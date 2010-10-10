@@ -65,6 +65,8 @@ public class DumpThreadsAction extends Action {
                     return Status.CANCEL_STATUS;
                 }
 
+                section.setPinned(true);
+
                 OpenSnapshotAction.openEditor(fileStore);
                 return Status.OK_STATUS;
             }
