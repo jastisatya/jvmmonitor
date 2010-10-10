@@ -465,7 +465,7 @@ public class MBeanServer implements IMBeanServer {
             ThreadElement oldElement = threadListElements.get(threadName);
             long processCpuTime = threadMXBean.getThreadCpuTime(threadId);
             Long previousCpuTime = previousThreadProcessCpuTime.get(threadId);
-            double cpuUsage = -1;
+            double cpuUsage = 0;
             previousThreadProcessCpuTime.put(threadId, processCpuTime);
             if (previousCpuTime != null) {
                 cpuUsage = Math.min(

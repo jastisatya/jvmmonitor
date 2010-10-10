@@ -326,11 +326,41 @@ public class Tools implements IPropertyChangeListener, IConstants {
     }
 
     /**
+     * Validates the JDK root directory.
+     * 
+     * @param jdkRootDirectory
+     *            The JDK root directory
+     * @return The error message or <tt>null</tt> if not found
+     */
+    protected String validateJdkRootDirectory(String jdkRootDirectory) {
+
+        // check if directory exists
+        File directory = new File(jdkRootDirectory);
+        if (!directory.exists() || !directory.isDirectory()) {
+            return Messages.directoryNotExistMsg;
+        }
+
+        // check if tools.jar exists
+        File toolsJarFile = new File(jdkRootDirectory + TOOLS_JAR);
+        if (!toolsJarFile.exists()) {
+            return Messages.notJdkRootDirectoryMsg;
+        }
+
+        // checks if "attach" shared library exist
+        String libraryPath = getJreLibraryPath(jdkRootDirectory);
+        if (libraryPath != null) {
+            return null;
+        }
+
+        return Messages.notJdkRootDirectoryMsg;
+    }
+
+    /**
      * Searches the JDK root directory.
      * 
      * @return The JDK root directory, or empty string if not found
      */
-    protected String searchJdkRootDirectory() {
+    private String searchJdkRootDirectory() {
 
         // search from the JREs that are specified on preference page
         for (IVMInstallType type : JavaRuntime.getVMInstallTypes()) {
@@ -370,36 +400,6 @@ public class Tools implements IPropertyChangeListener, IConstants {
     }
 
     /**
-     * Validates the JDK root directory.
-     * 
-     * @param jdkRootDirectory
-     *            The JDK root directory
-     * @return The error message or <tt>null</tt> if not found
-     */
-    protected String validateJdkRootDirectory(String jdkRootDirectory) {
-
-        // check if directory exists
-        File directory = new File(jdkRootDirectory);
-        if (!directory.exists() || !directory.isDirectory()) {
-            return Messages.directoryNotExistMsg;
-        }
-
-        // check if tools.jar exists
-        File toolsJarFile = new File(jdkRootDirectory + TOOLS_JAR);
-        if (!toolsJarFile.exists()) {
-            return Messages.notJdkRootDirectoryMsg;
-        }
-
-        // checks if "attach" shared library exist
-        String libraryPath = getJreLibraryPath(jdkRootDirectory);
-        if (libraryPath != null) {
-            return null;
-        }
-
-        return Messages.notJdkRootDirectoryMsg;
-    }
-
-    /**
      * Configures the class path and library path.
      */
     private void configureClassPathAndLibraryPath() {
@@ -407,6 +407,8 @@ public class Tools implements IPropertyChangeListener, IConstants {
                 .getString(IConstants.JDK_ROOT_DIRECTORY);
         if (jdkRootDirectory.isEmpty()) {
             jdkRootDirectory = searchJdkRootDirectory();
+            Activator.getDefault().getPreferenceStore()
+                    .setValue(IConstants.JDK_ROOT_DIRECTORY, jdkRootDirectory);
         }
 
         if (validateJdkRootDirectory(jdkRootDirectory) != null) {

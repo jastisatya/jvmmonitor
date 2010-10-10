@@ -17,7 +17,7 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
  */
 public class PreferencesAction extends Action {
 
-    /** The preference dialog. */
+    /** The preference dialog (keep reference for testing). */
     private PreferenceDialog dialog;
 
     /**
@@ -42,16 +42,14 @@ public class PreferencesAction extends Action {
      * @return The preference dialog
      */
     private PreferenceDialog getDialog() {
-        if (dialog == null) {
-            String[] preferencePages = new String[] {
-                    "org.jvmmonitor.ui.JavaMonitorPreferencePage", //$NON-NLS-1$
-                    "org.jvmmonitor.tools.ToolsPreferencePage" }; //$NON-NLS-1$
+        String[] preferencePages = new String[] {
+                "org.jvmmonitor.ui.JavaMonitorPreferencePage", //$NON-NLS-1$
+                "org.jvmmonitor.tools.ToolsPreferencePage" }; //$NON-NLS-1$
 
-            Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                    .getShell();
-            dialog = PreferencesUtil.createPreferenceDialogOn(shell,
-                    preferencePages[0], preferencePages, null);
-        }
+        Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                .getShell();
+        dialog = PreferencesUtil.createPreferenceDialogOn(shell,
+                preferencePages[0], preferencePages, null);
         return dialog;
     }
 }

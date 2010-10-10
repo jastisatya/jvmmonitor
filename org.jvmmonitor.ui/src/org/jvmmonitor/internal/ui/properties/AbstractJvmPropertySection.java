@@ -361,6 +361,21 @@ abstract public class AbstractJvmPropertySection extends
     }
 
     /**
+     * Sets pinned.
+     * 
+     * @param pinned
+     *            <tt>true</tt> to set pinned
+     */
+    public void setPinned(final boolean pinned) {
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                propertySheet.setPinned(pinned);
+            }
+        });
+    }
+
+    /**
      * Notifies that the part is closed.
      */
     protected void partClosed() {

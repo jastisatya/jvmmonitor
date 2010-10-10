@@ -19,6 +19,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -36,6 +37,7 @@ import org.swtchart.ISeries;
 import org.swtchart.ISeries.SeriesType;
 import org.swtchart.ISeriesSet;
 import org.swtchart.Range;
+import org.swtchart.internal.PlotArea;
 
 /**
  * The timeline chart.
@@ -117,6 +119,7 @@ public class TimelineChart extends Chart implements IPropertyChangeListener {
             color.dispose();
         }
     }
+
     /**
      * Gets the monitored attribute group.
      * 
@@ -131,8 +134,7 @@ public class TimelineChart extends Chart implements IPropertyChangeListener {
      */
     public void refresh() {
         refreshJob = new RefreshJob(NLS.bind(Messages.refreshChartJobLabel,
-                attributeGroup.getName()), sectionId
-                + attributeGroup.getName()) {
+                attributeGroup.getName()), sectionId + attributeGroup.getName()) {
 
             @Override
             protected void refreshModel(IProgressMonitor monitor) {
@@ -214,10 +216,15 @@ public class TimelineChart extends Chart implements IPropertyChangeListener {
                 Activator.getDefault().getPreferenceStore()
                         .getBoolean(IConstants.LEGEND_VISIBILITY));
 
-        MyMouseListener listener = new MyMouseListener();
-        getPlotArea().addListener(SWT.MouseMove, listener);
-        getPlotArea().addListener(SWT.MouseDown, listener);
-        getPlotArea().addListener(SWT.MouseUp, listener);
+        MyMouseListener plotAreaListener = new MyMouseListener(getPlotArea());
+        getPlotArea().addListener(SWT.MouseMove, plotAreaListener);
+        getPlotArea().addListener(SWT.MouseDown, plotAreaListener);
+        getPlotArea().addListener(SWT.MouseUp, plotAreaListener);
+
+        MyMouseListener chartListener = new MyMouseListener(this);
+        addListener(SWT.MouseMove, chartListener);
+        addListener(SWT.MouseDown, chartListener);
+        addListener(SWT.MouseUp, chartListener);
     }
 
     /**
@@ -265,6 +272,7 @@ public class TimelineChart extends Chart implements IPropertyChangeListener {
         }
 
         section.setText(attributeGroup.getName());
+        marker.redraw();
         redraw();
     }
 
@@ -336,11 +344,17 @@ public class TimelineChart extends Chart implements IPropertyChangeListener {
      */
     private class MyMouseListener implements Listener {
 
+        /** The control to add listener. */
+        private Control control;
+
         /**
          * The constructor.
+         * 
+         * @param control
+         *            The control to add listener
          */
-        public MyMouseListener() {
-            // do nothing
+        public MyMouseListener(Control control) {
+            this.control = control;
         }
 
         /*
@@ -348,15 +362,24 @@ public class TimelineChart extends Chart implements IPropertyChangeListener {
          */
         @Override
         public void handleEvent(Event event) {
+            int position;
+            if (control instanceof Chart) {
+                position = event.x - getPlotArea().getBounds().x;
+            } else if (control instanceof PlotArea) {
+                position = event.x;
+            } else {
+                throw new IllegalStateException("unknown object");
+            }
+
             switch (event.type) {
             case SWT.MouseMove:
                 if (!marker.isDisposed()) {
-                    marker.setPosition(event.x);
+                    marker.setPosition(position);
                 }
                 break;
             case SWT.MouseDown:
                 if (event.button == 1) {
-                    marker.setPosition(event.x);
+                    marker.setPosition(position);
                 }
                 break;
             case SWT.MouseUp:
