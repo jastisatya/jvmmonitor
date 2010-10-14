@@ -93,10 +93,7 @@ public final class Messages extends NLS {
     public static String mBeanOperationFailedMsg;
 
     /** */
-    public static String dumpHeapDataFailedMsg;
-
-    /** */
-    public static String dumpThreadDataFailedMsg;
+    public static String dumpFailedMsg;
 
     /** */
     public static String subscribeMBeanNotificationFailedMsg;

@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -78,6 +80,14 @@ public class Snapshot implements ISnapshot {
     @Override
     public String getTimeStamp() {
         if (timeStamp != null) {
+            return timeStamp;
+        }
+
+        if (snapshotType == SnapshotType.Hprof) {
+            Date currentDate = new Date(fileStore.fetchInfo().getLastModified());
+            String date = new SimpleDateFormat("yyyy/MM/dd").format(currentDate); //$NON-NLS-1$
+            String time = new SimpleDateFormat("HH:mm:ss").format(currentDate); //$NON-NLS-1$
+            timeStamp = date + " " + time; //$NON-NLS-1$
             return timeStamp;
         }
 

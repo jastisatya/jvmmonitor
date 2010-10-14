@@ -52,6 +52,17 @@ public final class Messages extends NLS {
 
     /** */
     public static String deltaColumnToolTip;
+    
+    // dump hprof dialog
+    
+    /** */
+    public static String dumpHprofTitle;
+    
+    /** */
+    public static String hprofFileLabel;
+
+    /** */
+    public static String pathContainsInvalidCharactersMsg;
 
     // instruction message
 
@@ -62,6 +73,9 @@ public final class Messages extends NLS {
     public static String notSupportedForEclipseItselfOn64bitLinux;
 
     // actions
+
+    /** */
+    public static String dumpHprofLabel;
 
     /** */
     public static String dumpHeapLabel;
@@ -76,6 +90,9 @@ public final class Messages extends NLS {
 
     /** */
     public static String clearHeapDeltaJobLabel;
+
+    /** */
+    public static String dumpHprofDataJobLabel;
 
     /** */
     public static String dumpHeapDataJobLabel;

@@ -122,13 +122,12 @@ public class ActiveJvm extends AbstractJvm implements IActiveJvm {
         }
         initialize(url);
 
-        // connect
-        connect(updatePeriod);
-
         // refresh
+        connect(updatePeriod);
         refreshPid();
         refreshMainClass();
         refreshSnapshots();
+        disconnect();
 
         saveJvmProperties();
     }
@@ -163,13 +162,12 @@ public class ActiveJvm extends AbstractJvm implements IActiveJvm {
 
         initialize(jmxUrl);
 
-        // connect
-        connect(updatePeriod);
-
         // refresh
+        connect(updatePeriod);
         refreshPid();
         refreshMainClass();
         boolean jvmAddedToHost = refreshHost();
+        disconnect();
 
         if (jvmAddedToHost) {
             refreshSnapshots();
@@ -188,7 +186,9 @@ public class ActiveJvm extends AbstractJvm implements IActiveJvm {
         mBeanServer.connect(updatePeriod);
         isConnected = true;
 
-        JvmModel.getInstance().getAgentLoadHandler().loadAgent(this);
+        if (!isRemote) {
+            JvmModel.getInstance().getAgentLoadHandler().loadAgent(this);
+        }
 
         JvmModel.getInstance().fireJvmModelChangeEvent(
                 new JvmModelEvent(State.JvmConnected, this));

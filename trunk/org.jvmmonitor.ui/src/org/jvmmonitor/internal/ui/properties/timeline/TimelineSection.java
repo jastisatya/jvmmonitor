@@ -9,6 +9,7 @@ package org.jvmmonitor.internal.ui.properties.timeline;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
@@ -37,6 +38,7 @@ import org.jvmmonitor.core.mbean.IMBeanServerChangeListener;
 import org.jvmmonitor.core.mbean.IMonitoredMXBeanAttribute;
 import org.jvmmonitor.core.mbean.IMonitoredMXBeanGroup;
 import org.jvmmonitor.core.mbean.MBeanServerEvent;
+import org.jvmmonitor.internal.ui.RefreshJob;
 import org.jvmmonitor.internal.ui.actions.RefreshAction;
 import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
 import org.jvmmonitor.internal.ui.properties.memory.GarbageCollectorAction;
@@ -59,7 +61,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
     /** The action to create a new chart. */
     private NewChartAction newChartAction;
 
-    /** The action to restore defaults charts. */
+    /** The action to restore default charts. */
     private RestoreDefaultsAction restoreDefaultsAction;
 
     /** The action to run garbage collector. */
@@ -95,7 +97,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
      * @see AbstractJvmPropertySection#createControls(Composite)
      */
     @Override
-    protected void createControls(final Composite parent) {
+    protected void createControls(Composite parent) {
         sectionContainer = parent;
         parent.setBackground(Display.getDefault().getSystemColor(
                 SWT.COLOR_LIST_BACKGROUND));
@@ -106,15 +108,20 @@ public class TimelineSection extends AbstractJvmPropertySection {
         mBeanServerChangeListener = new IMBeanServerChangeListener() {
             @Override
             public void serverChanged(MBeanServerEvent event) {
-                Display.getDefault().asyncExec(new Runnable() {
+                new RefreshJob("Reconstruct charts", getId()) {
                     @Override
-                    public void run() {
+                    protected void refreshModel(IProgressMonitor monitor) {
+                        // do nothing
+                    }
+
+                    @Override
+                    protected void refreshUI() {
                         IActiveJvm jvm = getJvm();
                         if (jvm != null) {
                             reconstructCharts(jvm, false);
                         }
                     }
-                });
+                }.schedule();
             }
         };
     }
@@ -127,8 +134,13 @@ public class TimelineSection extends AbstractJvmPropertySection {
         super.jvmModelChanged(event);
 
         if (event.state == State.JvmConnected && !sectionContainer.isDisposed()) {
-            IActiveJvm newJvm = (IActiveJvm) event.jvm;
-            reconstructCharts(newJvm, true);
+            final IActiveJvm newJvm = (IActiveJvm) event.jvm;
+            Display.getDefault().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    reconstructCharts(newJvm, true);
+                }
+            });
             newJvm.getMBeanServer().addServerChangeListener(
                     mBeanServerChangeListener);
         }
@@ -312,6 +324,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
             }
         }
 
+        sectionContainer.setVisible(false);
         for (TimelineChart chart : charts) {
             chart.dispose();
         }
@@ -327,6 +340,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
             createSection(sectionContainer, group);
         }
         sectionContainer.layout();
+        sectionContainer.setVisible(true);
         refresh();
     }
 
@@ -393,7 +407,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
         section.setClient(flatFormComposite);
         List<Action> actions = new ArrayList<Action>();
         for (IMonitoredMXBeanAttribute attribute : group.getAttributes()) {
-            if (attribute.getAttributeName().equals("HeapMemoryUsage")) { //$NON-NLS-1$
+            if (attribute.getAttributeName().startsWith("HeapMemoryUsage")) { //$NON-NLS-1$
                 actions.add(garbageCollectorAction);
                 break;
             }
