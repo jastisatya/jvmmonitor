@@ -48,6 +48,9 @@ public class MemorySection extends AbstractJvmPropertySection {
     /** The action to dump heap. */
     DumpHeapAction dumpHeapAction;
 
+    /** The action to dump hprof. */
+    DumpHprofAction dumpHprofAction;
+
     /** The separator. */
     private Separator separator;
 
@@ -99,6 +102,7 @@ public class MemorySection extends AbstractJvmPropertySection {
                 boolean enabled = jvm != null && jvm.isConnected()
                         && !jvm.isRemote();
                 refreshBackground(heapComposite.getChildren(), enabled);
+                dumpHprofAction.setEnabled(!hasErrorMessage());
                 dumpHeapAction.setEnabled(!hasErrorMessage());
                 refreshAction.setEnabled(enabled);
                 garbageCollectorAction.setEnabled(enabled);
@@ -146,6 +150,9 @@ public class MemorySection extends AbstractJvmPropertySection {
         if (manager.find(dumpHeapAction.getId()) == null) {
             manager.insertAfter("defaults", dumpHeapAction); //$NON-NLS-1$
         }
+        if (manager.find(dumpHprofAction.getId()) == null) {
+            manager.insertAfter("defaults", dumpHprofAction); //$NON-NLS-1$
+        }
     }
 
     /*
@@ -158,6 +165,7 @@ public class MemorySection extends AbstractJvmPropertySection {
         manager.remove(garbageCollectorAction.getId());
         manager.remove(clearHeapDeltaAction.getId());
         manager.remove(dumpHeapAction.getId());
+        manager.remove(dumpHprofAction.getId());
     }
 
     /*
@@ -196,6 +204,7 @@ public class MemorySection extends AbstractJvmPropertySection {
         garbageCollectorAction = new GarbageCollectorAction(this);
         clearHeapDeltaAction = new ClearHeapDeltaAction(heapComposite, this);
         dumpHeapAction = new DumpHeapAction(this);
+        dumpHprofAction = new DumpHprofAction(this);
         separator = new Separator();
     }
 

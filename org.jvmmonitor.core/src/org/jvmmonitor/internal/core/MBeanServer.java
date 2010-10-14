@@ -253,6 +253,14 @@ public class MBeanServer implements IMBeanServer {
         Assert.isNotNull(name);
         Assert.isNotNull(axisUnit);
 
+        for (IMonitoredMXBeanGroup group : monitoredAttributeGroups) {
+            if (group.getName().equals(name)) {
+                group.setAxisUnit(axisUnit);
+                group.clearAttributes();
+                return group;
+            }
+        }
+
         IMonitoredMXBeanGroup group = addMonitoredAttributeGroup(name,
                 axisUnit, true);
         return group;
@@ -531,61 +539,37 @@ public class MBeanServer implements IMBeanServer {
     }
 
     /*
+     * @see IMBeanServer#dumpHprof(String)
+     */
+    @Override
+    public IFileStore dumpHprof(String hprofFileName) throws JvmCoreException {
+        if (!checkReachability()) {
+            return null;
+        }
+
+        IFileStore fileStore = null;
+        String fileName;
+        if (jvm.isRemote()) {
+            fileName = hprofFileName;
+        } else {
+            fileStore = dump(SnapshotType.Hprof);
+            fileName = fileStore.toString();
+        }
+
+        ObjectName objectName = jvm.getMBeanServer().getObjectName(
+                "com.sun.management:type=HotSpotDiagnostic"); //$NON-NLS-1$
+        invoke(objectName, "dumpHeap", new Object[] { fileName, Boolean.TRUE }, //$NON-NLS-1$
+                new String[] { String.class.getCanonicalName(), "boolean" }); //$NON-NLS-1$
+
+        return fileStore;
+    }
+
+    /*
      * @see IMBeanServer#dumpHeap()
      */
     @Override
     public IFileStore dumpHeap() throws JvmCoreException {
-        String dump = getHeapDumpString();
-
-        StringBuffer fileName = new StringBuffer();
-        fileName.append(new Date().getTime()).append('.')
-                .append(SnapshotType.Heap.getExtension());
-        IFileStore fileStore = Util.getFileStore(fileName.toString(),
-                jvm.getBaseDirectory());
-
-        // restore the terminated JVM if already removed
-        AbstractJvm abstractJvm = jvm;
-        if (!((Host) jvm.getHost()).getJvms().contains(jvm)) {
-            jvm.saveJvmProperties();
-            abstractJvm = (AbstractJvm) ((Host) jvm.getHost())
-                    .addTerminatedJvm(jvm.getPid(), jvm.getPort(),
-                            jvm.getMainClass());
-        }
-
-        OutputStream os = null;
-        try {
-            os = fileStore.openOutputStream(EFS.NONE, null);
-            os.write(dump.getBytes());
-
-            Snapshot snapshot = new Snapshot(fileStore, abstractJvm);
-            abstractJvm.addSnapshot(snapshot);
-
-            JvmModel.getInstance().fireJvmModelChangeEvent(
-                    new JvmModelEvent(State.ShapshotTaken, abstractJvm,
-                            snapshot));
-        } catch (CoreException e) {
-            throw new JvmCoreException(IStatus.ERROR, NLS.bind(
-                    Messages.openOutputStreamFailedMsg, fileStore.toURI()
-                            .getPath()), e);
-        } catch (IOException e) {
-            try {
-                fileStore.delete(EFS.NONE, null);
-            } catch (CoreException e1) {
-                // do nothing
-            }
-            throw new JvmCoreException(IStatus.ERROR,
-                    NLS.bind(Messages.dumpHeapDataFailedMsg, fileStore.toURI()
-                            .getPath()), e);
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {
-                    // do nothing
-                }
-            }
-        }
-        return fileStore;
+        return dump(SnapshotType.Heap);
     }
 
     /*
@@ -593,57 +577,7 @@ public class MBeanServer implements IMBeanServer {
      */
     @Override
     public IFileStore dumpThreads() throws JvmCoreException {
-        String dump = getThreadDumpString();
-
-        StringBuffer fileName = new StringBuffer();
-        fileName.append(new Date().getTime()).append('.')
-                .append(SnapshotType.Thread.getExtension());
-        IFileStore fileStore = Util.getFileStore(fileName.toString(),
-                jvm.getBaseDirectory());
-
-        // restore the terminated JVM if already removed
-        AbstractJvm abstractJvm = jvm;
-        if (!((Host) jvm.getHost()).getJvms().contains(jvm)) {
-            jvm.saveJvmProperties();
-            abstractJvm = (AbstractJvm) ((Host) jvm.getHost())
-                    .addTerminatedJvm(jvm.getPid(), jvm.getPort(),
-                            jvm.getMainClass());
-        }
-
-        OutputStream os = null;
-        try {
-            os = fileStore.openOutputStream(EFS.NONE, null);
-            os.write(dump.getBytes());
-
-            Snapshot snapshot = new Snapshot(fileStore, abstractJvm);
-            abstractJvm.addSnapshot(snapshot);
-
-            JvmModel.getInstance().fireJvmModelChangeEvent(
-                    new JvmModelEvent(State.ShapshotTaken, abstractJvm,
-                            snapshot));
-        } catch (CoreException e) {
-            throw new JvmCoreException(IStatus.ERROR, NLS.bind(
-                    Messages.openOutputStreamFailedMsg, fileStore.toURI()
-                            .getPath()), e);
-        } catch (IOException e) {
-            try {
-                fileStore.delete(EFS.NONE, null);
-            } catch (CoreException e1) {
-                // do nothing
-            }
-            throw new JvmCoreException(IStatus.ERROR, NLS.bind(
-                    Messages.dumpThreadDataFailedMsg, fileStore.toURI()
-                            .getPath()), e);
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {
-                    // do nothing
-                }
-            }
-        }
-        return fileStore;
+        return dump(SnapshotType.Thread);
     }
 
     /*
@@ -1171,43 +1105,78 @@ public class MBeanServer implements IMBeanServer {
     }
 
     /**
-     * Gets the heap dump string.
+     * Dumps the profile data into file.
      * 
-     * @return The heap dump string
+     * @param type
+     *            The snapshot type
+     * @return The file store
+     * @throws JvmCoreException
      */
-    private String getHeapDumpString() {
-        Date currentDate = new Date();
-        String date = new SimpleDateFormat("yyyy/MM/dd").format(currentDate); //$NON-NLS-1$
-        String time = new SimpleDateFormat("HH:mm:ss").format(currentDate); //$NON-NLS-1$
+    private IFileStore dump(SnapshotType type) throws JvmCoreException {
 
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //$NON-NLS-1$
-        buffer.append("<?JvmMonitor version=\""); //$NON-NLS-1$
-        buffer.append(Activator.getDefault().getBundle().getVersion()
-                .toString());
-        buffer.append("\"?>\n"); //$NON-NLS-1$
+        StringBuffer fileName = new StringBuffer();
+        fileName.append(new Date().getTime()).append('.')
+                .append(type.getExtension());
 
-        buffer.append("<heap-profile date=\"").append(date).append(' ') //$NON-NLS-1$
-                .append(time).append("\" "); //$NON-NLS-1$
-        buffer.append("runtime=\"").append(jvm.getPid()).append("@") //$NON-NLS-1$ //$NON-NLS-2$
-                .append(jvm.getHost().getName()).append("\" "); //$NON-NLS-1$
-        buffer.append("mainClass=\"").append(jvm.getMainClass()).append("\" "); //$NON-NLS-1$ //$NON-NLS-2$
-        buffer.append("arguments=\"").append(getJvmArguments()).append("\">\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        IFileStore fileStore = Util.getFileStore(fileName.toString(),
+                jvm.getBaseDirectory());
 
-        for (Entry<String, HeapElement> entry : heapListElements.entrySet()) {
-            entry.getValue().dump(buffer);
+        // restore the terminated JVM if already removed
+        AbstractJvm abstractJvm = jvm;
+        if (!((Host) jvm.getHost()).getJvms().contains(jvm)) {
+            jvm.saveJvmProperties();
+            abstractJvm = (AbstractJvm) ((Host) jvm.getHost())
+                    .addTerminatedJvm(jvm.getPid(), jvm.getPort(),
+                            jvm.getMainClass());
         }
 
-        buffer.append("</heap-profile>"); //$NON-NLS-1$
-        return buffer.toString();
+        OutputStream os = null;
+        try {
+            if (type == SnapshotType.Heap || type == SnapshotType.Thread) {
+                String dump = getDumpString(type);
+                os = fileStore.openOutputStream(EFS.NONE, null);
+                os.write(dump.getBytes());
+            }
+
+            Snapshot snapshot = new Snapshot(fileStore, abstractJvm);
+            abstractJvm.addSnapshot(snapshot);
+
+            JvmModel.getInstance().fireJvmModelChangeEvent(
+                    new JvmModelEvent(State.ShapshotTaken, abstractJvm,
+                            snapshot));
+        } catch (CoreException e) {
+            throw new JvmCoreException(IStatus.ERROR, NLS.bind(
+                    Messages.openOutputStreamFailedMsg, fileStore.toURI()
+                            .getPath()), e);
+        } catch (IOException e) {
+            try {
+                fileStore.delete(EFS.NONE, null);
+            } catch (CoreException e1) {
+                // do nothing
+            }
+
+            throw new JvmCoreException(IStatus.ERROR, NLS.bind(
+                    Messages.dumpFailedMsg, fileStore.toURI().getPath()), e);
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                    // do nothing
+                }
+            }
+        }
+        return fileStore;
     }
 
     /**
-     * Gets the thread dump string.
+     * Gets the dump string.
      * 
-     * @return The thread dump string
+     * @param type
+     *            The snapshot type
+     * @return The dump string
      */
-    private String getThreadDumpString() {
+    private String getDumpString(SnapshotType type) {
         Date currentDate = new Date();
         String date = new SimpleDateFormat("yyyy/MM/dd").format(currentDate); //$NON-NLS-1$
         String time = new SimpleDateFormat("HH:mm:ss").format(currentDate); //$NON-NLS-1$
@@ -1219,18 +1188,30 @@ public class MBeanServer implements IMBeanServer {
                 .toString());
         buffer.append("\"?>\n"); //$NON-NLS-1$
 
-        buffer.append("<thread-profile date=\"").append(date).append(' ') //$NON-NLS-1$
+        if (type == SnapshotType.Heap) {
+            buffer.append("<heap-profile date=\"");
+        } else if (type == SnapshotType.Thread) {
+            buffer.append("<thread-profile date=\"");
+        }
+        buffer.append(date).append(' ') //$NON-NLS-1$
                 .append(time).append("\" "); //$NON-NLS-1$
         buffer.append("runtime=\"").append(jvm.getPid()).append("@") //$NON-NLS-1$ //$NON-NLS-2$
                 .append(jvm.getHost().getName()).append("\" "); //$NON-NLS-1$
         buffer.append("mainClass=\"").append(jvm.getMainClass()).append("\" "); //$NON-NLS-1$ //$NON-NLS-2$
         buffer.append("arguments=\"").append(getJvmArguments()).append("\">\n"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        for (Entry<String, ThreadElement> entry : threadListElements.entrySet()) {
-            entry.getValue().dump(buffer);
+        if (type == SnapshotType.Heap) {
+            for (Entry<String, HeapElement> entry : heapListElements.entrySet()) {
+                entry.getValue().dump(buffer);
+            }
+            buffer.append("</heap-profile>"); //$NON-NLS-1$
+        } else if (type == SnapshotType.Thread) {
+            for (Entry<String, ThreadElement> entry : threadListElements
+                    .entrySet()) {
+                entry.getValue().dump(buffer);
+            }
+            buffer.append("</thread-profile>"); //$NON-NLS-1$
         }
-
-        buffer.append("</thread-profile>"); //$NON-NLS-1$
         return buffer.toString();
     }
 
@@ -1292,7 +1273,8 @@ public class MBeanServer implements IMBeanServer {
         if (previousSamplingTime == 0) {
             actualSamplingPeriodInMilliSeconds = samplingPeriod;
         } else {
-            actualSamplingPeriodInMilliSeconds = samplingTime - previousSamplingTime;
+            actualSamplingPeriodInMilliSeconds = samplingTime
+                    - previousSamplingTime;
         }
 
         List<String> profiledPackages = jvm.getCpuProfiler()

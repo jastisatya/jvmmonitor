@@ -30,7 +30,7 @@ import org.jvmmonitor.core.cpu.CpuModelEvent.CpuModelState;
 public class CpuModel implements ICpuModel {
 
     /** The agent version. */
-    static final String AGENT_VERSION = "3.6.1"; //$NON-NLS-1$
+    static final String AGENT_VERSION = "3.6.2"; //$NON-NLS-1$
 
     /** The call tree threads. */
     private List<ThreadNode<CallTreeNode>> callTreeThreads;

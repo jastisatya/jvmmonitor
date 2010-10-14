@@ -252,7 +252,16 @@ public class NewJvmConnectionWizardPage extends WizardPage {
 
         remoteHostText = addComboTextField(parent,
                 Messages.remoteHostTextLabel, REMOTE_HOST_HISTORY_KEY);
+        List<IHost> hosts = JvmModel.getInstance().getHosts();
+        for (IHost host : hosts) {
+            String hostName = host.getName();
+            if (!hostName.equals(IHost.LOCALHOST)
+                    && remoteHostText.indexOf(hostName) == -1) {
+                remoteHostText.add(hostName);
+            }
+        }
         remoteHostText.setFocus();
+
         portText = addComboTextField(parent, Messages.portTextLabel,
                 PORT_HISTORY_KEY);
     }
@@ -339,12 +348,6 @@ public class NewJvmConnectionWizardPage extends WizardPage {
         String[] items = getDialogSettings().getArray(historyKey);
         if (items != null) {
             combo.setItems(items);
-        }
-        List<IHost> hosts = JvmModel.getInstance().getHosts();
-        for (IHost host : hosts) {
-            if (!host.getName().equals(IHost.LOCALHOST)) {
-                combo.add(host.getName());
-            }
         }
 
         combo.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));

@@ -90,6 +90,10 @@ abstract public class AbstractMethodNode implements IMethodNode {
      */
     @Override
     public double getSelfTimeInPercentage() {
+        double rootTotalTime = getRootTotalTime();
+        if (rootTotalTime == 0) {
+            return 0;
+        }
         return selfTime / getRootTotalTime() * 100;
     }
 

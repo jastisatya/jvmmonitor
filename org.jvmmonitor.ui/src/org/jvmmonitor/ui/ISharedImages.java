@@ -108,6 +108,9 @@ public interface ISharedImages {
     /** The thread dump image path. */
     public static final String THREAD_DUMP_IMG_PATH = "icons/full/obj16/thread_dump.gif"; //$NON-NLS-1$
 
+    /** The hprof dump image path. */
+    public static final String HPROF_DUMP_IMG_PATH = "icons/full/obj16/hprof_dump.gif"; //$NON-NLS-1$
+
     /** The heap dump image path. */
     public static final String HEAP_DUMP_IMG_PATH = "icons/full/obj16/heap_dump.gif"; //$NON-NLS-1$
 
@@ -119,6 +122,12 @@ public interface ISharedImages {
 
     /** The disabled take thread dump image path. */
     public static final String DISABLED_TAKE_THREAD_DUMP_IMG_PATH = "icons/full/dlcl16/take_thread_dump.gif"; //$NON-NLS-1$
+
+    /** The take hprof dump image path. */
+    public static final String TAKE_HPROF_DUMP_IMG_PATH = "icons/full/elcl16/take_hprof_dump.gif"; //$NON-NLS-1$
+
+    /** The disabled take hprof dump image path. */
+    public static final String DISABLED_TAKE_HPROF_DUMP_IMG_PATH = "icons/full/dlcl16/take_hprof_dump.gif"; //$NON-NLS-1$
 
     /** The take heap dump image path. */
     public static final String TAKE_HEAP_DUMP_IMG_PATH = "icons/full/elcl16/take_heap_dump.gif"; //$NON-NLS-1$

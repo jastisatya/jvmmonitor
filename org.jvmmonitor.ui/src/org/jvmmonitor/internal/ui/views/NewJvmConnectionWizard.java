@@ -18,6 +18,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
@@ -79,6 +80,16 @@ public class NewJvmConnectionWizard extends Wizard implements INewWizard {
         // show properties view
         StartMonitoringAction action = new StartMonitoringAction();
         action.showPropertiesView(jvm);
+
+        // connect to JVM
+        try {
+            int period = Activator.getDefault().getPreferenceStore()
+                    .getInt(IConstants.UPDATE_PERIOD);
+            jvm.connect(period);
+        } catch (JvmCoreException e) {
+            Activator.log(NLS.bind(Messages.connectJvmFailedMsg, jvm.getPid()),
+                    e);
+        }
 
         page.storeDialogSettings();
 

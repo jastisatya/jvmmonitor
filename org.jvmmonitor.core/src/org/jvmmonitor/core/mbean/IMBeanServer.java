@@ -179,6 +179,17 @@ public interface IMBeanServer {
     void clearHeapDelta();
 
     /**
+     * Dumps the heap data as hprof file.
+     * 
+     * @param hprofFileName
+     *            The hprof file name used when monitoring JVM on remote host
+     * @return The file store, or <tt>null</tt> if target JVM is running on
+     *         remote host.
+     * @throws JvmCoreException
+     */
+    IFileStore dumpHprof(String hprofFileName) throws JvmCoreException;
+
+    /**
      * Dumps the heap data.
      * 
      * @return The file store
@@ -217,5 +228,4 @@ public interface IMBeanServer {
      *            The MBean server change listener
      */
     void removeServerChangeListener(IMBeanServerChangeListener listener);
-
 }

@@ -56,16 +56,19 @@ public interface ISnapshot {
      * The snapshot type.
      */
     public enum SnapshotType {
-    
+
         /** The thread snapshot. */
         Thread,
-    
+
         /** The heap snapshot. */
         Heap,
-    
+
         /** The CPU snapshot. */
-        Cpu;
-    
+        Cpu,
+
+        /** The heap snapshot in hprof format. */
+        Hprof;
+
         /**
          * Gets the extension.
          * 

@@ -128,7 +128,11 @@ public class CallTreeNode extends AbstractMethodNode implements ICallTreeNode {
      */
     @Override
     public double getTotalTimeInPercentage() {
-        return totalTime / getRootTotalTime() * 100;
+        double rootTotalTime = getRootTotalTime();
+        if (rootTotalTime == 0) {
+            return 0;
+        }
+        return totalTime / rootTotalTime * 100;
     }
 
     /*

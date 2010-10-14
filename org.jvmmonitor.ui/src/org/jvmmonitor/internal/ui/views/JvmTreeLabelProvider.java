@@ -43,6 +43,9 @@ public class JvmTreeLabelProvider implements IStyledLabelProvider,
     /** The thread dump image. */
     private Image threadDumpImage;
 
+    /** The hprof dump image. */
+    private Image hprofDumpImage;
+
     /** The heap dump image. */
     private Image heapDumpImage;
 
@@ -77,6 +80,8 @@ public class JvmTreeLabelProvider implements IStyledLabelProvider,
         if (element instanceof ISnapshot) {
             if (((ISnapshot) element).getType() == SnapshotType.Thread) {
                 return getThreadDumpImage();
+            } else if (((ISnapshot) element).getType() == SnapshotType.Hprof) {
+                return getHprofDumpImage();
             } else if (((ISnapshot) element).getType() == SnapshotType.Heap) {
                 return getHeapDumpImage();
             } else if (((ISnapshot) element).getType() == SnapshotType.Cpu) {
@@ -149,6 +154,9 @@ public class JvmTreeLabelProvider implements IStyledLabelProvider,
         }
         if (heapDumpImage != null) {
             heapDumpImage.dispose();
+        }
+        if (hprofDumpImage != null) {
+            hprofDumpImage.dispose();
         }
         if (cpuDumpImage != null) {
             cpuDumpImage.dispose();
@@ -247,6 +255,19 @@ public class JvmTreeLabelProvider implements IStyledLabelProvider,
                     .getImageDescriptor(THREAD_DUMP_IMG_PATH).createImage();
         }
         return threadDumpImage;
+    }
+
+    /**
+     * Gets the hprof dump image.
+     * 
+     * @return The image
+     */
+    private Image getHprofDumpImage() {
+        if (hprofDumpImage == null || hprofDumpImage.isDisposed()) {
+            hprofDumpImage = Activator.getImageDescriptor(HPROF_DUMP_IMG_PATH)
+                    .createImage();
+        }
+        return hprofDumpImage;
     }
 
     /**
