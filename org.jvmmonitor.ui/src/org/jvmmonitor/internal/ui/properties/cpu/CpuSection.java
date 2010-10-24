@@ -231,9 +231,11 @@ public class CpuSection extends AbstractJvmPropertySection {
         newJvm.getCpuProfiler().getCpuModel()
                 .addModelChangeListener(cpuModelChangeListener);
 
-        setProfilerType();
-        setProfiledPackages();
-        setProfilerSamplingPeriod();
+        if (newJvm.isConnected()) {
+            setProfilerType();
+            setProfiledPackages();
+            setProfilerSamplingPeriod();
+        }
 
         callTree.setInput(newJvm);
         hotSpots.setInput(newJvm);
@@ -410,10 +412,15 @@ public class CpuSection extends AbstractJvmPropertySection {
                 || callerCallee.isDisposed()) {
             return;
         }
-
-        hotSpots.refresh();
-        callTree.refresh();
-        callerCallee.refresh();
+        if (callTree.isVisible()) {
+            callTree.refresh();
+        }
+        if (hotSpots.isVisible()) {
+            hotSpots.refresh();
+        }
+        if (callerCallee.isVisible()) {
+            callerCallee.refresh();
+        }
     }
 
     /**

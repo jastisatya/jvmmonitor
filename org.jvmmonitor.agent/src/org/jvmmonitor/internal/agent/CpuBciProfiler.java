@@ -28,7 +28,7 @@ public class CpuBciProfiler {
         }
 
         long time = System.currentTimeMillis();
-        Thread thread = Thread.currentThread();
+        String thread = Thread.currentThread().getName();
 
         // get the current thread
         ThreadNode threadNode = model.getThread(thread);
@@ -61,7 +61,7 @@ public class CpuBciProfiler {
         }
 
         long time = System.currentTimeMillis();
-        Thread thread = Thread.currentThread();
+        String thread = Thread.currentThread().getName();
 
         // get the current thread
         ThreadNode threadNode = model.getThread(thread);
@@ -95,7 +95,7 @@ public class CpuBciProfiler {
         }
 
         long time = System.currentTimeMillis();
-        Thread thread = Thread.currentThread();
+        String thread = Thread.currentThread().getName();
 
         // get the current thread
         ThreadNode threadNode = model.getThread(thread);

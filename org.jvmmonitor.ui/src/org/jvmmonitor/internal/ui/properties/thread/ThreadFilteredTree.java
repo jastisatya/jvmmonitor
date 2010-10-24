@@ -60,9 +60,9 @@ public class ThreadFilteredTree extends FilteredTree implements
         configureTree();
         createContextMenu();
         setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
-        
-        Activator.getDefault().getPreferenceStore().addPropertyChangeListener(
-                this);
+
+        Activator.getDefault().getPreferenceStore()
+                .addPropertyChangeListener(this);
     }
 
     /*
@@ -113,7 +113,8 @@ public class ThreadFilteredTree extends FilteredTree implements
      */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if (!event.getProperty().equals(getId())) {
+        if (!event.getProperty().equals(getId())
+                || getViewer().getTree().isDisposed()) {
             return;
         }
 
@@ -142,8 +143,8 @@ public class ThreadFilteredTree extends FilteredTree implements
      */
     private void loadColumnsPreference() {
         columns = new LinkedHashMap<String, Boolean>();
-        String value = Activator.getDefault().getPreferenceStore().getString(
-                getId());
+        String value = Activator.getDefault().getPreferenceStore()
+                .getString(getId());
         if (value.isEmpty()) {
             for (ThreadColumn column : ThreadColumn.values()) {
                 columns.put(column.label, true);

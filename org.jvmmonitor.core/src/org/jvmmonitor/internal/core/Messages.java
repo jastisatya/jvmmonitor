@@ -112,4 +112,7 @@ public final class Messages extends NLS {
 
     /** */
     public static String renameFileFailedMsg;
+
+    /** */
+    public static String jvmNotReachableMsg;
 }

@@ -64,7 +64,8 @@ public class CallerCalleeTabPage extends AbstractTabPage {
      * @param tabFolder
      *            The tab folder
      */
-    public CallerCalleeTabPage(final CpuSection cpuSection, final CTabFolder tabFolder) {
+    public CallerCalleeTabPage(final CpuSection cpuSection,
+            final CTabFolder tabFolder) {
         super(cpuSection, tabFolder);
 
         callersCalleesPageBook = new PageBook(viewForm, SWT.NONE);
@@ -97,7 +98,7 @@ public class CallerCalleeTabPage extends AbstractTabPage {
                             .getCallersCalleesTarget() != null
                             && !tabFolder.isDisposed()) {
                         tabFolder.setSelection(tabItem);
-                        
+
                         // setSelection() doesn't send SelectionEvent
                         cpuSection.tabSelectionChanged(tabItem);
                     }
@@ -123,11 +124,24 @@ public class CallerCalleeTabPage extends AbstractTabPage {
      */
     @Override
     protected void refresh() {
-        if (!callerFilteredTree.getViewer().getControl().isDisposed()) {
-            callerFilteredTree.getViewer().refresh();
+        TreeViewer callerViewer = callerFilteredTree.getViewer();
+        if (!callerViewer.getControl().isDisposed()) {
+            callerViewer.refresh();
+            if (callerViewer.getTree().isFocusControl()) {
+                callerFilteredTree
+                        .updateStatusLine((IStructuredSelection) callerViewer
+                                .getSelection());
+            }
         }
-        if (!calleeFilteredTree.getViewer().getControl().isDisposed()) {
-            calleeFilteredTree.getViewer().refresh();
+
+        TreeViewer calleeViewer = calleeFilteredTree.getViewer();
+        if (!calleeViewer.getControl().isDisposed()) {
+            calleeViewer.refresh();
+            if (calleeViewer.getTree().isFocusControl()) {
+                calleeFilteredTree
+                        .updateStatusLine((IStructuredSelection) calleeViewer
+                                .getSelection());
+            }
         }
 
         refreshCallersCalleesPage();

@@ -544,7 +544,8 @@ public class MBeanServer implements IMBeanServer {
     @Override
     public IFileStore dumpHprof(String hprofFileName) throws JvmCoreException {
         if (!checkReachability()) {
-            return null;
+            throw new JvmCoreException(IStatus.WARNING,
+                    Messages.jvmNotReachableMsg, null);
         }
 
         IFileStore fileStore = null;
@@ -1235,7 +1236,10 @@ public class MBeanServer implements IMBeanServer {
                 samplingTimer.cancel();
                 samplingTimer = null;
             }
-            jvm.getHost().removeJvm(jvm.getPid());
+            if (jvm.getHost().getActiveJvms().contains(jvm)) {
+                jvm.getHost().removeJvm(jvm.getPid());
+            }
+           
             return false;
         }
         return true;

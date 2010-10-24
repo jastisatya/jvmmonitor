@@ -162,15 +162,16 @@ public class FrameNode {
      */
     protected void dump(PrintWriter writer, long time, int nest) {
         String name = getFrameName();
+        long actualTotalTime = totalTime - overheadTime;
         if (stepIntoTime != 0) {
-            totalTime += time - stepIntoTime - overheadTime;
+            actualTotalTime += time - stepIntoTime;
         }
 
         for (int i = 0; i < nest; i++) {
             writer.print("\t");
         }
         writer.printf("<frame name=\"%s\" cnt=\"%d\" time=\"%d\"", name, count,
-                Math.max(totalTime - overheadTime, 0));
+                Math.max(actualTotalTime, 0));
         if (childFrames.size() > 0) {
             writer.println(">");
             for (FrameNode frameNode : childFrames.values()) {
@@ -197,8 +198,9 @@ public class FrameNode {
      */
     protected void dump(StringBuffer buffer, long time, int nest) {
         String name = getFrameName();
+        long actualTotalTime = totalTime - overheadTime;
         if (stepIntoTime != 0) {
-            totalTime += time - stepIntoTime - overheadTime;
+            actualTotalTime += time - stepIntoTime;
         }
 
         for (int i = 0; i < nest; i++) {
@@ -206,7 +208,7 @@ public class FrameNode {
         }
         buffer.append("<frame name=\"").append(name).append("\" cnt=\"")
                 .append(count).append("\" time=\"")
-                .append(Math.max(totalTime - overheadTime, 0)).append("\"");
+                .append(Math.max(actualTotalTime, 0)).append("\"");
         if (childFrames.size() > 0) {
             buffer.append(">\n");
             for (FrameNode frameNode : childFrames.values()) {

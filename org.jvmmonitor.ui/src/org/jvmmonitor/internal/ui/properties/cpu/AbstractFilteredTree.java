@@ -125,7 +125,8 @@ abstract public class AbstractFilteredTree extends FilteredTree implements
      */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if (!event.getProperty().equals(getId())) {
+        if (!event.getProperty().equals(getId())
+                || getViewer().getTree().isDisposed()) {
             return;
         }
 
@@ -185,12 +186,12 @@ abstract public class AbstractFilteredTree extends FilteredTree implements
         for (Object object : selection.toArray()) {
             if (object instanceof IMethodNode) {
                 percentage += ((IMethodNode) object).getSelfTimeInPercentage();
-                time += ((IMethodNode) object).getSelfTime() / 1000000d;
+                time += ((IMethodNode) object).getSelfTime();
             }
         }
         String text = Util.ZERO_LENGTH_STRING;
         if (percentage != 0) {
-            text = String.format("Self Time: %.2fms  %.1f", time, percentage) + '%'; //$NON-NLS-1$
+            text = String.format("Self Time: %.0fms  %.1f", time, percentage) + '%'; //$NON-NLS-1$
         }
         selfTimeStatusLineItem.setText(text);
     }

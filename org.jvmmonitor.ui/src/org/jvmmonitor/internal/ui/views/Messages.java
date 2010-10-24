@@ -164,6 +164,9 @@ public final class Messages extends NLS {
 
     /** */
     public static String refreshStatusLineJobLabel;
+    
+    /** */
+    public static String startMonitoringJobLabel;
 
     /** */
     public static String stopMonitoringJobLabel;

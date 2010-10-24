@@ -102,7 +102,7 @@ public class MemorySection extends AbstractJvmPropertySection {
                 boolean enabled = jvm != null && jvm.isConnected()
                         && !jvm.isRemote();
                 refreshBackground(heapComposite.getChildren(), enabled);
-                dumpHprofAction.setEnabled(!hasErrorMessage());
+                dumpHprofAction.setEnabled(!hasErrorMessage() && enabled);
                 dumpHeapAction.setEnabled(!hasErrorMessage());
                 refreshAction.setEnabled(enabled);
                 garbageCollectorAction.setEnabled(enabled);
