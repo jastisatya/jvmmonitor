@@ -10,13 +10,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
@@ -37,7 +41,7 @@ public class StartMonitoringAction extends Action implements
         ISelectionChangedListener {
 
     /** The active JVMs. */
-    private List<IActiveJvm> jvms;
+    List<IActiveJvm> jvms;
 
     /** The visibility. */
     private boolean visible;
@@ -85,24 +89,38 @@ public class StartMonitoringAction extends Action implements
      */
     @Override
     public void run() {
-        for (IActiveJvm jvm : jvms) {
-            /*
-             * show properties view before connecting to JVM, so that the
-             * properties view can react to the jvm connection event
-             */
-            showPropertiesView(jvm);
+        new Job(Messages.startMonitoringJobLabel) {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                for (final IActiveJvm jvm : jvms) {
+                    /*
+                     * show properties view before connecting to JVM, so that
+                     * the properties view can react to the jvm connection event
+                     */
+                    Display.getDefault().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            showPropertiesView(jvm);
+                        }
+                    });
 
-            if (!jvm.isConnected()) {
-                try {
-                    int period = Activator.getDefault().getPreferenceStore()
-                            .getInt(IConstants.UPDATE_PERIOD);
-                    jvm.connect(period);
-                } catch (JvmCoreException e) {
-                    Activator.log(NLS.bind(Messages.connectJvmFailedMsg,
-                            jvm.getPid()), e);
+                    if (!jvm.isConnected()) {
+                        try {
+                            int period = Activator.getDefault()
+                                    .getPreferenceStore()
+                                    .getInt(IConstants.UPDATE_PERIOD);
+                            jvm.connect(period);
+                        } catch (JvmCoreException e) {
+                            Activator.log(
+                                    NLS.bind(Messages.connectJvmFailedMsg,
+                                            jvm.getPid()), e);
+                            return Status.CANCEL_STATUS;
+                        }
+                    }
                 }
+                return Status.OK_STATUS;
             }
-        }
+        }.schedule();
     }
 
     /**

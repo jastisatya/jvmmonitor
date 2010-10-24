@@ -16,6 +16,7 @@ import java.util.Date;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.osgi.util.NLS;
@@ -84,7 +85,11 @@ public class Snapshot implements ISnapshot {
         }
 
         if (snapshotType == SnapshotType.Hprof) {
-            Date currentDate = new Date(fileStore.fetchInfo().getLastModified());
+            long lastModified = fileStore.fetchInfo().getLastModified();
+            if (lastModified == EFS.NONE) {
+                return null;
+            }
+            Date currentDate = new Date(lastModified);
             String date = new SimpleDateFormat("yyyy/MM/dd").format(currentDate); //$NON-NLS-1$
             String time = new SimpleDateFormat("HH:mm:ss").format(currentDate); //$NON-NLS-1$
             timeStamp = date + " " + time; //$NON-NLS-1$

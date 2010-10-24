@@ -81,8 +81,8 @@ public class HeapComposite extends Composite implements IConfigurableColumns,
         configureTree();
         createContextMenu(actionBars);
 
-        Activator.getDefault().getPreferenceStore().addPropertyChangeListener(
-                this);
+        Activator.getDefault().getPreferenceStore()
+                .addPropertyChangeListener(this);
     }
 
     /*
@@ -119,7 +119,8 @@ public class HeapComposite extends Composite implements IConfigurableColumns,
      */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if (!event.getProperty().equals(getId())) {
+        if (!event.getProperty().equals(getId())
+                || heapViewer.getTree().isDisposed()) {
             return;
         }
 
@@ -204,8 +205,8 @@ public class HeapComposite extends Composite implements IConfigurableColumns,
      */
     private void loadColumnsPreference() {
         columns = new LinkedHashMap<String, Boolean>();
-        String value = Activator.getDefault().getPreferenceStore().getString(
-                getId());
+        String value = Activator.getDefault().getPreferenceStore()
+                .getString(getId());
         if (value.isEmpty()) {
             for (HeapColumn column : HeapColumn.values()) {
                 columns.put(column.label, true);

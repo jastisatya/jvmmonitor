@@ -7,6 +7,7 @@
 package org.jvmmonitor.internal.agent;
 
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ThreadNode {
 
     /** The thread name */
-    private Thread thread;
+    private String thread;
 
     /** The current frame */
     private FrameNode currentFrame;
@@ -31,7 +32,7 @@ public class ThreadNode {
      * @param thread
      *            The thread name
      */
-    protected ThreadNode(Thread thread) {
+    protected ThreadNode(String thread) {
         this.thread = thread;
         rootFrames = new ConcurrentHashMap<String, FrameNode>();
     }
@@ -82,9 +83,14 @@ public class ThreadNode {
      *            The time
      */
     protected void dump(PrintWriter writer, long time) {
-        writer.printf("\t<thread name=\"%s\">", thread.getName());
+        Collection<FrameNode> frameNodes = rootFrames.values();
+        if (frameNodes.size() == 0) {
+            return;
+        }
+        
+        writer.printf("\t<thread name=\"%s\">", thread);
         writer.println("");
-        for (FrameNode frameNode : rootFrames.values()) {
+        for (FrameNode frameNode : frameNodes) {
             frameNode.dump(writer, time, 2);
         }
         writer.println("\t</thread>");
@@ -99,9 +105,14 @@ public class ThreadNode {
      *            The time
      */
     protected void dump(StringBuffer buffer, long time) {
-        buffer.append("\t<thread name=\"").append(thread.getName())
+        Collection<FrameNode> frameNodes = rootFrames.values();
+        if (frameNodes.size() == 0) {
+            return;
+        }
+
+        buffer.append("\t<thread name=\"").append(thread)
                 .append("\">\n");
-        for (FrameNode frameNode : rootFrames.values()) {
+        for (FrameNode frameNode : frameNodes) {
             frameNode.dump(buffer, time, 2);
         }
         buffer.append("\t</thread>\n");

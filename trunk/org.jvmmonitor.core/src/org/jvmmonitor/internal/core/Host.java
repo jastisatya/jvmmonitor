@@ -159,6 +159,7 @@ public class Host implements IHost {
                 Util.deleteDir(dirPath.toFile());
                 JvmModel.getInstance().fireJvmModelChangeEvent(
                         new JvmModelEvent(State.JvmRemoved, null));
+                break;
             }
         }
         for (IActiveJvm jvm : activeJvms) {
@@ -178,6 +179,7 @@ public class Host implements IHost {
                 activeJvms.remove(jvm);
                 JvmModel.getInstance().fireJvmModelChangeEvent(
                         new JvmModelEvent(State.JvmRemoved, null));
+                break;
             }
         }
     }
@@ -216,6 +218,30 @@ public class Host implements IHost {
     }
 
     /**
+     * Adds the terminated JVM.
+     * 
+     * @param pid
+     *            The process ID.
+     * @param port
+     *            The port
+     * @param mainClass
+     *            The main class
+     * @return The terminated JVM
+     */
+    public ITerminatedJvm addTerminatedJvm(int pid, int port, String mainClass) {
+        for (ITerminatedJvm jvm : terminatedJvms) {
+            if (jvm.getPid() == pid) {
+                return jvm;
+            }
+        }
+
+        TerminatedJvm terminatedJvm = new TerminatedJvm(pid, port, mainClass,
+                this);
+        terminatedJvms.add(terminatedJvm);
+        return terminatedJvm;
+    }
+
+    /**
      * Adds the active JVM.
      * 
      * @param jvm
@@ -223,6 +249,12 @@ public class Host implements IHost {
      * @return The active JVM
      */
     protected IActiveJvm addActiveJvm(IActiveJvm jvm) {
+        for (IActiveJvm activeJvm : activeJvms) {
+            if (activeJvm.getPid() == jvm.getPid()) {
+                return jvm;
+            }
+        }
+
         activeJvms.add(jvm);
         JvmModel.getInstance().fireJvmModelChangeEvent(
                 new JvmModelEvent(State.JvmAdded, jvm));
@@ -331,29 +363,5 @@ public class Host implements IHost {
                 }
             }
         }
-    }
-
-    /**
-     * Adds the terminated JVM.
-     * 
-     * @param pid
-     *            The process ID.
-     * @param port
-     *            The port
-     * @param mainClass
-     *            The main class
-     * @return The terminated JVM
-     */
-    public ITerminatedJvm addTerminatedJvm(int pid, int port, String mainClass) {
-        for (ITerminatedJvm jvm : terminatedJvms) {
-            if (jvm.getPid() == pid) {
-                return jvm;
-            }
-        }
-    
-        TerminatedJvm terminatedJvm = new TerminatedJvm(pid, port, mainClass,
-                this);
-        terminatedJvms.add(terminatedJvm);
-        return terminatedJvm;
     }
 }

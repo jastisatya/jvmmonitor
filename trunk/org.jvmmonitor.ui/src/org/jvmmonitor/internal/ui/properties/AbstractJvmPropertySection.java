@@ -165,8 +165,8 @@ abstract public class AbstractJvmPropertySection extends
 
         if (newJvm.isConnected()) {
             activateSection();
-            setInput(part, selection, newJvm, oldJvm);
         }
+        setInput(part, selection, newJvm, oldJvm);
     }
 
     /*

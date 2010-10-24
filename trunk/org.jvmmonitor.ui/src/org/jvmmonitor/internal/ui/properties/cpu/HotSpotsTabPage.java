@@ -101,6 +101,8 @@ public class HotSpotsTabPage extends AbstractTabPage {
     protected void refresh() {
         if (!filteredTree.getViewer().getControl().isDisposed()) {
             filteredTree.getViewer().refresh();
+            filteredTree.updateStatusLine((IStructuredSelection) filteredTree
+                    .getViewer().getSelection());
         }
 
         refreshContentDescription();

@@ -19,7 +19,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,13 +29,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RuntimeModel implements Runnable {
 
     /** The thread nodes */
-    private Map<Thread, ThreadNode> threadNodes;
+    private Map<String, ThreadNode> threadNodes;
 
     /**
      * The constructor.
      */
     protected RuntimeModel() {
-        threadNodes = new ConcurrentHashMap<Thread, ThreadNode>();
+        threadNodes = new ConcurrentHashMap<String, ThreadNode>();
 
         // to dump the model into file when shutting down application
         Runtime.getRuntime().addShutdownHook(new Thread(this));
@@ -60,7 +59,7 @@ public class RuntimeModel implements Runnable {
      *            The thread name
      * @return The thread node
      */
-    protected ThreadNode getThread(Thread thread) {
+    protected ThreadNode getThread(String thread) {
         ThreadNode threadNode = threadNodes.get(thread);
         if (threadNode == null) {
             threadNode = new ThreadNode(thread);
@@ -133,8 +132,8 @@ public class RuntimeModel implements Runnable {
         buffer.append("arguments=\"").append(getJvmArguments()).append("\">\n");
 
         long currentTime = System.currentTimeMillis();
-        for (Entry<Thread, ThreadNode> entry : threadNodes.entrySet()) {
-            entry.getValue().dump(buffer, currentTime);
+        for (ThreadNode threadNode : threadNodes.values()) {
+            threadNode.dump(buffer, currentTime);
         }
         buffer.append("</cpu-profile>");
         return buffer.toString();

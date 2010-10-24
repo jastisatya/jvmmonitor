@@ -155,7 +155,8 @@ public class NotificationFilteredTree extends FilteredTree implements
      */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if (!event.getProperty().equals(getId())) {
+        if (!event.getProperty().equals(getId())
+                || getViewer().getTree().isDisposed()) {
             return;
         }
 
