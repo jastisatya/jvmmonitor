@@ -131,7 +131,7 @@ public class MBeanAttributeLabelProvider extends LabelProvider implements
      * @return The attribute image
      */
     private Image getAttributeImage() {
-        if (attributeImage == null) {
+        if (attributeImage == null || attributeImage.isDisposed()) {
             attributeImage = Activator.getImageDescriptor(
                     ISharedImages.ATTRIBUTE_IMG_PATH).createImage();
         }
@@ -144,7 +144,7 @@ public class MBeanAttributeLabelProvider extends LabelProvider implements
      * @return The MBean image
      */
     private Image getMBeanImage() {
-        if (mBeanImage == null) {
+        if (mBeanImage == null || mBeanImage.isDisposed()) {
             mBeanImage = Activator.getImageDescriptor(
                     ISharedImages.MBEAN_IMG_PATH).createImage();
         }

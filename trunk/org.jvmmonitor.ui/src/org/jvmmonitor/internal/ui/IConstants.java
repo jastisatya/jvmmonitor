@@ -15,10 +15,34 @@ import org.jvmmonitor.ui.Activator;
 public interface IConstants {
 
     /** The preference key for legend visibility. */
-    static final String LEGEND_VISIBILITY = "org.jvmmonitor.ui.legend.visibility";
-    
+    static final String LEGEND_VISIBILITY = "LegendVisibility";
+
     /** The preference key for update period. */
-    static final String UPDATE_PERIOD = "org.jvmmonitor.ui.update.period";
+    static final String UPDATE_PERIOD = "UpdatePeriod";
+
+    /** The preference key for default chart set. */
+    static final String DEFAULT_CHART_SET = "DefaultChartSet";
+
+    /** The preference key for chart sets. */
+    static final String CHART_SETS = "ChartSets";
+
+    /** The memento key for chart set. */
+    static final String CHART_SET = "ChartSet";
+
+    /** The memento key for group. */
+    static final String GROUP = "Group";
+
+    /** The memento key for unit. */
+    static final String UNIT = "Unit";
+
+    /** The memento key for attribute. */
+    static final String ATTRIBUTE = "Attribute";
+
+    /** The memento key for object name. */
+    static final String OBJECT_NAME = "ObjectName";
+
+    /** The memento key for color. */
+    static final String COLOR = "Color";
 
     /** The dialog settings key for profiled packages. */
     static final String PACKAGES_KEY = Activator.getDefault().getBundle()

@@ -86,13 +86,44 @@ public final class Messages extends NLS {
     /** */
     public static String removeButtonLabel;
 
+    // save chart set as dialog
+
+    /** */
+    public static String saveChartSetAsDialogTitle;
+
+    /** */
+    public static String enterOrSelectChartSetLabel;
+
+    /** */
+    public static String chartSetLabel;
+
+    /** */
+    public static String existingChartSetsLabel;
+
+    /** */
+    public static String deleteButtonLabel;
+
+    /** */
+    public static String illiegalChartSetMsg;
+
+    // load chart set dialog
+
+    /** */
+    public static String loadChartSetDialogTitle;
+
+    /** */
+    public static String selectChartSetLabel;
+
+    /** */
+    public static String makeDefaultButtonLabel;
+
+    /** */
+    public static String defaultChartSet;
+
     // actions
 
     /** */
     public static String clearTimelineDataLabel;
-
-    /** */
-    public static String restoreDefaultsLabel;
 
     /** */
     public static String configureChartLabel;
@@ -102,6 +133,12 @@ public final class Messages extends NLS {
 
     /** */
     public static String deleteChartLabel;
+
+    /** */
+    public static String saveChartSetAsLabel;
+
+    /** */
+    public static String loadChartSetLabel;
 
     // tooltip
 
@@ -114,9 +151,6 @@ public final class Messages extends NLS {
     public static String refreshChartJobLabel;
 
     // error log messages
-
-    /** */
-    public static String restoreDefaultChartsFailedMsg;
 
     /** */
     public static String configureMonitoredAttributesFailedMsg;
@@ -132,4 +166,16 @@ public final class Messages extends NLS {
 
     /** */
     public static String addAttributeFailedMsg;
+
+    /** */
+    public static String loadChartSetFailedMsg;
+
+    /** */
+    public static String saveChartSetFailedMsg;
+
+    /** */
+    public static String openSaveChartSetAsDialogFailedMsg;
+
+    /** */
+    public static String getMemoryPoolAttributeFailedMsg;
 }

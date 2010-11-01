@@ -261,8 +261,11 @@ public class MBeanServer implements IMBeanServer {
             }
         }
 
-        IMonitoredMXBeanGroup group = addMonitoredAttributeGroup(name,
-                axisUnit, true);
+        IMonitoredMXBeanGroup group = new MonitoredMXBeanGroup(this, name,
+                axisUnit);
+        monitoredAttributeGroups.add(group);
+        fireMBeanServerChangeEvent(new MBeanServerEvent(
+                MBeanServerState.MonitoredAttributeGroupAdded, group));
         return group;
     }
 
@@ -287,38 +290,6 @@ public class MBeanServer implements IMBeanServer {
                     MBeanServerState.MonitoredAttributeGroupRemoved,
                     targetGroup));
         }
-    }
-
-    /*
-     * @see IMBeanServer#restoreDefaultMonitoredAttributeGroup()
-     */
-    @Override
-    public void restoreDefaultMonitoredAttributeGroup() throws JvmCoreException {
-        final int[] rgb = new int[] { 0, 0, 255 };
-        monitoredAttributeGroups.clear();
-
-        MonitoredMXBeanGroup group = (MonitoredMXBeanGroup) addMonitoredAttributeGroup(
-                "Used Heap Memory", AxisUnit.MBytes, false); //$NON-NLS-1$
-        group.addAttribute(ManagementFactory.MEMORY_MXBEAN_NAME,
-                "HeapMemoryUsage.used", rgb, false); //$NON-NLS-1$
-
-        group = (MonitoredMXBeanGroup) addMonitoredAttributeGroup(
-                "Loaded Class Count", AxisUnit.Count, false); //$NON-NLS-1$
-        group.addAttribute(ManagementFactory.CLASS_LOADING_MXBEAN_NAME,
-                "LoadedClassCount", rgb, false); //$NON-NLS-1$
-
-        group = (MonitoredMXBeanGroup) addMonitoredAttributeGroup(
-                "Thread Count", AxisUnit.Count, false); //$NON-NLS-1$
-        group.addAttribute(ManagementFactory.THREAD_MXBEAN_NAME, "ThreadCount", //$NON-NLS-1$
-                rgb, false);
-
-        group = (MonitoredMXBeanGroup) addMonitoredAttributeGroup(
-                "CPU Usage", AxisUnit.Percent, false); //$NON-NLS-1$
-        group.addAttribute(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME,
-                "ProcessCpuTime", rgb, false); //$NON-NLS-1$
-
-        fireMBeanServerChangeEvent(new MBeanServerEvent(
-                MBeanServerState.DefaultMonitoredAttributesRestored, null));
     }
 
     /*
@@ -949,29 +920,6 @@ public class MBeanServer implements IMBeanServer {
     }
 
     /**
-     * Adds the monitored attribute group.
-     * 
-     * @param name
-     *            The group name
-     * @param axisUnit
-     *            The axis unit
-     * @param fireEvent
-     *            True to fire change
-     * @return The monitored attribute group
-     */
-    private IMonitoredMXBeanGroup addMonitoredAttributeGroup(String name,
-            AxisUnit axisUnit, boolean fireEvent) {
-        IMonitoredMXBeanGroup group = new MonitoredMXBeanGroup(this, name,
-                axisUnit);
-        monitoredAttributeGroups.add(group);
-        if (fireEvent) {
-            fireMBeanServerChangeEvent(new MBeanServerEvent(
-                    MBeanServerState.MonitoredAttributeGroupAdded, group));
-        }
-        return group;
-    }
-
-    /**
      * Connects to the MBean server in the given VM.
      * 
      * @param url
@@ -1239,7 +1187,7 @@ public class MBeanServer implements IMBeanServer {
             if (jvm.getHost().getActiveJvms().contains(jvm)) {
                 jvm.getHost().removeJvm(jvm.getPid());
             }
-           
+
             return false;
         }
         return true;

@@ -180,12 +180,6 @@ public interface ISharedImages {
     /** The previous image path. */
     public static final String PREV_IMG_PATH = "icons/full/elcl16/prev.gif"; //$NON-NLS-1$
 
-    /** The restore defaults image path. */
-    public static final String RESTORE_DEFAULT_CHARTS_IMG_PATH = "icons/full/elcl16/restore_default_charts.gif"; //$NON-NLS-1$
-
-    /** The disabled restore defaults image path. */
-    public static final String DISABLED_RESTORE_DEFAULT_CHARTS_IMG_PATH = "icons/full/dlcl16/restore_default_charts.gif"; //$NON-NLS-1$
-
     /** The new chart image path. */
     public static final String NEW_CHART_IMG_PATH = "icons/full/elcl16/new_chart.gif"; //$NON-NLS-1$
 

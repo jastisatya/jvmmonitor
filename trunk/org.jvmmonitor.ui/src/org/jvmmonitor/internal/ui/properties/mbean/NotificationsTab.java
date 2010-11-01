@@ -68,9 +68,10 @@ public class NotificationsTab extends PageBook {
      * @param tabFolder
      *            The tab folder
      * @param section
-     *            The property section 
+     *            The property section
      */
-    public NotificationsTab(CTabFolder tabFolder, AbstractJvmPropertySection section) {
+    public NotificationsTab(CTabFolder tabFolder,
+            AbstractJvmPropertySection section) {
         super(tabFolder, SWT.NONE);
 
         this.tabFolder = tabFolder;
@@ -247,7 +248,7 @@ public class NotificationsTab extends PageBook {
      * @return The notification image
      */
     private Image getNotificationImage() {
-        if (notificationImage == null) {
+        if (notificationImage == null || notificationImage.isDisposed()) {
             notificationImage = Activator.getImageDescriptor(
                     ISharedImages.NOTIFICATION_IMG_PATH).createImage();
         }

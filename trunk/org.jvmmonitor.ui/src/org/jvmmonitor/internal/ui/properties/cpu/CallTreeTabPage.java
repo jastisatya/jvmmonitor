@@ -188,7 +188,7 @@ public class CallTreeTabPage extends AbstractTabPage {
      * @return The call tree image
      */
     private Image getCallTreeImage() {
-        if (callTreeImage == null) {
+        if (callTreeImage == null || callTreeImage.isDisposed()) {
             callTreeImage = Activator.getImageDescriptor(
                     ISharedImages.CALL_TREE_IMG_PATH).createImage();
         }

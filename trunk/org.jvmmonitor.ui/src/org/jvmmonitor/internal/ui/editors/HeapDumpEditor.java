@@ -126,7 +126,7 @@ public class HeapDumpEditor extends AbstractDumpEditor {
      * @return The memory image
      */
     private Image getMemoryImage() {
-        if (memoryImage == null) {
+        if (memoryImage == null || memoryImage.isDisposed()) {
             memoryImage = Activator.getImageDescriptor(
                     ISharedImages.MEMORY_IMG_PATH).createImage();
         }

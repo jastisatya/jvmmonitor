@@ -601,7 +601,7 @@ public class CpuDumpEditor extends AbstractDumpEditor {
      * @return The call tree image
      */
     private Image getCallTreeImage() {
-        if (callTreeImage == null) {
+        if (callTreeImage == null || callTreeImage.isDisposed()) {
             callTreeImage = Activator.getImageDescriptor(
                     ISharedImages.CALL_TREE_IMG_PATH).createImage();
         }
@@ -614,7 +614,7 @@ public class CpuDumpEditor extends AbstractDumpEditor {
      * @return The hot spots image
      */
     private Image getHotSpotsImage() {
-        if (hotSpotsImage == null) {
+        if (hotSpotsImage == null || hotSpotsImage.isDisposed()) {
             hotSpotsImage = Activator.getImageDescriptor(
                     ISharedImages.HOT_SPOTS_IMG_PATH).createImage();
         }
@@ -627,7 +627,7 @@ public class CpuDumpEditor extends AbstractDumpEditor {
      * @return The caller callee image
      */
     private Image getCallerCalleeImage() {
-        if (callerCalleeImage == null) {
+        if (callerCalleeImage == null || callerCalleeImage.isDisposed()) {
             callerCalleeImage = Activator.getImageDescriptor(
                     ISharedImages.CALLER_CALLEE_IMG_PATH).createImage();
         }

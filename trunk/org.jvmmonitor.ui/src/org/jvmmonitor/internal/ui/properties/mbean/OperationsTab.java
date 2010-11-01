@@ -256,7 +256,7 @@ public class OperationsTab extends Composite {
      * @return The method image
      */
     private Image getMethodImage() {
-        if (methodImage == null) {
+        if (methodImage == null || methodImage.isDisposed()) {
             methodImage = Activator.getImageDescriptor(
                     ISharedImages.METHOD_IMG_PATH).createImage();
         }
