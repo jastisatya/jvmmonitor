@@ -160,7 +160,7 @@ public class AttributeLabelProvider extends LabelProvider implements
      * @return The attribute image
      */
     private Image getAttributeImage() {
-        if (attributeImage == null) {
+        if (attributeImage == null || attributeImage.isDisposed()) {
             ImageData imageData = Activator.getImageDescriptor(
                     ISharedImages.ATTRIBUTE_IMG_PATH).getImageData();
             attributeImage = new OverlayImageDescriptor(imageData,
@@ -176,7 +176,7 @@ public class AttributeLabelProvider extends LabelProvider implements
      * @return The attribute image
      */
     private Image getAttributeFolderImage() {
-        if (attributeFolderImage == null) {
+        if (attributeFolderImage == null || attributeFolderImage.isDisposed()) {
             ImageData imageData = Activator.getImageDescriptor(
                     ISharedImages.ATTRIBUTE_FOLDER_IMG_PATH).getImageData();
             attributeFolderImage = new OverlayImageDescriptor(imageData,
@@ -192,7 +192,7 @@ public class AttributeLabelProvider extends LabelProvider implements
      * @return The write overlay image
      */
     private Image getWriteOverlayImage() {
-        if (writeOverlayImage == null) {
+        if (writeOverlayImage == null || writeOverlayImage.isDisposed()) {
             ImageDescriptor[] descriptors = new ImageDescriptor[] { null, null,
                     null, null };
             descriptors[IDecoration.TOP_RIGHT] = Activator

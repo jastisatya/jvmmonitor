@@ -156,7 +156,7 @@ public class MBeanLabelProvider implements IStyledLabelProvider {
      * @return The MBean image
      */
     private Image getMBeanImage() {
-        if (mBeanImage == null) {
+        if (mBeanImage == null || mBeanImage.isDisposed()) {
             mBeanImage = Activator.getImageDescriptor(
                     ISharedImages.MBEAN_IMG_PATH).createImage();
         }
@@ -169,7 +169,7 @@ public class MBeanLabelProvider implements IStyledLabelProvider {
      * @return The MBean folder image
      */
     private Image getMBeanFolderImage() {
-        if (mBeanFolderImage == null) {
+        if (mBeanFolderImage == null || mBeanFolderImage.isDisposed()) {
             mBeanFolderImage = Activator.getImageDescriptor(
                     ISharedImages.MBEAN_FOLDER_IMG_PATH).createImage();
         }

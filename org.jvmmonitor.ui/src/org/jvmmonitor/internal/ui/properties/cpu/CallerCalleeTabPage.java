@@ -355,7 +355,7 @@ public class CallerCalleeTabPage extends AbstractTabPage {
      * @return The caller callee image
      */
     private Image getCallerCalleeImage() {
-        if (callerCalleeImage == null) {
+        if (callerCalleeImage == null || callerCalleeImage.isDisposed()) {
             callerCalleeImage = Activator.getImageDescriptor(
                     ISharedImages.CALLER_CALLEE_IMG_PATH).createImage();
         }

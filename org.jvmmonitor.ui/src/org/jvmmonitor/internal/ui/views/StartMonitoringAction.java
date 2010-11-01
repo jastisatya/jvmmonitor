@@ -97,7 +97,7 @@ public class StartMonitoringAction extends Action implements
                      * show properties view before connecting to JVM, so that
                      * the properties view can react to the jvm connection event
                      */
-                    Display.getDefault().asyncExec(new Runnable() {
+                    Display.getDefault().syncExec(new Runnable() {
                         @Override
                         public void run() {
                             showPropertiesView(jvm);

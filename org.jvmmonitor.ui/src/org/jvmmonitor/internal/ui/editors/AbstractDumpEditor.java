@@ -161,7 +161,7 @@ abstract public class AbstractDumpEditor extends MultiPageEditorPart {
      * @return The info image
      */
     private Image getInfoImage() {
-        if (infoImage == null) {
+        if (infoImage == null || infoImage.isDisposed()) {
             infoImage = Activator.getImageDescriptor(
                     ISharedImages.INFO_IMG_PATH).createImage();
         }

@@ -135,7 +135,7 @@ public class ThreadDumpEditor extends AbstractDumpEditor {
      * @return The thread image
      */
     private Image getThreadImage() {
-        if (threadImage == null) {
+        if (threadImage == null || threadImage.isDisposed()) {
             threadImage = Activator.getImageDescriptor(
                     ISharedImages.THREAD_IMG_PATH).createImage();
         }

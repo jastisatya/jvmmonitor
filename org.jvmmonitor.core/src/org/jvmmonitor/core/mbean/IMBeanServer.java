@@ -87,13 +87,6 @@ public interface IMBeanServer {
     void removeMonitoredAttributeGroup(String name);
 
     /**
-     * Restores the default monitored attribute group.
-     * 
-     * @throws JvmCoreException
-     */
-    void restoreDefaultMonitoredAttributeGroup() throws JvmCoreException;
-
-    /**
      * Gets the MBean info.
      * 
      * @param objectName

@@ -114,7 +114,9 @@ public class MonitoredMXBeanGroup implements IMonitoredMXBeanGroup {
     public void addAttribute(String objectNameString, String attributeName,
             int[] rgb) throws JvmCoreException {
         for (IMonitoredMXBeanAttribute attribute : attributes) {
-            if (attribute.getAttributeName().equals(attributeName)) {
+            if (attribute.getAttributeName().equals(attributeName)
+                    && attribute.getObjectName().getCanonicalName()
+                            .equals(objectNameString)) {
                 return;
             }
         }

@@ -68,7 +68,7 @@ public class AttributeLabelProvider extends MBeanLabelProvider {
      * @return The attribute image
      */
     private Image getAttributeImage() {
-        if (attributeImage == null) {
+        if (attributeImage == null || attributeImage.isDisposed()) {
             attributeImage = Activator.getImageDescriptor(
                     ISharedImages.ATTRIBUTE_IMG_PATH).createImage();
         }
@@ -81,7 +81,7 @@ public class AttributeLabelProvider extends MBeanLabelProvider {
      * @return The attribute image
      */
     private Image getAttributeFolderImage() {
-        if (attributeFolderImage == null) {
+        if (attributeFolderImage == null || attributeFolderImage.isDisposed()) {
             attributeFolderImage = Activator.getImageDescriptor(
                     ISharedImages.ATTRIBUTE_FOLDER_IMG_PATH).createImage();
         }

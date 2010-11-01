@@ -197,7 +197,7 @@ public class HotSpotsTabPage extends AbstractTabPage {
      * @return The hot spots image
      */
     private Image getHotSpotsImage() {
-        if (hotSpotsImage == null) {
+        if (hotSpotsImage == null || hotSpotsImage.isDisposed()) {
             hotSpotsImage = Activator.getImageDescriptor(
                     ISharedImages.HOT_SPOTS_IMG_PATH).createImage();
         }

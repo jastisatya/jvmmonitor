@@ -79,7 +79,7 @@ abstract public class AbstractJvmPropertySection extends
     private PerspectiveListener perspectiveListener;
 
     /** The preferences action. */
-    private IAction preferencesAction;
+    IAction preferencesAction;
 
     /** The state indicating if section is activated. */
     private boolean isSectionActivated;
@@ -552,7 +552,7 @@ abstract public class AbstractJvmPropertySection extends
      * 
      * @return The menu manager
      */
-    private IMenuManager getMenuManager() {
+    IMenuManager getMenuManager() {
         return propertySheet.getViewSite().getActionBars().getMenuManager();
     }
 
@@ -572,14 +572,20 @@ abstract public class AbstractJvmPropertySection extends
      * Adds the local menus.
      */
     private void addLocalMenus() {
-        IMenuManager menuManager = getMenuManager();
-        if (menuManager != null
-                && menuManager.find(preferencesAction.getId()) == null) {
-            addLocalMenus(menuManager);
-            menuManager.add(preferencesAction);
-            menuManager.update(false);
-            updateActions();
-        }
+        // defer adding menus to properly order menus
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                IMenuManager menuManager = getMenuManager();
+                if (menuManager != null
+                        && menuManager.find(preferencesAction.getId()) == null) {
+                    addLocalMenus(menuManager);
+                    menuManager.add(preferencesAction);
+                    menuManager.update(false);
+                    updateActions();
+                }
+            }
+        });
     }
 
     /**

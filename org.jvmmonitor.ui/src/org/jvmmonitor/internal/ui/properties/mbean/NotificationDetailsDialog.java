@@ -16,6 +16,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -35,6 +36,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
@@ -56,9 +58,6 @@ class NotificationDetailsDialog extends Dialog {
 
     /** The date format. */
     private static final String DATE_FORMAT = "yyyy/MM/dd HH:mm:ss.SSS"; //$NON-NLS-1$
-
-    /** The state indicating if the dialog is opened. */
-    private boolean isOpened;
 
     /** The date label. */
     private Label dateLabel;
@@ -121,20 +120,10 @@ class NotificationDetailsDialog extends Dialog {
     }
 
     /*
-     * @see Window#open()
-     */
-    @Override
-    public int open() {
-        isOpened = true;
-        return super.open();
-    }
-
-    /*
      * @see Dialog#close()
      */
     @Override
     public boolean close() {
-        isOpened = false;
         dispose();
         return super.close();
     }
@@ -189,7 +178,8 @@ class NotificationDetailsDialog extends Dialog {
      * @return The state indicating if the dialog is opened
      */
     protected boolean isOpened() {
-        return isOpened;
+        Shell shell = getShell();
+        return shell != null && shell.isVisible();
     }
 
     /**
@@ -198,7 +188,10 @@ class NotificationDetailsDialog extends Dialog {
     protected void refreshWidgets() {
         final Notification notification = (Notification) ((StructuredSelection) tree
                 .getViewer().getSelection()).getFirstElement();
-    
+        if (notification == null) {
+            return;
+        }
+
         dateLabel.setText(new SimpleDateFormat(DATE_FORMAT).format(new Date(
                 notification.getTimeStamp())));
         sequenceNumberText.setText(String.valueOf(notification
@@ -206,15 +199,22 @@ class NotificationDetailsDialog extends Dialog {
         sourceLabel.setText(notification.getSource().toString());
         typeLabel.setText(notification.getType());
         messageText.setText(notification.getMessage());
-    
+
         Object userData = notification.getUserData();
         if (userData != null) {
-            ((DetailsContentProvider) detailsViewer.getContentProvider())
-                    .refresh(userData);
+            IContentProvider contentProvider = detailsViewer
+                    .getContentProvider();
+            if (contentProvider != null) {
+                ((DetailsContentProvider) contentProvider).refresh(userData);
+            }
         }
-    
-        prevButton.setEnabled(tree.getPrevItem() != null);
-        nextButton.setEnabled(tree.getNextItem() != null);
+
+        if (prevButton != null && !prevButton.isDisposed()) {
+            prevButton.setEnabled(tree.getPrevItem() != null);
+        }
+        if (nextButton != null && !nextButton.isDisposed()) {
+            nextButton.setEnabled(tree.getNextItem() != null);
+        }
     }
 
     /**
@@ -354,7 +354,7 @@ class NotificationDetailsDialog extends Dialog {
      * @return The next image
      */
     private Image getNextImage() {
-        if (nextImage == null) {
+        if (nextImage == null || nextImage.isDisposed()) {
             nextImage = Activator.getImageDescriptor(
                     ISharedImages.NEXT_IMG_PATH).createImage();
         }
@@ -367,7 +367,7 @@ class NotificationDetailsDialog extends Dialog {
      * @return The previous image
      */
     private Image getPrevImage() {
-        if (prevImage == null) {
+        if (prevImage == null || prevImage.isDisposed()) {
             prevImage = Activator.getImageDescriptor(
                     ISharedImages.PREV_IMG_PATH).createImage();
         }

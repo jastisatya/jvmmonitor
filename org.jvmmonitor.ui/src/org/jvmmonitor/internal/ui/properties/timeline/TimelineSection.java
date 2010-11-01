@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
@@ -61,11 +62,14 @@ public class TimelineSection extends AbstractJvmPropertySection {
     /** The action to create a new chart. */
     private NewChartAction newChartAction;
 
-    /** The action to restore default charts. */
-    private RestoreDefaultsAction restoreDefaultsAction;
+    /** The action to load chart set. */
+    private LoadChartSetAction loadChartSetAction;
 
     /** The action to run garbage collector. */
     private GarbageCollectorAction garbageCollectorAction;
+
+    /** The action to save chart set as given name. */
+    private SaveChartSetAsAction saveChartSetAsAction;
 
     /** The separator. */
     private Separator separator;
@@ -76,8 +80,8 @@ public class TimelineSection extends AbstractJvmPropertySection {
     /** The section container. */
     private Composite sectionContainer;
 
-    /** The state indicating if the default charts have to be restored. */
-    private boolean forceRestoreDefault;
+    /** The state indicating if the default chart set have to be loaded. */
+    private boolean forceLoadDefaultChartSet;
 
     /**
      * The constructor.
@@ -87,10 +91,11 @@ public class TimelineSection extends AbstractJvmPropertySection {
         clearAction = new ClearTimelineDataAction(this);
         refreshAction = new RefreshAction(this);
         newChartAction = new NewChartAction(this);
-        restoreDefaultsAction = new RestoreDefaultsAction(this);
+        loadChartSetAction = new LoadChartSetAction(this);
         garbageCollectorAction = new GarbageCollectorAction(this);
+        saveChartSetAsAction = new SaveChartSetAsAction(this);
         separator = new Separator();
-        forceRestoreDefault = true;
+        forceLoadDefaultChartSet = true;
     }
 
     /*
@@ -202,9 +207,6 @@ public class TimelineSection extends AbstractJvmPropertySection {
         if (manager.find(clearAction.getId()) == null) {
             manager.insertAfter("defaults", clearAction); //$NON-NLS-1$
         }
-        if (manager.find(restoreDefaultsAction.getId()) == null) {
-            manager.insertAfter("defaults", restoreDefaultsAction); //$NON-NLS-1$
-        }
         if (manager.find(newChartAction.getId()) == null) {
             manager.insertAfter("defaults", newChartAction); //$NON-NLS-1$
         }
@@ -218,8 +220,28 @@ public class TimelineSection extends AbstractJvmPropertySection {
         manager.remove(separator);
         manager.remove(refreshAction.getId());
         manager.remove(clearAction.getId());
-        manager.remove(restoreDefaultsAction.getId());
         manager.remove(newChartAction.getId());
+    }
+
+    /*
+     * @see AbstractJvmPropertySection#addLocalMenus(IMenuManager)
+     */
+    @Override
+    protected void addLocalMenus(IMenuManager manager) {
+        manager.add(saveChartSetAsAction);
+        manager.add(loadChartSetAction);
+        manager.add(separator);
+    }
+
+    /*
+     * @see AbstractJvmPropertySection#removeLocalMenus(IMenuManager)
+     */
+    @Override
+    protected void removeLocalMenus(IMenuManager manager) {
+        manager.remove(saveChartSetAsAction.getId());
+        manager.remove(loadChartSetAction.getId());
+        manager.remove(separator);
+
     }
 
     /*
@@ -266,7 +288,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
         clearAction.setEnabled(isConnected);
         refreshAction.setEnabled(isConnected);
         newChartAction.setEnabled(isConnected);
-        restoreDefaultsAction.setEnabled(isConnected);
+        loadChartSetAction.setEnabled(isConnected);
         garbageCollectorAction.setEnabled(isConnected);
     }
 
@@ -311,14 +333,14 @@ public class TimelineSection extends AbstractJvmPropertySection {
 
         IMBeanServer mBeanServer = activeJvm.getMBeanServer();
         if (connected) {
-            if (forceRestoreDefault) {
+            if (forceLoadDefaultChartSet) {
                 try {
-                    mBeanServer.restoreDefaultMonitoredAttributeGroup();
+                    loadChartSetAction.loadDefaultChartSet();
                 } catch (JvmCoreException e) {
                     Activator.log(
                             Messages.configureMonitoredAttributesFailedMsg, e);
                 }
-                forceRestoreDefault = false;
+                forceLoadDefaultChartSet = false;
             } else {
                 inheritChartConfiguration(mBeanServer);
             }

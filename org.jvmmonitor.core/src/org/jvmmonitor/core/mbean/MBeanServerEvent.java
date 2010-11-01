@@ -32,20 +32,17 @@ public class MBeanServerEvent {
 
     /** The MBean server change state. */
     public enum MBeanServerState {
-    
+
         /** The monitored attribute has been added. */
         MonitoredAttributeAdded,
-    
+
         /** The monitored attribute has been removed. */
         MonitoredAttributeRemoved,
-    
+
         /** The monitored attribute group has been added. */
         MonitoredAttributeGroupAdded,
-    
+
         /** The monitored attribute group has been removed. */
         MonitoredAttributeGroupRemoved,
-    
-        /** The default monitored attributes have been restored. */
-        DefaultMonitoredAttributesRestored;
     }
 }

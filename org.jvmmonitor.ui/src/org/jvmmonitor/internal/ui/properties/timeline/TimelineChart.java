@@ -272,6 +272,7 @@ public class TimelineChart extends Chart implements IPropertyChangeListener {
         }
 
         section.setText(attributeGroup.getName());
+        section.layout();
         marker.redraw();
         redraw();
     }
@@ -336,6 +337,18 @@ public class TimelineChart extends Chart implements IPropertyChangeListener {
      * @return The series ID
      */
     private String getSeriesId(IMonitoredMXBeanAttribute attribute) {
+        final String NAME = "name="; //$NON-NLS-1$
+        final String DELIMITER = ","; //$NON-NLS-1$
+
+        String canoticalName = attribute.getObjectName().getCanonicalName();
+        if (canoticalName.contains(NAME)) {
+            String[] elements = canoticalName.split(NAME);
+            String name = elements[1];
+            if (name.contains(DELIMITER)) {
+                name = name.split(DELIMITER)[0];
+            }
+            return name + " : " + attribute.getAttributeName(); //$NON-NLS-1$
+        }
         return attribute.getAttributeName();
     }
 

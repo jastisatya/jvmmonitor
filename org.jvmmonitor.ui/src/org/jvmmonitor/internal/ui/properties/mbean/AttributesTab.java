@@ -470,7 +470,7 @@ public class AttributesTab extends Composite {
      * @return The attribute image
      */
     private Image getAttributeImage() {
-        if (attributeImage == null) {
+        if (attributeImage == null || attributeImage.isDisposed()) {
             attributeImage = Activator.getImageDescriptor(
                     ISharedImages.ATTRIBUTE_IMG_PATH).createImage();
         }

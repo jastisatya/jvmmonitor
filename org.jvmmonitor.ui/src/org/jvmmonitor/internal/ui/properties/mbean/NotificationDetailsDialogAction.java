@@ -7,6 +7,7 @@
 package org.jvmmonitor.internal.ui.properties.mbean;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.jvmmonitor.ui.Activator;
@@ -46,7 +47,8 @@ public class NotificationDetailsDialogAction extends Action implements
         if (dialog.isOpened()) {
             dialog.refreshWidgets();
         }
-        setEnabled(tree.getViewer().getSelection() != null);
+        ISelection selection = tree.getViewer().getSelection();
+        setEnabled(selection != null && !selection.isEmpty());
     }
 
     /*
