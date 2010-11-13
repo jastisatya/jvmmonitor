@@ -6,7 +6,7 @@
  *******************************************************************************/
 package org.jvmmonitor.internal.ui.properties.cpu;
 
-import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -449,7 +449,7 @@ public class CpuSection extends AbstractJvmPropertySection {
                     if (jvm == null) {
                         return Status.CANCEL_STATUS;
                     }
-                    List<String> packages = jvm.getCpuProfiler()
+                    Set<String> packages = jvm.getCpuProfiler()
                             .getProfiledPackages();
                     if (packages.isEmpty()) {
                         String packagesString = Activator.getDefault()
@@ -576,7 +576,7 @@ public class CpuSection extends AbstractJvmPropertySection {
         }
 
         try {
-            List<String> packages = jvm.getCpuProfiler().getProfiledPackages();
+            Set<String> packages = jvm.getCpuProfiler().getProfiledPackages();
             return packages != null && !packages.isEmpty();
         } catch (JvmCoreException e) {
             Activator.log(Messages.getProfiledPackagesFailedMsg, e);

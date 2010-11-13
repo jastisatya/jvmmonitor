@@ -9,10 +9,9 @@ package org.jvmmonitor.internal.core.cpu;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.management.Attribute;
 import javax.management.ObjectName;
@@ -85,7 +84,7 @@ public class CpuProfiler implements ICpuProfiler {
     private ProfilerType type;
 
     /** The profiled packages. */
-    private List<String> profiledPackages;
+    private Set<String> profiledPackages;
 
     /**
      * The constructor.
@@ -97,7 +96,7 @@ public class CpuProfiler implements ICpuProfiler {
         cpuModel = new CpuModel();
         this.jvm = jvm;
 
-        profiledPackages = new ArrayList<String>();
+        profiledPackages = new HashSet<String>();
     }
 
     /*
@@ -282,16 +281,14 @@ public class CpuProfiler implements ICpuProfiler {
     }
 
     /*
-     * @see ICpuProfiler#setProfiledPackages(List<String>)
+     * @see ICpuProfiler#setProfiledPackages(Set<String>)
      */
     @Override
-    public void setProfiledPackages(List<String> packages)
+    public void setProfiledPackages(Set<String> packages)
             throws JvmCoreException {
 
         if (type == ProfilerType.BCI) {
             validateAgent();
-
-            Collections.sort(packages);
 
             StringBuffer buffer = new StringBuffer();
             for (String item : packages) {
@@ -319,12 +316,12 @@ public class CpuProfiler implements ICpuProfiler {
      * @see ICpuProfiler#getProfiledPackages()
      */
     @Override
-    public List<String> getProfiledPackages() throws JvmCoreException {
+    public Set<String> getProfiledPackages() throws JvmCoreException {
         if (type == ProfilerType.BCI) {
             validateAgent();
             ObjectName objectName = jvm.getMBeanServer().getObjectName(
                     PROFILER_MXBEAN_NAME);
-            List<String> packages = new ArrayList<String>();
+            Set<String> packages = new HashSet<String>();
             if (jvm.isConnected()) {
                 for (String item : (String[]) jvm.getMBeanServer()
                         .getAttribute(objectName, PROFILED_PACKAGES)) {
@@ -357,7 +354,9 @@ public class CpuProfiler implements ICpuProfiler {
             return server.getProfilerState();
         }
 
-        if (!JvmModel.getInstance().getAgentLoadHandler().isAgentLoaded()) {
+        if (!jvm.isRemote()
+                && !JvmModel.getInstance().getAgentLoadHandler()
+                        .isAgentLoaded()) {
             return ProfilerState.AGENT_NOT_LOADED;
         }
 
@@ -461,7 +460,9 @@ public class CpuProfiler implements ICpuProfiler {
      * @throws JvmCoreException
      */
     private void validateAgent() throws JvmCoreException {
-        if (!JvmModel.getInstance().getAgentLoadHandler().isAgentLoaded()) {
+        if (!jvm.isRemote()
+                && !JvmModel.getInstance().getAgentLoadHandler()
+                        .isAgentLoaded()) {
             type = ProfilerType.SAMPLING;
             throw new JvmCoreException(IStatus.ERROR,
                     Messages.agentNotLoadedMsg, new Exception());

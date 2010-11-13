@@ -6,7 +6,7 @@
  *******************************************************************************/
 package org.jvmmonitor.core.cpu;
 
-import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -86,7 +86,7 @@ public interface ICpuProfiler {
      *            The profiled packages
      * @throws JvmCoreException
      */
-    void setProfiledPackages(List<String> packages) throws JvmCoreException;
+    void setProfiledPackages(Set<String> packages) throws JvmCoreException;
 
     /**
      * Gets the profiled packages.
@@ -94,7 +94,7 @@ public interface ICpuProfiler {
      * @return The profiled packages
      * @throws JvmCoreException
      */
-    List<String> getProfiledPackages() throws JvmCoreException;
+    Set<String> getProfiledPackages() throws JvmCoreException;
 
     /**
      * Gets the profiler state of given profiler type.
