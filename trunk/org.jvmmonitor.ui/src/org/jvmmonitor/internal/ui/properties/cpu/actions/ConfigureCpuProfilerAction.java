@@ -6,7 +6,7 @@
  *******************************************************************************/
 package org.jvmmonitor.internal.ui.properties.cpu.actions;
 
-import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -30,7 +30,7 @@ import org.jvmmonitor.ui.Activator;
 public class ConfigureCpuProfilerAction extends Action {
 
     /** The Java packages that CPU profiler profiles. */
-    List<String> packages;
+    Set<String> packages;
 
     /** The CPU section. */
     CpuSection cpuSection;
@@ -164,7 +164,7 @@ public class ConfigureCpuProfilerAction extends Action {
      *            The packages
      * @return The packages string with delimiter ','
      */
-    String setPackages(List<String> packages) {
+    String setPackages(Set<String> packages) {
         IActiveJvm jvm = cpuSection.getJvm();
         if (jvm != null) {
             try {

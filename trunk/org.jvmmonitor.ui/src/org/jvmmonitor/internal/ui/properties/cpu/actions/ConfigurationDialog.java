@@ -6,9 +6,9 @@
  *******************************************************************************/
 package org.jvmmonitor.internal.ui.properties.cpu.actions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -53,7 +53,7 @@ public class ConfigurationDialog extends SelectionDialog {
     TableViewer packagesViewer;
 
     /** The specified Java packages. */
-    List<String> packages;
+    Set<String> packages;
 
     /** The sampling period text field. */
     Text samplingPeriodText;
@@ -89,7 +89,7 @@ public class ConfigurationDialog extends SelectionDialog {
      */
     public ConfigurationDialog(Shell parentShell, ProfilerType profilerType,
             int samplingPeriod, ProfilerState bciProfilerState,
-            List<String> packages) {
+            Set<String> packages) {
         super(parentShell);
         setTitle(Messages.configureCpuProfilerTitle);
         setHelpAvailable(false);
@@ -97,7 +97,7 @@ public class ConfigurationDialog extends SelectionDialog {
         this.profilerType = profilerType;
         this.samplingPeriod = samplingPeriod;
         this.profilerState = bciProfilerState;
-        this.packages = new ArrayList<String>(packages);
+        this.packages = new HashSet<String>(packages);
     }
 
     /*
@@ -174,7 +174,7 @@ public class ConfigurationDialog extends SelectionDialog {
      * 
      * @return The packages
      */
-    protected List<String> getPackages() {
+    protected Set<String> getPackages() {
         return packages;
     }
 
@@ -394,8 +394,8 @@ public class ConfigurationDialog extends SelectionDialog {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 Object[] input = (Object[]) packagesViewer.getInput();
-                PackageSelectionDialog dialog = new PackageSelectionDialog(
-                        getShell(), input);
+                AddPackageDialog dialog = new AddPackageDialog(getShell(),
+                        input);
                 if (dialog.open() == Window.OK) {
                     packages.clear();
                     for (Object object : input) {
@@ -403,11 +403,12 @@ public class ConfigurationDialog extends SelectionDialog {
                     }
                     Object[] elements = dialog.getResult();
                     for (Object object : elements) {
-                        packages.add((String) object);
+                        packages.add(((String) object).trim());
                     }
-                    Collections.sort(packages);
-                    packagesViewer.setInput(packages
-                            .toArray(new String[packages.size()]));
+                    String[] items = packages
+                            .toArray(new String[packages.size()]);
+                    Arrays.sort(items);
+                    packagesViewer.setInput(items);
                     packagesViewer.refresh();
                 }
             }

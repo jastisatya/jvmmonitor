@@ -941,7 +941,10 @@ public class MBeanServer implements IMBeanServer {
             }
             return jmxc.getMBeanServerConnection();
         } catch (IOException e) {
-            throw new JvmCoreException(IStatus.ERROR,
+            if (jvm.getHost().getActiveJvms().contains(jvm)) {
+                jvm.getHost().removeJvm(jvm.getPid());
+            }
+            throw new JvmCoreException(IStatus.INFO,
                     Messages.connectToMBeanServerFailedMsg, e);
         }
     }
@@ -1229,7 +1232,7 @@ public class MBeanServer implements IMBeanServer {
                     - previousSamplingTime;
         }
 
-        List<String> profiledPackages = jvm.getCpuProfiler()
+        Set<String> profiledPackages = jvm.getCpuProfiler()
                 .getProfiledPackages();
         for (ThreadInfo threadInfo : threadMXBean.dumpAllThreads(true, false)) {
             StackTraceElement[] stackTrace = threadInfo.getStackTrace();
@@ -1294,7 +1297,7 @@ public class MBeanServer implements IMBeanServer {
      */
     private void updateCpuModel(ThreadNode<CallTreeNode> callTreeThreadNode,
             ThreadNode<MethodNode> hotSpotThreadNode,
-            List<String> profiledPackages, StackTraceElement[] stackTrace,
+            Set<String> profiledPackages, StackTraceElement[] stackTrace,
             long period) {
 
         String threadName = callTreeThreadNode.getName();
@@ -1431,7 +1434,7 @@ public class MBeanServer implements IMBeanServer {
      *            The profiled packages
      * @return true if the given class belongs to one of the packages list
      */
-    private boolean isProfiledPackage(String className, List<String> packages) {
+    private boolean isProfiledPackage(String className, Set<String> packages) {
         if (packages.isEmpty()) {
             return false;
         }

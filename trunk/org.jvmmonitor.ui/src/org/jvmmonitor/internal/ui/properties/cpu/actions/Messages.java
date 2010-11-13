@@ -79,13 +79,19 @@ public final class Messages extends NLS {
     /** */
     public static String agentNotLoadedMsg;
 
-    // package selection dialog
+    // add package dialog
 
     /** */
-    public static String packageSelectionDialogTitle;
+    public static String addPackageDialogTitle;
 
     /** */
-    public static String packageSelectionDialogMessage;
+    public static String selectPackagesMessage;
+
+    /** */
+    public static String enterPackageName;
+
+    /** */
+    public static String packageNameLabel;
 
     // actions
 
