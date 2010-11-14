@@ -72,7 +72,7 @@ public class MemorySection extends AbstractJvmPropertySection {
      */
     @Override
     public void refresh() {
-        if (getJvm() == null || getJvm().isRemote() || !isSupported()) {
+        if (getJvm() == null || !isSupported()) {
             return;
         }
 
@@ -83,7 +83,7 @@ public class MemorySection extends AbstractJvmPropertySection {
             protected void refreshModel(IProgressMonitor monitor) {
                 try {
                     IActiveJvm jvm = getJvm();
-                    if (jvm != null && jvm.isConnected()
+                    if (jvm != null && jvm.isConnected() && !jvm.isRemote()
                             && !isRefreshSuspended()) {
                         jvm.getMBeanServer().refreshHeapCache();
                     }
@@ -99,14 +99,15 @@ public class MemorySection extends AbstractJvmPropertySection {
                 }
 
                 IActiveJvm jvm = getJvm();
-                boolean enabled = jvm != null && jvm.isConnected()
-                        && !jvm.isRemote();
-                refreshBackground(heapComposite.getChildren(), enabled);
-                dumpHprofAction.setEnabled(!hasErrorMessage() && enabled);
+                boolean isConnected = jvm != null && jvm.isConnected();
+                boolean isRemote = jvm != null && jvm.isRemote();
+                refreshBackground(heapComposite.getChildren(), isConnected
+                        && !isRemote);
+                dumpHprofAction.setEnabled(isConnected);
                 dumpHeapAction.setEnabled(!hasErrorMessage());
-                refreshAction.setEnabled(enabled);
-                garbageCollectorAction.setEnabled(enabled);
-                clearHeapDeltaAction.setEnabled(enabled);
+                refreshAction.setEnabled(isConnected && !isRemote);
+                garbageCollectorAction.setEnabled(isConnected);
+                clearHeapDeltaAction.setEnabled(isConnected && !isRemote);
 
                 if (!heapComposite.isDisposed()) {
                     heapComposite.refresh();

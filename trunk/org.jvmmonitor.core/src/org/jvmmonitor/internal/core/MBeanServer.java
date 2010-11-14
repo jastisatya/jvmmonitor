@@ -8,6 +8,7 @@ package org.jvmmonitor.internal.core;
 
 import static java.lang.management.ManagementFactory.newPlatformMXBeanProxy;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
@@ -50,6 +51,7 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.osgi.util.NLS;
@@ -82,6 +84,9 @@ import org.jvmmonitor.internal.core.cpu.ThreadNode;
  * disconnected.
  */
 public class MBeanServer implements IMBeanServer {
+
+    /** The data transfer MXBean name. */
+    private final static String DATA_TRANSFER_MXBEAN_NAME = "org.jvmmonitor:type=Data Transfer";
 
     /** The MBean server connection. */
     private MBeanServerConnection connection;
@@ -510,10 +515,11 @@ public class MBeanServer implements IMBeanServer {
     }
 
     /*
-     * @see IMBeanServer#dumpHprof(String)
+     * @see IMBeanServer#dumpHprof(String, boolean, IProgressMonitor)
      */
     @Override
-    public IFileStore dumpHprof(String hprofFileName) throws JvmCoreException {
+    public IFileStore dumpHprof(String hprofFileName, boolean transfer,
+            IProgressMonitor monitor) throws JvmCoreException {
         if (!checkReachability()) {
             throw new JvmCoreException(IStatus.WARNING,
                     Messages.jvmNotReachableMsg, null);
@@ -524,14 +530,22 @@ public class MBeanServer implements IMBeanServer {
         if (jvm.isRemote()) {
             fileName = hprofFileName;
         } else {
-            fileStore = dump(SnapshotType.Hprof);
+            fileStore = dump(SnapshotType.Hprof, null, null);
             fileName = fileStore.toString();
+        }
+        if (monitor.isCanceled()) {
+            return null;
         }
 
         ObjectName objectName = jvm.getMBeanServer().getObjectName(
                 "com.sun.management:type=HotSpotDiagnostic"); //$NON-NLS-1$
         invoke(objectName, "dumpHeap", new Object[] { fileName, Boolean.TRUE }, //$NON-NLS-1$
                 new String[] { String.class.getCanonicalName(), "boolean" }); //$NON-NLS-1$
+
+        if (jvm.isRemote() && transfer) {
+            fileStore = dump(SnapshotType.Hprof,
+                    new File(hprofFileName).getName(), monitor);
+        }
 
         return fileStore;
     }
@@ -541,7 +555,7 @@ public class MBeanServer implements IMBeanServer {
      */
     @Override
     public IFileStore dumpHeap() throws JvmCoreException {
-        return dump(SnapshotType.Heap);
+        return dump(SnapshotType.Heap, null, null);
     }
 
     /*
@@ -549,7 +563,7 @@ public class MBeanServer implements IMBeanServer {
      */
     @Override
     public IFileStore dumpThreads() throws JvmCoreException {
-        return dump(SnapshotType.Thread);
+        return dump(SnapshotType.Thread, null, null);
     }
 
     /*
@@ -1061,16 +1075,25 @@ public class MBeanServer implements IMBeanServer {
      * 
      * @param type
      *            The snapshot type
+     * @param dumpFileName
+     *            The dump file name
+     * @param monitor
+     *            The progress monitor
      * @return The file store
      * @throws JvmCoreException
      */
-    private IFileStore dump(SnapshotType type) throws JvmCoreException {
+    private IFileStore dump(SnapshotType type, String dumpFileName,
+            IProgressMonitor monitor) throws JvmCoreException {
 
-        StringBuffer fileName = new StringBuffer();
-        fileName.append(new Date().getTime()).append('.')
-                .append(type.getExtension());
+        String fileName = dumpFileName;
+        if (fileName == null) {
+            StringBuffer stringBuffer = new StringBuffer();
+            stringBuffer.append(new Date().getTime()).append('.')
+                    .append(type.getExtension());
+            fileName = stringBuffer.toString();
+        }
 
-        IFileStore fileStore = Util.getFileStore(fileName.toString(),
+        IFileStore fileStore = Util.getFileStore(fileName,
                 jvm.getBaseDirectory());
 
         // restore the terminated JVM if already removed
@@ -1088,6 +1111,23 @@ public class MBeanServer implements IMBeanServer {
                 String dump = getDumpString(type);
                 os = fileStore.openOutputStream(EFS.NONE, null);
                 os.write(dump.getBytes());
+            } else if (type == SnapshotType.Hprof && jvm.isRemote()) {
+                ObjectName objectName = getObjectName(DATA_TRANSFER_MXBEAN_NAME);
+                os = fileStore.openOutputStream(EFS.NONE, null);
+                byte[] bytes = new byte[0];
+                int offset = 0;
+                final int SIZE = 4096;
+                final String[] SIGNATURES = new String[] {
+                        String.class.getCanonicalName(), "int", "int" };//$NON-NLS-1$ //$NON-NLS-2$
+                do {
+                    bytes = (byte[]) invoke(objectName, "read", new Object[] { //$NON-NLS-1$
+                            fileName, offset, SIZE }, SIGNATURES);
+                    os.write(bytes);
+                    offset += SIZE;
+                    if (monitor != null && monitor.isCanceled()) {
+                        return null;
+                    }
+                } while (bytes.length > 0);
             }
 
             Snapshot snapshot = new Snapshot(fileStore, abstractJvm);

@@ -43,6 +43,9 @@ public class Messages {
     /** The error message that re-transforming class failed. */
     static final String CANNOT_RETRANSFORM_CLASS = "Cannot retransform class: %s";
 
+    /** The error message that reading file failed. */
+    static final String CANNOT_READ_FILE = "Cannot read file: %s";
+
     /** The info message that agent got loaded. */
     static final String AGENT_LOADED = "Agent has been loaded.";
 
