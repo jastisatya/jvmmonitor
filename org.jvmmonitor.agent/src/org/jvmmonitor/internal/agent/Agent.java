@@ -106,9 +106,7 @@ public class Agent {
             throws Throwable {
         inst.appendToBootstrapClassLoaderSearch(new JarFile(agentJar));
 
-        CpuBciProfilerMXBeanImpl profiler = registerProfilerMXBean(inst);
-
-        if (profiler != null) {
+        if (registerMXBeans(inst)) {
             logInfo(Messages.AGENT_LOADED);
         } else {
             logInfo(Messages.AGENT_ALREADY_LOADED);
@@ -132,26 +130,37 @@ public class Agent {
     }
 
     /**
-     * Registers the profiler MXBean.
+     * Registers the MXBeans.
      * 
      * @param inst
      *            The instrumentation
-     * @return The profiler MXBean, or <tt>null</tt> if already registered
+     * @return <tt>true</tt> if registered, and <tt>false</tt> if nothing was
+     *         done since MBeans had already been registered.
      * @throws Throwable
      */
-    private static CpuBciProfilerMXBeanImpl registerProfilerMXBean(
-            Instrumentation inst) throws Throwable {
-        MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-        ObjectName name = new ObjectName(
-                CpuBciProfilerMXBean.PROFILER_MXBEAN_NAME);
+    private static boolean registerMXBeans(Instrumentation inst)
+            throws Throwable {
+        boolean agentLoaded = false;
 
-        if (!server.isRegistered(name)) {
+        MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+        ObjectName profilerObjectName = new ObjectName(
+                CpuBciProfilerMXBean.PROFILER_MXBEAN_NAME);
+        ObjectName dataTransferObjectName = new ObjectName(
+                DataTransferMXBean.DATA_TRANSFER_MXBEAN_NAME);
+
+        if (!server.isRegistered(profilerObjectName)) {
             CpuBciProfilerMXBeanImpl profiler = new CpuBciProfilerMXBeanImpl(
                     inst);
-            server.registerMBean(profiler, name);
-            return profiler;
+            server.registerMBean(profiler, profilerObjectName);
+            agentLoaded = true;
         }
 
-        return null;
+        if (!server.isRegistered(dataTransferObjectName)) {
+            DataTransferMXBeanImpl dataTransfer = new DataTransferMXBeanImpl();
+            server.registerMBean(dataTransfer, dataTransferObjectName);
+            agentLoaded = true;
+        }
+
+        return agentLoaded;
     }
 }

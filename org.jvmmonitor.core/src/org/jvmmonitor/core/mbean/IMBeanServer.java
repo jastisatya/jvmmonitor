@@ -14,6 +14,7 @@ import javax.management.MBeanInfo;
 import javax.management.ObjectName;
 
 import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.jvmmonitor.core.IHeapElement;
 import org.jvmmonitor.core.IThreadElement;
 import org.jvmmonitor.core.JvmCoreException;
@@ -176,11 +177,16 @@ public interface IMBeanServer {
      * 
      * @param hprofFileName
      *            The hprof file name used when monitoring JVM on remote host
+     * @param transfer
+     *            <tt>true</tt> to transfer hprof file to local host
+     * @param monitor
+     *            The progress monitor
      * @return The file store, or <tt>null</tt> if target JVM is running on
-     *         remote host.
+     *         remote host and hprof file is not transfered to local host
      * @throws JvmCoreException
      */
-    IFileStore dumpHprof(String hprofFileName) throws JvmCoreException;
+    IFileStore dumpHprof(String hprofFileName, boolean transfer,
+            IProgressMonitor monitor) throws JvmCoreException;
 
     /**
      * Dumps the heap data.

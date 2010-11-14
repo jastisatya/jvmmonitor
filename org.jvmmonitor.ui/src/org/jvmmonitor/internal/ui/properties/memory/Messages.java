@@ -52,17 +52,20 @@ public final class Messages extends NLS {
 
     /** */
     public static String deltaColumnToolTip;
-    
+
     // dump hprof dialog
-    
+
     /** */
     public static String dumpHprofTitle;
-    
+
     /** */
     public static String hprofFileLabel;
 
     /** */
     public static String pathContainsInvalidCharactersMsg;
+
+    /** */
+    public static String transferHprofFileLabel;
 
     // instruction message
 

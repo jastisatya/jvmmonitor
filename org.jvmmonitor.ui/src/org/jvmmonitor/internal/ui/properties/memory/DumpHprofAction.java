@@ -25,6 +25,12 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.window.Window;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.ISnapshot.SnapshotType;
@@ -70,11 +76,25 @@ public class DumpHprofAction extends Action {
         }
 
         // get file name for remote host
-        String fileName = null;
+        final String fileName[] = new String[1];
+        final boolean transfer[] = new boolean[] { false };
+
         try {
             if (jvm.isRemote()) {
-                fileName = getFileName(jvm);
-                if (fileName == null) {
+                final FileNameInputDialog dialog = new FileNameInputDialog(
+                        getInitialFileName(jvm));
+
+                Display.getDefault().syncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (dialog.open() == Window.OK) {
+                            fileName[0] = dialog.getValue();
+                            transfer[0] = dialog.isFileTransfered();
+                        }
+                    }
+                });
+
+                if (fileName[0] == null) {
                     return;
                 }
             }
@@ -83,7 +103,7 @@ public class DumpHprofAction extends Action {
             return;
         }
 
-        dumpHprof(fileName);
+        dumpHprof(fileName[0], transfer[0]);
     }
 
     /**
@@ -91,8 +111,10 @@ public class DumpHprofAction extends Action {
      * 
      * @param fileName
      *            The file name
+     * @param transfer
+     *            <tt>true</tt> to transfer file to local host
      */
-    private void dumpHprof(final String fileName) {
+    private void dumpHprof(final String fileName, final boolean transfer) {
         new Job(Messages.dumpHprofDataJobLabel) {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -103,13 +125,14 @@ public class DumpHprofAction extends Action {
 
                 IFileStore fileStore = null;
                 try {
-                    fileStore = activeJvm.getMBeanServer().dumpHprof(fileName);
+                    fileStore = activeJvm.getMBeanServer().dumpHprof(fileName,
+                            transfer, monitor);
                 } catch (JvmCoreException e) {
                     Activator.log(Messages.dumpHeapDataFailedMsg, e);
                     return Status.CANCEL_STATUS;
                 }
 
-                if (isMemoryAnalyzerInstalled() && !activeJvm.isRemote()) {
+                if (isMemoryAnalyzerInstalled() && fileStore != null) {
                     section.setPinned(true);
                     OpenSnapshotAction.openEditor(fileStore);
                 }
@@ -129,14 +152,14 @@ public class DumpHprofAction extends Action {
     }
 
     /**
-     * Gets the file name opening input dialog.
+     * Gets the initial file name.
      * 
      * @param jvm
      *            The active JVM
      * @return The file name, or <tt>null</tt> if file name is specified
      * @throws JvmCoreException
      */
-    String getFileName(IActiveJvm jvm) throws JvmCoreException {
+    String getInitialFileName(IActiveJvm jvm) throws JvmCoreException {
 
         ObjectName objectName;
         try {
@@ -155,21 +178,7 @@ public class DumpHprofAction extends Action {
         StringBuffer initialFileName = new StringBuffer(home);
         initialFileName.append(File.separator).append(new Date().getTime())
                 .append('.').append(SnapshotType.Hprof.getExtension());
-
-        final InputDialog dialog = new InputDialog(section.getPart().getSite()
-                .getShell(), Messages.dumpHprofTitle, Messages.hprofFileLabel,
-                initialFileName.toString(), new InputValidator());
-
-        final String[] fileName = new String[1];
-        Display.getDefault().syncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (dialog.open() == Window.OK) {
-                    fileName[0] = dialog.getValue();
-                }
-            }
-        });
-        return fileName[0];
+        return initialFileName.toString();
     }
 
     /**
@@ -207,6 +216,70 @@ public class DumpHprofAction extends Action {
             }
 
             return null;
+        }
+    }
+
+    /**
+     * The dialog to input file name.
+     */
+    private class FileNameInputDialog extends InputDialog {
+
+        /** The dialog settings key for transfer. */
+        private static final String TRANSFER_KEY = "transfer";
+
+        /** <tt>true</tt> to transfer hprof file to local host. */
+        boolean isFileTransfered;
+
+        /**
+         * The constructor.
+         * 
+         * @param initialFileName
+         *            The initial file name
+         */
+        public FileNameInputDialog(String initialFileName) {
+            super(section.getPart().getSite().getShell(),
+                    Messages.dumpHprofTitle, Messages.hprofFileLabel,
+                    initialFileName, new InputValidator());
+            isFileTransfered = Activator.getDefault()
+                    .getDialogSettings(getClass().getName())
+                    .getBoolean(TRANSFER_KEY);
+        }
+
+        /*
+         * @see InputDialog#createDialogArea(Composite)
+         */
+        @Override
+        protected Control createDialogArea(Composite parent) {
+            Composite control = (Composite) super.createDialogArea(parent);
+            final Button button = new Button(control, SWT.CHECK);
+            button.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    isFileTransfered = button.getSelection();
+                }
+            });
+            button.setText(Messages.transferHprofFileLabel);
+            button.setSelection(isFileTransfered);
+            return control;
+        }
+
+        /*
+         * @see Dialog#okPressed()
+         */
+        @Override
+        protected void okPressed() {
+            Activator.getDefault().getDialogSettings(getClass().getName())
+                    .put(TRANSFER_KEY, isFileTransfered);
+            super.okPressed();
+        }
+
+        /**
+         * Gets the state indicating if file is transfered to local host.
+         * 
+         * @return <tt>true</tt> if file is transfered to local host
+         */
+        protected boolean isFileTransfered() {
+            return isFileTransfered;
         }
     }
 }
