@@ -6,6 +6,7 @@
  *******************************************************************************/
 package org.jvmmonitor.internal.ui.properties.thread;
 
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -57,7 +58,11 @@ public class ThreadSashForm extends AbstractSashForm {
                 .addSelectionChangedListener(new ISelectionChangedListener() {
                     @Override
                     public void selectionChanged(SelectionChangedEvent event) {
-                        stackTraceViewer.setInput(event.getSelection());
+                        ISelection selection = event.getSelection();
+                        if (selection.isEmpty()) {
+                            selection = null;
+                        }
+                        stackTraceViewer.setInput(selection);
                     }
                 });
 

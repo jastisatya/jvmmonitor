@@ -54,6 +54,9 @@ public final class Messages extends NLS {
     /** */
     public static String newChartDialogTitle;
 
+    /** */
+    public static String chartTitleEmptyMsg;
+
     // configure chart dialog
 
     /** */
@@ -119,6 +122,12 @@ public final class Messages extends NLS {
 
     /** */
     public static String defaultChartSet;
+
+    /** */
+    public static String errorDialogTitle;
+
+    /** */
+    public static String attributeNotSupportedMsg;
 
     // actions
 
