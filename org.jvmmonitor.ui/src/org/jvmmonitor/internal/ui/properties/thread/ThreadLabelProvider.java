@@ -14,6 +14,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Tree;
 import org.jvmmonitor.core.IThreadElement;
+import org.jvmmonitor.internal.ui.IConstants;
 import org.jvmmonitor.internal.ui.properties.overview.IFormat;
 import org.jvmmonitor.ui.Activator;
 import org.jvmmonitor.ui.ISharedImages;
@@ -23,6 +24,11 @@ import org.jvmmonitor.ui.ISharedImages;
  */
 public class ThreadLabelProvider extends LabelProvider implements
         ITableLabelProvider {
+
+    /** The columns taken into account for filter. */
+    private static final ThreadColumn[] COLUMNS_TAKEN_INTO_ACCOUNT_FOR_FILTER = {
+            ThreadColumn.THREAD, ThreadColumn.STATE, ThreadColumn.LOCK,
+            ThreadColumn.LOCK_OWNWER };
 
     /** The thread running object image. */
     private Image threadRunnableObjImage;
@@ -83,17 +89,26 @@ public class ThreadLabelProvider extends LabelProvider implements
     @Override
     public String getText(Object obj) {
         if (obj instanceof IThreadElement) {
-            return getColumnText((IThreadElement) obj,
-                    getColumnIndex(ThreadColumn.THREAD))
-                    + " " //$NON-NLS-1$
-                    + getColumnText((IThreadElement) obj,
-                            getColumnIndex(ThreadColumn.STATE))
-                    + " " //$NON-NLS-1$
-                    + getColumnText((IThreadElement) obj,
-                            getColumnIndex(ThreadColumn.LOCK))
-                    + " " //$NON-NLS-1$
-                    + getColumnText((IThreadElement) obj,
-                            getColumnIndex(ThreadColumn.LOCK_OWNWER));
+            StringBuffer buffer = new StringBuffer();
+
+            // columns
+            for (ThreadColumn column : COLUMNS_TAKEN_INTO_ACCOUNT_FOR_FILTER) {
+                buffer.append(
+                        getColumnText((IThreadElement) obj,
+                                getColumnIndex(column))).append(' ');
+            }
+
+            // stack traces
+            if (Activator.getDefault().getPreferenceStore()
+                    .getBoolean(IConstants.TAKE_STACK_TRACES_INTO_ACCOUNT)) {
+                for (StackTraceElement element : ((IThreadElement) obj)
+                        .getStackTraceElements()) {
+                    buffer.append(element.getClassName()).append('.')
+                            .append(element.getMethodName()).append(' ');
+                    buffer.append(element.getFileName()).append(' ');
+                }
+            }
+            return buffer.toString();
         }
         return super.getText(obj);
     }

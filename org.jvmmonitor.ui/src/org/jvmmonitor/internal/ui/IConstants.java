@@ -20,6 +20,9 @@ public interface IConstants {
     /** The preference key for update period. */
     static final String UPDATE_PERIOD = "UpdatePeriod";
 
+    /** The preference key for threads filter. */
+    static final String TAKE_STACK_TRACES_INTO_ACCOUNT = "TakeStackTracesIntoAccount";
+
     /** The preference key for default chart set. */
     static final String DEFAULT_CHART_SET = "DefaultChartSet";
 

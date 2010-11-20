@@ -38,8 +38,11 @@ public class JavaMonitorPreferencePage extends PreferencePage implements
     /** The update period text field. */
     private Text updatePeriodText;
 
-    /** The legend visibility button. */
+    /** The legend visibility check box. */
     private Button legendVisibilityButton;
+
+    /** The check box to take stack traces into account when filtering threads. */
+    private Button takeStackTracesIntoAccountButton;
 
     /*
      * @see PreferencePage#createContents(Composite)
@@ -54,6 +57,7 @@ public class JavaMonitorPreferencePage extends PreferencePage implements
 
         createUpdatePeriodText(composite);
         createTimelineGroup(composite);
+        createThreadsGroup(composite);
 
         applyDialogFont(composite);
 
@@ -77,6 +81,9 @@ public class JavaMonitorPreferencePage extends PreferencePage implements
                 updatePeriodText.getText());
         getPreferenceStore().setValue(IConstants.LEGEND_VISIBILITY,
                 legendVisibilityButton.getSelection());
+        getPreferenceStore().setValue(
+                IConstants.TAKE_STACK_TRACES_INTO_ACCOUNT,
+                takeStackTracesIntoAccountButton.getSelection());
 
         applyChanges();
         return true;
@@ -104,6 +111,8 @@ public class JavaMonitorPreferencePage extends PreferencePage implements
         updatePeriodText.setText(updatePeriod);
         legendVisibilityButton.setSelection(getPreferenceStore()
                 .getDefaultBoolean(IConstants.LEGEND_VISIBILITY));
+        takeStackTracesIntoAccountButton.setSelection(getPreferenceStore()
+                .getDefaultBoolean(IConstants.TAKE_STACK_TRACES_INTO_ACCOUNT));
         super.performDefaults();
     }
 
@@ -154,6 +163,30 @@ public class JavaMonitorPreferencePage extends PreferencePage implements
         GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
         gridData.horizontalSpan = 2;
         legendVisibilityButton.setLayoutData(gridData);
+    }
+
+    /**
+     * Creates the threads group.
+     * 
+     * @param parent
+     *            The parent composite
+     */
+    private void createThreadsGroup(Composite parent) {
+        Group group = new Group(parent, SWT.NONE);
+        group.setText(Messages.threadsGroupLabel);
+        GridLayout layout = new GridLayout(1, false);
+        group.setLayout(layout);
+        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        takeStackTracesIntoAccountButton = new Button(group, SWT.CHECK);
+        takeStackTracesIntoAccountButton
+                .setText(Messages.takeStackTracesIntoAccountLabel);
+        takeStackTracesIntoAccountButton.setSelection(getPreferenceStore()
+                .getBoolean(IConstants.TAKE_STACK_TRACES_INTO_ACCOUNT));
+
+        GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+        gridData.horizontalSpan = 2;
+        takeStackTracesIntoAccountButton.setLayoutData(gridData);
     }
 
     /**

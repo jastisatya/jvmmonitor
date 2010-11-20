@@ -9,15 +9,18 @@ package org.jvmmonitor.internal.ui.properties.timeline;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.XMLMemento;
@@ -32,6 +35,14 @@ import org.jvmmonitor.ui.Activator;
  * The action to select chart set.
  */
 public class LoadChartSetAction extends AbstractChartSetAction {
+
+    /** The non heap memory pool MBeans. */
+    private static final String[] NON_HEAP_MEMORYPOOL_MXBEANS = {
+            "name=Code Cache", "name=Perm Gen" }; //$NON-NLS-1$ //$NON-NLS-2$
+
+    /** The heap memory pool MBeans. */
+    private static final String[] HEAP_MEMORYPOOL_MXBEANS = {
+            "name=Eden Space", "name=Survivor Space", "name=Tenured Gen" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
     /**
      * The constructor.
@@ -183,17 +194,57 @@ public class LoadChartSetAction extends AbstractChartSetAction {
         IMBeanServer server = section.getJvm().getMBeanServer();
         server.getMonitoredAttributeGroups().clear();
 
+        StringBuffer buffer = new StringBuffer();
         for (IMemento groupMemento : memento.getChildren(GROUP)) {
             IMonitoredMXBeanGroup group = server.addMonitoredAttributeGroup(
                     groupMemento.getID(),
                     AxisUnit.valueOf(groupMemento.getString(UNIT)));
             for (IMemento attributeMemento : groupMemento
                     .getChildren(ATTRIBUTE)) {
-                group.addAttribute(attributeMemento.getString(OBJECT_NAME),
-                        attributeMemento.getID(),
-                        getRGB(attributeMemento.getString(COLOR)));
+                String objectName = attributeMemento.getString(OBJECT_NAME);
+                String attributeName = attributeMemento.getID();
+
+                if (attributeExist(objectName, attributeName)) {
+                    group.addAttribute(objectName, attributeName,
+                            getRGB(attributeMemento.getString(COLOR)));
+                } else {
+                    buffer.append('\n');
+                    buffer.append(objectName + ':' + attributeName);
+                }
             }
         }
+
+        if (buffer.length() > 0) {
+            MessageDialog.openError(
+                    Display.getDefault().getActiveShell(),
+                    Messages.errorDialogTitle,
+                    NLS.bind(Messages.attributeNotSupportedMsg,
+                            buffer.toString()));
+        }
+    }
+
+    /**
+     * Gets the state indicating if the given attribute exists.
+     * 
+     * @param objectName
+     *            The object name
+     * @param attributeName
+     *            The attribute name
+     * @return <tt>true</tt> if the given attribute exists
+     */
+    private boolean attributeExist(String objectName, String attributeName) {
+        IMBeanServer server = section.getJvm().getMBeanServer();
+        try {
+            server.getAttribute(ObjectName.getInstance(objectName),
+                    attributeName);
+        } catch (MalformedObjectNameException e) {
+            return false;
+        } catch (NullPointerException e) {
+            return false;
+        } catch (JvmCoreException e) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -271,42 +322,28 @@ public class LoadChartSetAction extends AbstractChartSetAction {
 
         group = server.addMonitoredAttributeGroup(
                 "Heap Memory Pool", AxisUnit.MBytes); //$NON-NLS-1$
-        for (String objectName : getHeapMemoryPoolObjectNames()) {
+        for (String objectName : getMemoryPoolObjectNames(HEAP_MEMORYPOOL_MXBEANS)) {
             group.addAttribute(objectName, "Usage.used", blue); //$NON-NLS-1$
         }
 
         group = server.addMonitoredAttributeGroup(
                 "Non-Heap Memory Pool", AxisUnit.MBytes); //$NON-NLS-1$
-        for (String objectName : getNonHeapMemoryPoolObjectNames()) {
+        for (String objectName : getMemoryPoolObjectNames(NON_HEAP_MEMORYPOOL_MXBEANS)) {
             group.addAttribute(objectName, "Usage.used", blue); //$NON-NLS-1$
         }
     }
 
     /**
-     * Gets the heap memory pool object names.
+     * Gets the memory pool object names that contains the given filter text.
      * 
-     * @return The heap memory pool object names
+     * @param filters
+     *            The filters
+     * @return The memory pool object names
      * @throws JvmCoreException
      */
-    private List<String> getHeapMemoryPoolObjectNames() throws JvmCoreException {
-        return Arrays.asList(new String[] {
-                "java.lang:type=MemoryPool,name=Eden Space", //$NON-NLS-1$
-                "java.lang:type=MemoryPool,name=Survivor Space", //$NON-NLS-1$
-                "java.lang:type=MemoryPool,name=Tenured Gen" }); //$NON-NLS-1$
-    }
-
-    /**
-     * Gets the non-heap memory pool object names.
-     * 
-     * @return The non-heap memory pool object names
-     * @throws JvmCoreException
-     */
-    private List<String> getNonHeapMemoryPoolObjectNames()
+    private Set<String> getMemoryPoolObjectNames(String[] filters)
             throws JvmCoreException {
-        List<String> heapMemoryPoolObjectNames = new ArrayList<String>();
-        heapMemoryPoolObjectNames
-                .add("java.lang:type=MemoryPool,name=Code Cache"); //$NON-NLS-1$
-
+        Set<String> objectNames = new HashSet<String>();
         try {
             for (ObjectName objectName : section
                     .getJvm()
@@ -315,8 +352,10 @@ public class LoadChartSetAction extends AbstractChartSetAction {
                             ObjectName
                                     .getInstance("java.lang:type=MemoryPool,name=*"))) { //$NON-NLS-1$
                 String canonicalName = objectName.getCanonicalName();
-                if (canonicalName.contains("name=Perm Gen")) { //$NON-NLS-1$
-                    heapMemoryPoolObjectNames.add(canonicalName);
+                for (String filter : filters) {
+                    if (canonicalName.contains(filter)) {
+                        objectNames.add(canonicalName);
+                    }
                 }
             }
         } catch (MalformedObjectNameException e) {
@@ -326,7 +365,7 @@ public class LoadChartSetAction extends AbstractChartSetAction {
             Activator.log(IStatus.ERROR,
                     Messages.getMemoryPoolAttributeFailedMsg, e);
         }
-        return heapMemoryPoolObjectNames;
+        return objectNames;
     }
 
     /**
@@ -346,7 +385,7 @@ public class LoadChartSetAction extends AbstractChartSetAction {
         } else {
             oldMementos = oldChartSetsMemento.getChildren(CHART_SET);
         }
-        
+
         XMLMemento chartSetsMemento = XMLMemento.createWriteRoot(CHART_SETS);
         for (String chartSet : chartSets) {
             for (IMemento memento : oldMementos) {

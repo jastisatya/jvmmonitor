@@ -269,6 +269,10 @@ public class OpenDeclarationAction extends Action implements
                     }
                 }, 400);
 
+                if (className == null) {
+                    return;
+                }
+
                 try {
                     source[0] = doSearchSource(className);
                 } catch (CoreException e) {

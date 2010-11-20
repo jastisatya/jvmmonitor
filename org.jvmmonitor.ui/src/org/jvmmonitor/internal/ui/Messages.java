@@ -15,11 +15,11 @@ public final class Messages extends NLS {
 
     /** The bundle name. */
     private static final String BUNDLE_NAME = "org.jvmmonitor.internal.ui.messages";//$NON-NLS-1$
-    
+
     static {
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
     }
-    
+
     /**
      * The constructor.
      */
@@ -46,4 +46,10 @@ public final class Messages extends NLS {
 
     /** */
     public static String updatePeriodOutOfRangeMsg;
+    
+    /** */
+    public static String threadsGroupLabel;
+
+    /** */
+    public static String takeStackTracesIntoAccountLabel;
 }

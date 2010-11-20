@@ -27,5 +27,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
         store.setDefault(IConstants.UPDATE_PERIOD, DEFAULT_UPDATE_PERIOD);
         store.setDefault(IConstants.LEGEND_VISIBILITY, false);
+        store.setDefault(IConstants.TAKE_STACK_TRACES_INTO_ACCOUNT, true);
     }
 }

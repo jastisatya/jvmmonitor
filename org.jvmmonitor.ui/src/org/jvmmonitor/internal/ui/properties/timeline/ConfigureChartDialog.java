@@ -128,6 +128,7 @@ public class ConfigureChartDialog extends Dialog {
     public void create() {
         super.create();
         getShell().setText(Messages.configureChartDialogTitle);
+        setOkButtonVisible(!chartTitleText.getText().isEmpty());
     }
 
     /*
@@ -527,11 +528,25 @@ public class ConfigureChartDialog extends Dialog {
             }
         }
 
+        if (text.isEmpty()) {
+            errorMessage = Messages.chartTitleEmptyMsg;
+        }
+
         errorImageLabel.setVisible(!errorMessage.isEmpty());
         errorMessageLabel.setText(errorMessage);
+        setOkButtonVisible(errorMessage.isEmpty());
+    }
+
+    /**
+     * Sets the OK button visible.
+     * 
+     * @param visible
+     *            <tt>true</tt> to make OK button visible
+     */
+    private void setOkButtonVisible(boolean visible) {
         Control button = getButton(IDialogConstants.OK_ID);
         if (button != null) {
-            button.setEnabled(errorMessage.isEmpty());
+            button.setEnabled(visible);
         }
     }
 
