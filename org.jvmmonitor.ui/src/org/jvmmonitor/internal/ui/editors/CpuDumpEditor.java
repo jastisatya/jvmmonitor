@@ -42,6 +42,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.PageBook;
@@ -53,6 +54,7 @@ import org.jvmmonitor.core.cpu.ICpuModel;
 import org.jvmmonitor.core.cpu.ICpuModelChangeListener;
 import org.jvmmonitor.core.cpu.IMethodNode;
 import org.jvmmonitor.core.dump.CpuDumpParser;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.actions.CollapseAllAction;
 import org.jvmmonitor.internal.ui.actions.CopyAction;
 import org.jvmmonitor.internal.ui.actions.OpenDeclarationAction;
@@ -116,6 +118,9 @@ public class CpuDumpEditor extends AbstractDumpEditor {
         refresh();
 
         addListeners();
+
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(getContainer(), IHelpContextIds.CPU_DUMP_EDITOR);
     }
 
     /*

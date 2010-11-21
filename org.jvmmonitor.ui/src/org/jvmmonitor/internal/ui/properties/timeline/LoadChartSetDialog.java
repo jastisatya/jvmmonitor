@@ -28,6 +28,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 
 /**
  * The dialog to select the chart set to load.
@@ -83,6 +85,16 @@ public class LoadChartSetDialog extends Dialog {
     public void create() {
         super.create();
         getShell().setText(Messages.loadChartSetDialogTitle);
+    }
+
+    /*
+     * @see Window#configureShell(Shell)
+     */
+    @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(newShell, IHelpContextIds.LOAD_CHART_SET_DIALOG);
     }
 
     /*

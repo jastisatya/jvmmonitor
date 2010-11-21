@@ -31,8 +31,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.jvmmonitor.core.cpu.ICpuModel;
 import org.jvmmonitor.core.cpu.ITreeNode;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.properties.cpu.AbstractFilteredTree.ViewerType;
 import org.jvmmonitor.ui.Activator;
 
@@ -87,6 +90,16 @@ public class FindDialog extends Dialog {
         super.create();
         getShell().setText(Messages.findTitle);
         validate();
+    }
+
+    /*
+     * @see Window#configureShell(Shell)
+     */
+    @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(newShell, IHelpContextIds.FIND_DIALOG);
     }
 
     /*

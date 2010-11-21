@@ -14,6 +14,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.tabbed.ITabbedPropertySheetPageContributor;
@@ -24,6 +25,7 @@ import org.jvmmonitor.core.mbean.IMBeanServerChangeListener;
 import org.jvmmonitor.core.mbean.IMonitoredMXBeanAttribute;
 import org.jvmmonitor.core.mbean.MBeanServerEvent;
 import org.jvmmonitor.core.mbean.MBeanServerEvent.MBeanServerState;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.actions.PreferencesAction;
 
 /**
@@ -46,6 +48,12 @@ public class JvmExplorer extends ViewPart implements
         getSite().setSelectionProvider(treeViewer);
         createLocalToolBar();
         createLocalMenus();
+
+        PlatformUI
+                .getWorkbench()
+                .getHelpSystem()
+                .setHelp(treeViewer.getControl(),
+                        IHelpContextIds.JVM_EXPLORER_VIEW);
     }
 
     /*
@@ -117,7 +125,8 @@ public class JvmExplorer extends ViewPart implements
     /**
      * Tabbed property sheet page.
      */
-    private static class MyTabbedPropertySheetPage extends TabbedPropertySheetPage {
+    private static class MyTabbedPropertySheetPage extends
+            TabbedPropertySheetPage {
 
         /**
          * The constructor.

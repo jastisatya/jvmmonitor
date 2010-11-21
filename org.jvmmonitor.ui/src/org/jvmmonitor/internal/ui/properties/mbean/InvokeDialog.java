@@ -57,9 +57,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.ui.PlatformUI;
 import org.jvmmonitor.core.Activator;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.JvmCoreException;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.actions.CopyAction;
 import org.jvmmonitor.internal.ui.properties.PropertiesColumn;
 
@@ -128,6 +130,16 @@ public class InvokeDialog extends Dialog {
         getShell().setSize(Math.max(DIALOG_WIDTH, getShell().getSize().x),
                 DIALOG_HEIGHT);
         validate();
+    }
+
+    /*
+     * @see Window#configureShell(Shell)
+     */
+    @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(newShell, IHelpContextIds.INVOKE_DIALOG);
     }
 
     /*
@@ -589,7 +601,8 @@ public class InvokeDialog extends Dialog {
     /**
      * The content provider for return value of MBean operation.
      */
-    private static class ReturnValueContentProvider implements ITreeContentProvider {
+    private static class ReturnValueContentProvider implements
+            ITreeContentProvider {
 
         /**
          * The constructor.
@@ -660,8 +673,8 @@ public class InvokeDialog extends Dialog {
     /**
      * The label provider for return value of MBean operation.
      */
-    private static class ReturnValueLabelProvider extends LabelProvider implements
-            ITableLabelProvider {
+    private static class ReturnValueLabelProvider extends LabelProvider
+            implements ITableLabelProvider {
 
         /**
          * The constructor.

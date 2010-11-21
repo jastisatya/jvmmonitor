@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.JvmCoreException;
@@ -39,6 +40,7 @@ import org.jvmmonitor.core.mbean.IMBeanServerChangeListener;
 import org.jvmmonitor.core.mbean.IMonitoredMXBeanAttribute;
 import org.jvmmonitor.core.mbean.IMonitoredMXBeanGroup;
 import org.jvmmonitor.core.mbean.MBeanServerEvent;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.RefreshJob;
 import org.jvmmonitor.internal.ui.actions.RefreshAction;
 import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
@@ -129,6 +131,9 @@ public class TimelineSection extends AbstractJvmPropertySection {
                 }.schedule();
             }
         };
+
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(parent, IHelpContextIds.TIMELINE_PAGE);
     }
 
     /*

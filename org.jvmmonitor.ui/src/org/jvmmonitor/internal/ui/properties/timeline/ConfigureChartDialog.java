@@ -41,6 +41,7 @@ import org.eclipse.ui.PlatformUI;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.mbean.IMonitoredMXBeanGroup;
 import org.jvmmonitor.core.mbean.IMonitoredMXBeanGroup.AxisUnit;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 
 /**
  * The configure chart dialog.
@@ -129,6 +130,16 @@ public class ConfigureChartDialog extends Dialog {
         super.create();
         getShell().setText(Messages.configureChartDialogTitle);
         setOkButtonVisible(!chartTitleText.getText().isEmpty());
+    }
+
+    /*
+     * @see Window#configureShell(Shell)
+     */
+    @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(newShell, IHelpContextIds.CONFIGURE_CHART_DIALOG);
     }
 
     /*

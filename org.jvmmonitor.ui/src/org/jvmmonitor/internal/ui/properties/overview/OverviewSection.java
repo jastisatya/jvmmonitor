@@ -33,6 +33,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.jvmmonitor.core.IActiveJvm;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.RefreshJob;
 import org.jvmmonitor.internal.ui.actions.CopyAction;
 import org.jvmmonitor.internal.ui.actions.RefreshAction;
@@ -110,6 +111,9 @@ public class OverviewSection extends AbstractJvmPropertySection {
         viewer.setContentProvider(new OverviewContentProvider(
                 overviewProperties));
         viewer.setLabelProvider(new OverviewLabelProvider());
+
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(parent, IHelpContextIds.OVERVIEW_PAGE);
     }
 
     /*

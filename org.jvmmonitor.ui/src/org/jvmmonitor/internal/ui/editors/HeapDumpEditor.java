@@ -23,9 +23,11 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.jvmmonitor.core.IHeapElement;
 import org.jvmmonitor.core.dump.HeapDumpParser;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.properties.memory.HeapComposite;
 import org.jvmmonitor.internal.ui.properties.memory.IHeapInput;
 import org.jvmmonitor.ui.Activator;
@@ -59,6 +61,9 @@ public class HeapDumpEditor extends AbstractDumpEditor {
     @Override
     protected void createClientPages() {
         createMemoryPage();
+
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(getContainer(), IHelpContextIds.HEAP_DUMP_EDITOR);
     }
 
     /*

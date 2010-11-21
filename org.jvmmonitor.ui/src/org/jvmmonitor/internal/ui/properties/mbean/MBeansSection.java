@@ -13,7 +13,9 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
 import org.jvmmonitor.core.IActiveJvm;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.actions.RefreshAction;
 import org.jvmmonitor.internal.ui.actions.ToggleOrientationAction;
 import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
@@ -64,6 +66,9 @@ public class MBeansSection extends AbstractJvmPropertySection {
     @Override
     protected void createControls(Composite parent) {
         sashForm = new MBeanSashForm(parent, this);
+
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(parent, IHelpContextIds.MBEANS_PAGE);
     }
 
     /*

@@ -23,9 +23,11 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.jvmmonitor.core.IThreadElement;
 import org.jvmmonitor.core.dump.ThreadDumpParser;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.properties.thread.IThreadInput;
 import org.jvmmonitor.internal.ui.properties.thread.ThreadSashForm;
 import org.jvmmonitor.ui.Activator;
@@ -59,6 +61,9 @@ public class ThreadDumpEditor extends AbstractDumpEditor {
     @Override
     protected void createClientPages() {
         createThreadsPage();
+
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(getContainer(), IHelpContextIds.THREADS_DUMP_EDITOR);
     }
 
     /*
