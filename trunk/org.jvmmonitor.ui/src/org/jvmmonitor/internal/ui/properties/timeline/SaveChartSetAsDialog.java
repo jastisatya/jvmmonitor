@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 
 /**
  * The dialog to specify the name to save chart set as.
@@ -97,6 +98,16 @@ public class SaveChartSetAsDialog extends Dialog {
         super.create();
         getShell().setText(Messages.saveChartSetAsDialogTitle);
         validate();
+    }
+
+    /*
+     * @see Window#configureShell(Shell)
+     */
+    @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(newShell, IHelpContextIds.SAVE_CHART_SET_AS_DIALOG);
     }
 
     /*

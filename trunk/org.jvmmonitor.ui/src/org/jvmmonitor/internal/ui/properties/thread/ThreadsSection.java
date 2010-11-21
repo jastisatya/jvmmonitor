@@ -15,9 +15,11 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.IThreadElement;
 import org.jvmmonitor.core.JvmCoreException;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.RefreshJob;
 import org.jvmmonitor.internal.ui.actions.RefreshAction;
 import org.jvmmonitor.internal.ui.actions.ToggleOrientationAction;
@@ -99,6 +101,9 @@ public class ThreadsSection extends AbstractJvmPropertySection {
     @Override
     protected void createControls(Composite parent) {
         sashForm = new ThreadSashForm(parent, getActionBars());
+
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(parent, IHelpContextIds.THREADS_PAGE);
     }
 
     /*

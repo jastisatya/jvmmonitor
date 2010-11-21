@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.JvmCoreException;
@@ -37,6 +38,7 @@ import org.jvmmonitor.core.cpu.ICpuProfiler;
 import org.jvmmonitor.core.cpu.ICpuProfiler.ProfilerState;
 import org.jvmmonitor.core.cpu.ICpuProfiler.ProfilerType;
 import org.jvmmonitor.internal.ui.IConstants;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.RefreshJob;
 import org.jvmmonitor.internal.ui.actions.CopyAction;
 import org.jvmmonitor.internal.ui.actions.OpenDeclarationAction;
@@ -133,6 +135,9 @@ public class CpuSection extends AbstractJvmPropertySection {
         callerCallee = new CallerCalleeTabPage(this, tabFolder);
 
         setProfiledPackages();
+
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(parent, IHelpContextIds.CPU_PAGE);
     }
 
     /*

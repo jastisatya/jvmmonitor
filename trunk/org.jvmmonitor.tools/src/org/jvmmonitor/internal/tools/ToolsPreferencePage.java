@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.PlatformUI;
 import org.jvmmonitor.tools.Activator;
 
 /**
@@ -40,6 +41,10 @@ import org.jvmmonitor.tools.Activator;
  */
 public class ToolsPreferencePage extends PreferencePage implements
         IWorkbenchPreferencePage, IConstants {
+
+    /** The help context id for this page. */
+    private static final String JAVA_MONITOR_TOOLS_PREFERENCE_PAGE = Activator.PLUGIN_ID
+            + '.' + "java_monitor_tools_preference_page_context";
 
     /** The minimum value of update period. */
     private static final int MIN_UPDATE_PERIOD = 100;
@@ -75,6 +80,9 @@ public class ToolsPreferencePage extends PreferencePage implements
         createMemoryGroup(composite);
 
         applyDialogFont(composite);
+
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(parent, JAVA_MONITOR_TOOLS_PREFERENCE_PAGE);
 
         return composite;
     }

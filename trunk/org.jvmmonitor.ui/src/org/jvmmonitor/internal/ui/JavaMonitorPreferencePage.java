@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.PlatformUI;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.IHost;
 import org.jvmmonitor.core.JvmModel;
@@ -60,6 +61,12 @@ public class JavaMonitorPreferencePage extends PreferencePage implements
         createThreadsGroup(composite);
 
         applyDialogFont(composite);
+
+        PlatformUI
+                .getWorkbench()
+                .getHelpSystem()
+                .setHelp(parent,
+                        IHelpContextIds.JAVA_MONITOR_PREFERENCE_PAGE);
 
         return composite;
     }

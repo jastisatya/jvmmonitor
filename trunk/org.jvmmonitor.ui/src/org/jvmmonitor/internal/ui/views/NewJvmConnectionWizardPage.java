@@ -26,8 +26,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 import org.jvmmonitor.core.IHost;
 import org.jvmmonitor.core.JvmModel;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.ui.Activator;
 import org.jvmmonitor.ui.ISharedImages;
 
@@ -108,6 +110,12 @@ public class NewJvmConnectionWizardPage extends WizardPage {
         Dialog.applyDialogFont(composite);
 
         setControl(composite);
+
+        PlatformUI
+                .getWorkbench()
+                .getHelpSystem()
+                .setHelp(composite,
+                        IHelpContextIds.NEW_JVM_CONNECTION_WIZARD_PAGE);
     }
 
     /**

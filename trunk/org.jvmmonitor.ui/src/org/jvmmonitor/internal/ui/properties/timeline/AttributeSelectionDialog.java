@@ -32,6 +32,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jvmmonitor.core.IActiveJvm;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 
 /**
  * The attribute selection dialog.
@@ -72,6 +73,16 @@ public class AttributeSelectionDialog extends Dialog {
         super.create();
         getShell().setText(Messages.attributeSelectionDialogTitle);
         getShell().setSize(500, 600);
+    }
+
+    /*
+     * @see Window#configureShell(Shell)
+     */
+    @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(newShell, IHelpContextIds.ATTRIBUTE_SELECTION_DIALOG);
     }
 
     /*

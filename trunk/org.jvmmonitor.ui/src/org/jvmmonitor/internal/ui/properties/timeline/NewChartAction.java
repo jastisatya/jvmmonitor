@@ -16,10 +16,12 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.JvmCoreException;
 import org.jvmmonitor.core.mbean.IMonitoredMXBeanGroup;
 import org.jvmmonitor.core.mbean.IMonitoredMXBeanGroup.AxisUnit;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
 import org.jvmmonitor.ui.Activator;
 import org.jvmmonitor.ui.ISharedImages;
@@ -123,6 +125,16 @@ public class NewChartAction extends Action {
         public void create() {
             super.create();
             getShell().setText(Messages.newChartDialogTitle);
+        }
+
+        /*
+         * @see Window#configureShell(Shell)
+         */
+        @Override
+        protected void configureShell(Shell newShell) {
+            super.configureShell(newShell);
+            PlatformUI.getWorkbench().getHelpSystem()
+                    .setHelp(newShell, IHelpContextIds.NEW_CHART_DIALOG);
         }
     }
 }

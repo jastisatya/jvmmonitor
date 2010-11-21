@@ -40,6 +40,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.ui.PlatformUI;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.actions.CopyAction;
 import org.jvmmonitor.internal.ui.properties.PropertiesColumn;
 import org.jvmmonitor.ui.Activator;
@@ -117,6 +119,16 @@ class NotificationDetailsDialog extends Dialog {
         getShell().setSize(Math.max(DIALOG_WIDTH, getShell().getSize().x),
                 DIALOG_HEIGHT);
         getShell().setText(Messages.notificationDetailsLabel);
+    }
+
+    /*
+     * @see Window#configureShell(Shell)
+     */
+    @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(newShell, IHelpContextIds.NOTIFICATION_DETAILS_DIALOG);
     }
 
     /*

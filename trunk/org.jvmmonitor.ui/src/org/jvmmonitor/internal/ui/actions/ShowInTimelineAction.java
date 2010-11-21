@@ -20,10 +20,12 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.JvmCoreException;
 import org.jvmmonitor.core.mbean.IMonitoredMXBeanGroup;
 import org.jvmmonitor.core.mbean.IMonitoredMXBeanGroup.AxisUnit;
+import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
 import org.jvmmonitor.internal.ui.properties.timeline.ConfigureChartDialog;
 import org.jvmmonitor.internal.ui.properties.timeline.MBeanAttribute;
@@ -102,7 +104,7 @@ abstract public class ShowInTimelineAction extends Action implements
         ShowInTimelineDialog dialog = new ShowInTimelineDialog(Display
                 .getDefault().getActiveShell(), selections.get(0)
                 .getAttributeName(), jvm);
-    
+
         if (dialog.open() == Window.OK) {
             performShowInTimeline(dialog.getChartTitle(), dialog.getAxisUnit(),
                     dialog.getAttributes());
@@ -190,6 +192,16 @@ abstract public class ShowInTimelineAction extends Action implements
         public void create() {
             super.create();
             getShell().setText(Messages.showInTimelineDialogTitle);
+        }
+
+        /*
+         * @see Window#configureShell(Shell)
+         */
+        @Override
+        protected void configureShell(Shell newShell) {
+            super.configureShell(newShell);
+            PlatformUI.getWorkbench().getHelpSystem()
+                    .setHelp(newShell, IHelpContextIds.SHOW_IN_TIMELINE_DIALOG);
         }
     }
 }
