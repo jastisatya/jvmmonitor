@@ -381,7 +381,7 @@ public class TimelineChart extends Chart implements IPropertyChangeListener {
             } else if (control instanceof PlotArea) {
                 position = event.x;
             } else {
-                throw new IllegalStateException("unknown object");
+                throw new IllegalStateException("unknown object");//$NON-NLS-1$
             }
 
             switch (event.type) {

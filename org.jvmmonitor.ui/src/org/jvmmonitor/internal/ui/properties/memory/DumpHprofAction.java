@@ -225,7 +225,7 @@ public class DumpHprofAction extends Action {
     private class FileNameInputDialog extends InputDialog {
 
         /** The dialog settings key for transfer. */
-        private static final String TRANSFER_KEY = "transfer";
+        private static final String TRANSFER_KEY = "transfer"; //$NON-NLS-1$
 
         /** <tt>true</tt> to transfer hprof file to local host. */
         boolean isFileTransfered;

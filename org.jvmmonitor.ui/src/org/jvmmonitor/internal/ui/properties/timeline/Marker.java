@@ -33,7 +33,7 @@ public class Marker {
     private static final int OFFSET = 25;
 
     /** The key for hover to show time. */
-    private static final String TIME_KEY = "time";
+    private static final String TIME_KEY = "time"; //$NON-NLS-1$
 
     /** The chart. */
     private TimelineChart chart;

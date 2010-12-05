@@ -159,6 +159,9 @@ public final class Messages extends NLS {
     /** */
     public static String refreshChartJobLabel;
 
+    /** */
+    public static String reconstructChartJobLabel;
+
     // error log messages
 
     /** */

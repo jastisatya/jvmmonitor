@@ -38,11 +38,12 @@ public class LoadChartSetAction extends AbstractChartSetAction {
 
     /** The non heap memory pool MBeans. */
     private static final String[] NON_HEAP_MEMORYPOOL_MXBEANS = {
-            "name=Code Cache", "name=Perm Gen" }; //$NON-NLS-1$ //$NON-NLS-2$
+            "name=Code Cache", "name=Perm Gen", "name=PS Perm Gen" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
     /** The heap memory pool MBeans. */
     private static final String[] HEAP_MEMORYPOOL_MXBEANS = {
-            "name=Eden Space", "name=Survivor Space", "name=Tenured Gen" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            "name=Eden Space", "name=Survivor Space", "name=Tenured Gen", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            "name=PS Eden Space", "name=PS Survivor Space", "name=PS Old Gen" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
     /**
      * The constructor.

@@ -82,9 +82,6 @@ public class TimelineSection extends AbstractJvmPropertySection {
     /** The section container. */
     private Composite sectionContainer;
 
-    /** The state indicating if the default chart set have to be loaded. */
-    private boolean forceLoadDefaultChartSet;
-
     /**
      * The constructor.
      */
@@ -97,7 +94,6 @@ public class TimelineSection extends AbstractJvmPropertySection {
         garbageCollectorAction = new GarbageCollectorAction(this);
         saveChartSetAsAction = new SaveChartSetAsAction(this);
         separator = new Separator();
-        forceLoadDefaultChartSet = true;
     }
 
     /*
@@ -115,7 +111,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
         mBeanServerChangeListener = new IMBeanServerChangeListener() {
             @Override
             public void serverChanged(MBeanServerEvent event) {
-                new RefreshJob("Reconstruct charts", getId()) {
+                new RefreshJob(Messages.reconstructChartJobLabel, getId()) {
                     @Override
                     protected void refreshModel(IProgressMonitor monitor) {
                         // do nothing
@@ -300,31 +296,14 @@ public class TimelineSection extends AbstractJvmPropertySection {
     /**
      * Reconstructs charts.
      * <p>
-     * The chart configuration should remain even when restarting JVM as long as
-     * the properties view where chart has been configured is reused, and as
-     * long as JVM doesn't yet have its own configuration.
+     * When JVM gets connected (e.g. opening Properties view or on already
+     * opened Properties view), the default chart set will be loaded and
+     * applied.
      * <p>
-     * [case 1] JVM gets connected opening Properties view
-     * <p>
-     * The default monitored attributes will be restored, and then chart
-     * configuration will be adapted to the monitored attributes.
-     * <p>
-     * [case 2] JVM gets connected on already opened Properties view
-     * <p>
-     * Existing chart configuration will be inherited.
-     * <p>
-     * [case 3] Properties view gets opened with already connected JVM
-     * <p>
-     * The chart configuration will be adapted to the monitored attributes.
-     * <p>
-     * [case 4] another JVM gets selected
-     * <p>
-     * The chart configuration will be adapted to the monitored attributes.
-     * <p>
-     * [case 5] monitored attributes gets changed (e.g. when running
-     * <tt>RestoreDefaultsAction</tt>)
-     * <p>
-     * The chart configuration will be adapted to the monitored attributes.
+     * When target JVM is already connected (e.g. opening new Properties view,
+     * another JVM gets selected, or monitored attributes gets changed), chart
+     * configuration will be adapted to the monitored attributes stored in the
+     * target JVM.
      * 
      * @param activeJvm
      *            The JVM
@@ -336,18 +315,12 @@ public class TimelineSection extends AbstractJvmPropertySection {
             return;
         }
 
-        IMBeanServer mBeanServer = activeJvm.getMBeanServer();
         if (connected) {
-            if (forceLoadDefaultChartSet) {
-                try {
-                    loadChartSetAction.loadDefaultChartSet();
-                } catch (JvmCoreException e) {
-                    Activator.log(
-                            Messages.configureMonitoredAttributesFailedMsg, e);
-                }
-                forceLoadDefaultChartSet = false;
-            } else {
-                inheritChartConfiguration(mBeanServer);
+            try {
+                loadChartSetAction.loadDefaultChartSet();
+            } catch (JvmCoreException e) {
+                Activator
+                        .log(Messages.configureMonitoredAttributesFailedMsg, e);
             }
         }
 
@@ -369,30 +342,6 @@ public class TimelineSection extends AbstractJvmPropertySection {
         sectionContainer.layout();
         sectionContainer.setVisible(true);
         refresh();
-    }
-
-    /**
-     * Inherits the existing chart configuration.
-     * 
-     * @param mBeanServer
-     *            The MBean server
-     */
-    private void inheritChartConfiguration(IMBeanServer mBeanServer) {
-        for (TimelineChart chart : charts) {
-            IMonitoredMXBeanGroup oldGroup = chart.getAttributeGroup();
-            IMonitoredMXBeanGroup newGroup = mBeanServer
-                    .addMonitoredAttributeGroup(chart.getSection().getText(),
-                            oldGroup.getAxisUnit());
-            for (IMonitoredMXBeanAttribute attribute : oldGroup.getAttributes()) {
-                try {
-                    newGroup.addAttribute(attribute.getObjectName()
-                            .getCanonicalName(), attribute.getAttributeName(),
-                            attribute.getRGB());
-                } catch (JvmCoreException e) {
-                    Activator.log(Messages.getMBeanAttributeFailedMsg, e);
-                }
-            }
-        }
     }
 
     /**
