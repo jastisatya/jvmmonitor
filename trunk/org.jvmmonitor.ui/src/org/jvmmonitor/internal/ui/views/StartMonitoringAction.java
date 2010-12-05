@@ -104,7 +104,7 @@ public class StartMonitoringAction extends Action implements
                         }
                     });
 
-                    if (!jvm.isConnected()) {
+                    if (!jvm.isConnected() && isEnabled()) {
                         try {
                             int period = Activator.getDefault()
                                     .getPreferenceStore()

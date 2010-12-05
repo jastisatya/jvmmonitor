@@ -86,7 +86,7 @@ import org.jvmmonitor.internal.core.cpu.ThreadNode;
 public class MBeanServer implements IMBeanServer {
 
     /** The data transfer MXBean name. */
-    private final static String DATA_TRANSFER_MXBEAN_NAME = "org.jvmmonitor:type=Data Transfer";
+    private final static String DATA_TRANSFER_MXBEAN_NAME = "org.jvmmonitor:type=Data Transfer"; //$NON-NLS-1$
 
     /** The MBean server connection. */
     private MBeanServerConnection connection;
@@ -717,7 +717,7 @@ public class MBeanServer implements IMBeanServer {
                     .log(IStatus.ERROR,
                             NLS.bind(Messages.getAttributeFailedMsg,
                                     "InputArguments"), e); //$NON-NLS-1$
-            return "";
+            return ""; //$NON-NLS-1$
         }
 
         StringBuffer buffer = new StringBuffer();
@@ -1181,11 +1181,11 @@ public class MBeanServer implements IMBeanServer {
         buffer.append("\"?>\n"); //$NON-NLS-1$
 
         if (type == SnapshotType.Heap) {
-            buffer.append("<heap-profile date=\"");
+            buffer.append("<heap-profile date=\""); //$NON-NLS-1$
         } else if (type == SnapshotType.Thread) {
-            buffer.append("<thread-profile date=\"");
+            buffer.append("<thread-profile date=\""); //$NON-NLS-1$
         }
-        buffer.append(date).append(' ') //$NON-NLS-1$
+        buffer.append(date).append(' ')
                 .append(time).append("\" "); //$NON-NLS-1$
         buffer.append("runtime=\"").append(jvm.getPid()).append("@") //$NON-NLS-1$ //$NON-NLS-2$
                 .append(jvm.getHost().getName()).append("\" "); //$NON-NLS-1$

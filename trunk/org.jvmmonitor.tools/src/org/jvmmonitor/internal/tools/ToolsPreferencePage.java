@@ -44,7 +44,7 @@ public class ToolsPreferencePage extends PreferencePage implements
 
     /** The help context id for this page. */
     private static final String JAVA_MONITOR_TOOLS_PREFERENCE_PAGE = Activator.PLUGIN_ID
-            + '.' + "java_monitor_tools_preference_page_context";
+            + '.' + "java_monitor_tools_preference_page_context"; //$NON-NLS-1$
 
     /** The minimum value of update period. */
     private static final int MIN_UPDATE_PERIOD = 100;
