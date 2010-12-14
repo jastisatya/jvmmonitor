@@ -201,6 +201,7 @@ abstract public class AbstractJvmPropertySection extends
         // note that setInput() is invoked only when section is activated
         if (!isSectionActivated) {
             jvm = (IActiveJvm) e.jvm;
+            return;
         }
 
         if (e.state == State.JvmDisconnected) {
