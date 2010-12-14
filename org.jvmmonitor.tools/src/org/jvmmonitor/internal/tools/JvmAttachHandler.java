@@ -163,12 +163,14 @@ public class JvmAttachHandler implements IJvmAttachHandler,
 
         String mainClass = null;
         String localConnectorAddress = null;
+        String stateMessage = null;
         if (monitoredVm != null) {
             mainClass = getMainClass(monitoredVm, pid);
             try {
                 localConnectorAddress = getLocalConnectorAddress(monitoredVm,
                         pid);
             } catch (JvmCoreException e) {
+                stateMessage = e.getMessage();
                 String message = NLS.bind(
                         Messages.getLocalConnectorAddressFailedMsg, pid);
                 Activator.log(IStatus.WARNING, message, e);
@@ -176,7 +178,8 @@ public class JvmAttachHandler implements IJvmAttachHandler,
         }
 
         try {
-            localhost.addLocalActiveJvm(pid, mainClass, localConnectorAddress);
+            localhost.addLocalActiveJvm(pid, mainClass, localConnectorAddress,
+                    stateMessage);
         } catch (JvmCoreException e) {
             String message = NLS.bind(Messages.connectTargetJvmFailedMsg, pid);
             Activator.log(IStatus.WARNING, message, e);

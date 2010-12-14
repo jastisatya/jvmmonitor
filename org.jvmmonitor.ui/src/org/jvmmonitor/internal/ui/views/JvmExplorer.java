@@ -9,22 +9,13 @@ package org.jvmmonitor.internal.ui.views;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.tabbed.ITabbedPropertySheetPageContributor;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
-import org.jvmmonitor.core.IActiveJvm;
-import org.jvmmonitor.core.mbean.IMBeanServer;
-import org.jvmmonitor.core.mbean.IMBeanServerChangeListener;
-import org.jvmmonitor.core.mbean.IMonitoredMXBeanAttribute;
-import org.jvmmonitor.core.mbean.MBeanServerEvent;
-import org.jvmmonitor.core.mbean.MBeanServerEvent.MBeanServerState;
 import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.actions.PreferencesAction;
 
@@ -81,7 +72,7 @@ public class JvmExplorer extends ViewPart implements
     @Override
     public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         if (adapter == IPropertySheetPage.class) {
-            return new MyTabbedPropertySheetPage(this);
+            return new TabbedPropertySheetPage(this);
         }
         return super.getAdapter(adapter);
     }
@@ -120,118 +111,5 @@ public class JvmExplorer extends ViewPart implements
         IMenuManager manager = getViewSite().getActionBars().getMenuManager();
         manager.add(new PreferencesAction());
         manager.update(false);
-    }
-
-    /**
-     * Tabbed property sheet page.
-     */
-    private static class MyTabbedPropertySheetPage extends
-            TabbedPropertySheetPage {
-
-        /**
-         * The constructor.
-         * 
-         * @param contributor
-         *            The tabbed property sheet page contributor
-         */
-        public MyTabbedPropertySheetPage(
-                ITabbedPropertySheetPageContributor contributor) {
-            super(contributor);
-        }
-
-        /** The MBean server. */
-        private IMBeanServer server;
-
-        /** The MBean server change listener. */
-        private MBeanServerChangeListener listener;
-
-        /*
-         * @see TabbedPropertySheetPage#selectionChanged(IWorkbenchPart,
-         * ISelection)
-         */
-        @Override
-        public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-            super.selectionChanged(part, selection);
-            if (!(selection instanceof IStructuredSelection)) {
-                return;
-            }
-            Object element = ((IStructuredSelection) selection)
-                    .getFirstElement();
-            if (!(element instanceof IActiveJvm)) {
-                return;
-            }
-
-            server = ((IActiveJvm) element).getMBeanServer();
-            if (server == null) {
-                return;
-            }
-
-            if (listener != null) {
-                server.removeServerChangeListener(listener);
-            }
-            listener = new MBeanServerChangeListener(this);
-            server.addServerChangeListener(listener);
-        }
-
-        /*
-         * @see TabbedPropertySheetPage#resizeScrolledComposite()
-         */
-        @Override
-        public void resizeScrolledComposite() {
-            // no scroll bar except for section itself
-        }
-
-        /*
-         * @see TabbedPropertySheetPage#dispose()
-         */
-        @Override
-        public void dispose() {
-            super.dispose();
-            if (server != null) {
-                server.removeServerChangeListener(listener);
-            }
-        }
-    }
-
-    /**
-     * The MBean server change listener.
-     */
-    private static class MBeanServerChangeListener implements
-            IMBeanServerChangeListener {
-
-        /** The timeline tab ID. */
-        private static final String TIMELINE_TAB_ID = "org.jvmmonitor.ui.timelineTab"; //$NON-NLS-1$
-
-        /** The tabbed property sheet page. */
-        TabbedPropertySheetPage page;
-
-        /**
-         * The constructor.
-         * 
-         * @param page
-         *            The tabbed property sheet page
-         */
-        public MBeanServerChangeListener(TabbedPropertySheetPage page) {
-            this.page = page;
-        }
-
-        /*
-         * @see IMBeanServerChangeListener#serverChanged(MBeanServerEvent)
-         */
-        @Override
-        public void serverChanged(MBeanServerEvent event) {
-            Object source = event.source;
-            if (!(source instanceof IMonitoredMXBeanAttribute)
-                    || event.state != MBeanServerState.MonitoredAttributeAdded) {
-                return;
-            }
-
-            Display.getDefault().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    page.setSelectedTab(TIMELINE_TAB_ID);
-                }
-            });
-        }
     }
 }

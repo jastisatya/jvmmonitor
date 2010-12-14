@@ -72,11 +72,13 @@ public interface IHost {
      * @param url
      *            The JMX URL, or <tt>null</tt> if target JVM doesn't support
      *            attach
+     * @param errorStateMessage
+     *            The error state message
      * @return The active JVM
      * @throws JvmCoreException
      */
-    IActiveJvm addLocalActiveJvm(int pid, String mainClass, String url)
-            throws JvmCoreException;
+    IActiveJvm addLocalActiveJvm(int pid, String mainClass, String url,
+            String errorStateMessage) throws JvmCoreException;
 
     /**
      * Removes the JVM.

@@ -48,6 +48,13 @@ public interface IActiveJvm extends IJvm {
     boolean isConnectionSupported();
 
     /**
+     * Gets the error state message.
+     * 
+     * @return The error state message
+     */
+    String getErrorStateMessage();
+
+    /**
      * Gets the state indicating if the target JVM is running on remote host.
      * 
      * @return true if the target JVM is running on remote host

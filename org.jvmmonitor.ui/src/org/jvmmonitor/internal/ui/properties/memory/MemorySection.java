@@ -35,9 +35,6 @@ public class MemorySection extends AbstractJvmPropertySection {
     /** The 64 bit OS architecture. */
     private static final String ARCH_64BIT = "64"; //$NON-NLS-1$
 
-    /** The Linux OS name. */
-    private static final String LINUX = "Linux"; //$NON-NLS-1$
-
     /** The action to refresh section. */
     RefreshAction refreshAction;
 
@@ -197,7 +194,7 @@ public class MemorySection extends AbstractJvmPropertySection {
             if (jvm.isRemote()) {
                 setErrorMessageLabel(Messages.notSupportedOnRemoteHostMsg);
             } else if (!isSupported()) {
-                setErrorMessageLabel(Messages.notSupportedForEclipseItselfOn64bitLinux);
+                setErrorMessageLabel(Messages.notSupportedForEclipseItselfOn64bitOS);
             }
         }
     }
@@ -217,7 +214,7 @@ public class MemorySection extends AbstractJvmPropertySection {
     /**
      * Gets the state indicating if heap histogram is supported.
      * <p>
-     * WORKAROUND: Heap histogram is disabled on 64bit Linux when monitoring
+     * WORKAROUND: Heap histogram is disabled on 64bit OS when monitoring
      * eclipse itself, due to the issue that the method heapHisto() of the class
      * HotSpotVirtualMachine causes continuously increasing the committed heap
      * memory.
@@ -233,8 +230,7 @@ public class MemorySection extends AbstractJvmPropertySection {
         OperatingSystemMXBean osMBean = ManagementFactory
                 .getOperatingSystemMXBean();
         RuntimeMXBean runtimeMBean = ManagementFactory.getRuntimeMXBean();
-        if (osMBean.getName().contains(LINUX)
-                && osMBean.getArch().contains(ARCH_64BIT)
+        if (osMBean.getArch().contains(ARCH_64BIT)
                 && runtimeMBean.getName()
                         .contains(String.valueOf(jvm.getPid()))) {
             return false;
