@@ -291,6 +291,11 @@ public class JvmTreeViewer extends TreeViewer implements
                             text.append(" ").append( //$NON-NLS-1$
                                     Messages.cpuProfilerRunningMsg);
                         }
+                    } else if (!activeJvm.isConnectionSupported()) {
+                        String errorMessage = activeJvm.getErrorStateMessage();
+                        if (errorMessage != null) {
+                            errorText.append(errorMessage);
+                        }
                     } else {
                         text.append(Messages.disconnectedMsg);
                     }

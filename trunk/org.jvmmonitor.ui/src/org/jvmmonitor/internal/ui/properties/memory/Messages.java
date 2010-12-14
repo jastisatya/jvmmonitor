@@ -73,7 +73,7 @@ public final class Messages extends NLS {
     public static String notSupportedOnRemoteHostMsg;
 
     /** */
-    public static String notSupportedForEclipseItselfOn64bitLinux;
+    public static String notSupportedForEclipseItselfOn64bitOS;
 
     // actions
 

@@ -193,9 +193,14 @@ abstract public class AbstractJvmPropertySection extends
      */
     @Override
     public void jvmModelChanged(final JvmModelEvent e) {
-        if ((e.state != State.JvmModified && e.state != State.JvmConnected && e.state != State.JvmDisconnected)
-                || !isSectionActivated) {
+        if (e.state != State.JvmModified && e.state != State.JvmConnected
+                && e.state != State.JvmDisconnected) {
             return;
+        }
+
+        // note that setInput() is invoked only when section is activated
+        if (!isSectionActivated) {
+            jvm = (IActiveJvm) e.jvm;
         }
 
         if (e.state == State.JvmDisconnected) {
@@ -490,7 +495,14 @@ abstract public class AbstractJvmPropertySection extends
             if (jvm.isConnectionSupported()) {
                 errorMessageLabel.setText(Messages.monitoringNotStartedMsg);
             } else {
-                errorMessageLabel.setText(Messages.monitoringNotSupportedMsg);
+                StringBuffer buffer = new StringBuffer(
+                        Messages.monitoringNotSupportedMsg);
+                String errorMessage = jvm.getErrorStateMessage();
+                if (errorMessage != null) {
+                    buffer.append('\n').append('(').append(errorMessage)
+                            .append(')');
+                }
+                errorMessageLabel.setText(buffer.toString());
             }
         }
 

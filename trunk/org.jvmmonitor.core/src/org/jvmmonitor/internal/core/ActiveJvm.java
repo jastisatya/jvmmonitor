@@ -47,6 +47,9 @@ public class ActiveJvm extends AbstractJvm implements IActiveJvm {
     /** The state indicating if attach mechanism is supported. */
     private boolean isAttachSupported;
 
+    /** The error state message. */
+    private String errorStateMessage;
+
     /** The state indicating if JVM is running on remote host. */
     private boolean isRemote;
 
@@ -225,6 +228,14 @@ public class ActiveJvm extends AbstractJvm implements IActiveJvm {
     }
 
     /*
+     * @see IActiveJvm#getErrorStateMessage()
+     */
+    @Override
+    public String getErrorStateMessage() {
+        return errorStateMessage;
+    }
+
+    /*
      * @see IActiveJvm#isRemote()
      */
     @Override
@@ -254,6 +265,71 @@ public class ActiveJvm extends AbstractJvm implements IActiveJvm {
     @Override
     public String toString() {
         return getMainClass();
+    }
+
+    /**
+     * Saves the JVM properties.
+     */
+    public void saveJvmProperties() {
+        IFileStore fileStore;
+        try {
+            fileStore = Util.getFileStore(IJvm.PROPERTIES_FILE,
+                    getBaseDirectory());
+            if (fileStore.fetchInfo().exists()) {
+                return;
+            }
+        } catch (JvmCoreException e) {
+            Activator.log(IStatus.ERROR, Messages.savePropertiesFileFailedMsg,
+                    e);
+            return;
+        }
+
+        Properties props = new Properties();
+        OutputStream os = null;
+        try {
+            os = fileStore.openOutputStream(EFS.NONE, null);
+
+            int pid = getPid();
+            int port = getPort();
+            String mainClass = getMainClass();
+
+            props.setProperty(IJvm.PID_PROP_KEY, String.valueOf(pid));
+            props.setProperty(IJvm.PORT_PROP_KEY, String.valueOf(port));
+            if (mainClass != null) {
+                props.setProperty(IJvm.MAIN_CLASS_PROP_KEY, mainClass);
+            }
+            props.setProperty(IJvm.HOST_PROP_KEY, getHost().getName());
+
+            props.storeToXML(os, "JVM Properties"); //$NON-NLS-1$
+        } catch (CoreException e) {
+            Activator.log(IStatus.ERROR, NLS.bind(
+                    Messages.openOutputStreamFailedMsg, fileStore.toURI()
+                            .getPath()), e);
+        } catch (IOException e) {
+            try {
+                fileStore.delete(EFS.NONE, null);
+            } catch (CoreException e1) {
+                // do nothing
+            }
+            Activator.log(IStatus.ERROR, NLS.bind(
+                    Messages.writePropertiesFileFailedMsg, fileStore.toURI()
+                            .getPath()), e);
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                    // do nothing
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets the error state message.
+     */
+    protected void setErrorStateMessage(String errorStateMessage) {
+        this.errorStateMessage = errorStateMessage;
     }
 
     /**
@@ -330,64 +406,6 @@ public class ActiveJvm extends AbstractJvm implements IActiveJvm {
                 StackTraceElement lastElement = elements[elements.length - 1];
                 setMainClass(lastElement.getClassName());
                 break;
-            }
-        }
-    }
-
-    /**
-     * Saves the JVM properties.
-     */
-    public void saveJvmProperties() {
-        IFileStore fileStore;
-        try {
-            fileStore = Util.getFileStore(IJvm.PROPERTIES_FILE,
-                    getBaseDirectory());
-            if (fileStore.fetchInfo().exists()) {
-                return;
-            }
-        } catch (JvmCoreException e) {
-            Activator.log(IStatus.ERROR, Messages.savePropertiesFileFailedMsg,
-                    e);
-            return;
-        }
-
-        Properties props = new Properties();
-        OutputStream os = null;
-        try {
-            os = fileStore.openOutputStream(EFS.NONE, null);
-
-            int pid = getPid();
-            int port = getPort();
-            String mainClass = getMainClass();
-
-            props.setProperty(IJvm.PID_PROP_KEY, String.valueOf(pid));
-            props.setProperty(IJvm.PORT_PROP_KEY, String.valueOf(port));
-            if (mainClass != null) {
-                props.setProperty(IJvm.MAIN_CLASS_PROP_KEY, mainClass);
-            }
-            props.setProperty(IJvm.HOST_PROP_KEY, getHost().getName());
-
-            props.storeToXML(os, "JVM Properties"); //$NON-NLS-1$
-        } catch (CoreException e) {
-            Activator.log(IStatus.ERROR, NLS.bind(
-                    Messages.openOutputStreamFailedMsg, fileStore.toURI()
-                            .getPath()), e);
-        } catch (IOException e) {
-            try {
-                fileStore.delete(EFS.NONE, null);
-            } catch (CoreException e1) {
-                // do nothing
-            }
-            Activator.log(IStatus.ERROR, NLS.bind(
-                    Messages.writePropertiesFileFailedMsg, fileStore.toURI()
-                            .getPath()), e);
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {
-                    // do nothing
-                }
             }
         }
     }
