@@ -161,10 +161,10 @@ public class AttributesTab extends Composite {
         layout.marginHeight = 0;
         composite.setLayout(layout);
 
-        PropertySheet view = (PropertySheet) PlatformUI.getWorkbench()
+        PropertySheet propertySheet = (PropertySheet) PlatformUI.getWorkbench()
                 .getActiveWorkbenchWindow().getActivePage().getActivePart();
         PropertiesFilteredTree filteredTree = new PropertiesFilteredTree(
-                composite, view.getViewSite().getActionBars()) {
+                composite, propertySheet.getViewSite().getActionBars()) {
 
             private ShowInTimelineAction showInTimelineAction;
 

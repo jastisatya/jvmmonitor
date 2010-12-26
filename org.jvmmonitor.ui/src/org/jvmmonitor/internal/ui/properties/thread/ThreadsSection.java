@@ -31,6 +31,9 @@ import org.jvmmonitor.ui.Activator;
  */
 public class ThreadsSection extends AbstractJvmPropertySection {
 
+    /** The layout menu id. */
+    private static final String LAYOUT_MENU_ID = "layout"; //$NON-NLS-1$
+
     /** The sash form. */
     ThreadSashForm sashForm;
 
@@ -150,10 +153,12 @@ public class ThreadsSection extends AbstractJvmPropertySection {
      */
     @Override
     protected void addLocalMenus(IMenuManager manager) {
-        layoutMenu = new MenuManager(Messages.layoutLabel);
-        manager.add(layoutMenu);
-        for (ToggleOrientationAction action : sashForm.getOrientationActions()) {
-            layoutMenu.add(action);
+        if (manager.find(layoutMenu.getId()) == null) {
+            manager.add(layoutMenu);
+            for (ToggleOrientationAction action : sashForm
+                    .getOrientationActions()) {
+                layoutMenu.add(action);
+            }
         }
     }
 
@@ -172,5 +177,6 @@ public class ThreadsSection extends AbstractJvmPropertySection {
         dumpThreadsAction = new DumpThreadsAction(this);
         refreshAction = new RefreshAction(this);
         separator = new Separator();
+        layoutMenu = new MenuManager(Messages.layoutLabel, LAYOUT_MENU_ID);
     }
 }

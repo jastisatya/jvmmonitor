@@ -42,11 +42,19 @@ public class Tools implements IPropertyChangeListener, IConstants {
      * The constructor.
      */
     private Tools() {
-        isReady = false;
+        /*
+         * In case of Mac, the required APIs are provided by classes.jar instead
+         * of tools.jar, and the additional class path and library path don't
+         * have to be set.
+         */
+        isReady = validateClassPathAndLibraryPath();
 
-        Activator.getDefault().getPreferenceStore()
-                .addPropertyChangeListener(this);
-        configureClassPathAndLibraryPath();
+        if (!isReady) {
+            Activator.getDefault().getPreferenceStore()
+                    .addPropertyChangeListener(this);
+            configureClassPathAndLibraryPath();
+            isReady = validateClassPathAndLibraryPath();
+        }
     }
 
     /**
@@ -400,6 +408,21 @@ public class Tools implements IPropertyChangeListener, IConstants {
     }
 
     /**
+     * Validates the class path and library path.
+     * 
+     * @return <tt>true</tt> if tools.jar (or classses.jar in Mac) can be found
+     *         in class path, and the required shared library can be also found.
+     */
+    private boolean validateClassPathAndLibraryPath() {
+        try {
+            invokeGetMonitoredHost(IHost.LOCALHOST);
+        } catch (JvmCoreException e) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Configures the class path and library path.
      */
     private void configureClassPathAndLibraryPath() {
@@ -429,16 +452,6 @@ public class Tools implements IPropertyChangeListener, IConstants {
                     .log(IStatus.ERROR, Messages.addingLibraryPathFailedMsg, t);
             return;
         }
-
-        // check if it's ready to use
-        try {
-            invokeGetMonitoredHost(IHost.LOCALHOST);
-        } catch (JvmCoreException e) {
-            // do nothing
-            return;
-        }
-
-        isReady = true;
     }
 
     /**

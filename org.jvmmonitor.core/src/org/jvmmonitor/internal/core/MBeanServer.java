@@ -58,6 +58,7 @@ import org.eclipse.osgi.util.NLS;
 import org.jvmmonitor.core.Activator;
 import org.jvmmonitor.core.IHeapDumpHandler;
 import org.jvmmonitor.core.IHeapElement;
+import org.jvmmonitor.core.IHost;
 import org.jvmmonitor.core.ISnapshot.SnapshotType;
 import org.jvmmonitor.core.IThreadElement;
 import org.jvmmonitor.core.JvmCoreException;
@@ -955,8 +956,9 @@ public class MBeanServer implements IMBeanServer {
             }
             return jmxc.getMBeanServerConnection();
         } catch (IOException e) {
-            if (jvm.getHost().getActiveJvms().contains(jvm)) {
-                jvm.getHost().removeJvm(jvm.getPid());
+            IHost host = jvm.getHost();
+            if (host != null && host.getActiveJvms().contains(jvm)) {
+                host.removeJvm(jvm.getPid());
             }
             throw new JvmCoreException(IStatus.INFO,
                     Messages.connectToMBeanServerFailedMsg, e);
@@ -1185,8 +1187,7 @@ public class MBeanServer implements IMBeanServer {
         } else if (type == SnapshotType.Thread) {
             buffer.append("<thread-profile date=\""); //$NON-NLS-1$
         }
-        buffer.append(date).append(' ')
-                .append(time).append("\" "); //$NON-NLS-1$
+        buffer.append(date).append(' ').append(time).append("\" "); //$NON-NLS-1$
         buffer.append("runtime=\"").append(jvm.getPid()).append("@") //$NON-NLS-1$ //$NON-NLS-2$
                 .append(jvm.getHost().getName()).append("\" "); //$NON-NLS-1$
         buffer.append("mainClass=\"").append(jvm.getMainClass()).append("\" "); //$NON-NLS-1$ //$NON-NLS-2$

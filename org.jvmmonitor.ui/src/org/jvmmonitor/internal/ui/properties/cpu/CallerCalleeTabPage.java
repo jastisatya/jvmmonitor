@@ -177,9 +177,9 @@ public class CallerCalleeTabPage extends AbstractTabPage {
      *            The parent composite
      */
     private void createCallerViewer(Composite parent) {
-        PropertySheet view = (PropertySheet) PlatformUI.getWorkbench()
+        PropertySheet propertySheet = (PropertySheet) PlatformUI.getWorkbench()
                 .getActiveWorkbenchWindow().getActivePage().getActivePart();
-        callerFilteredTree = new HotSpotsFilteredTree(parent, view
+        callerFilteredTree = new HotSpotsFilteredTree(parent, propertySheet
                 .getViewSite().getActionBars()) {
             @Override
             protected void addMenus(IMenuManager manager) {
@@ -233,9 +233,9 @@ public class CallerCalleeTabPage extends AbstractTabPage {
      *            The parent composite
      */
     private void createCalleeViewer(Composite parent) {
-        PropertySheet view = (PropertySheet) PlatformUI.getWorkbench()
+        PropertySheet propertySheet = (PropertySheet) PlatformUI.getWorkbench()
                 .getActiveWorkbenchWindow().getActivePage().getActivePart();
-        calleeFilteredTree = new HotSpotsFilteredTree(parent, view
+        calleeFilteredTree = new HotSpotsFilteredTree(parent, propertySheet
                 .getViewSite().getActionBars()) {
             @Override
             protected void addMenus(IMenuManager manager) {

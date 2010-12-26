@@ -12,6 +12,7 @@ import java.lang.management.ManagementFactory;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -38,12 +39,12 @@ public class LoadChartSetAction extends AbstractChartSetAction {
 
     /** The non heap memory pool MBeans. */
     private static final String[] NON_HEAP_MEMORYPOOL_MXBEANS = {
-            "name=Code Cache", "name=Perm Gen", "name=PS Perm Gen" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            "name=.*Code Cache", "name=.*Perm Gen" }; //$NON-NLS-1$ //$NON-NLS-2$
 
     /** The heap memory pool MBeans. */
     private static final String[] HEAP_MEMORYPOOL_MXBEANS = {
-            "name=Eden Space", "name=Survivor Space", "name=Tenured Gen", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            "name=PS Eden Space", "name=PS Survivor Space", "name=PS Old Gen" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            "name=.*Eden Space", "name=.*Survivor Space", "name=.*Tenured Gen", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            "name=.*Old Gen" }; //$NON-NLS-1$
 
     /**
      * The constructor.
@@ -354,7 +355,7 @@ public class LoadChartSetAction extends AbstractChartSetAction {
                                     .getInstance("java.lang:type=MemoryPool,name=*"))) { //$NON-NLS-1$
                 String canonicalName = objectName.getCanonicalName();
                 for (String filter : filters) {
-                    if (canonicalName.contains(filter)) {
+                    if (Pattern.compile(filter).matcher(canonicalName).find()) {
                         objectNames.add(canonicalName);
                     }
                 }
