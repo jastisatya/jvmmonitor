@@ -254,7 +254,7 @@ public class LoadChartSetDialog extends Dialog {
      * @return The chart set viewer
      */
     private TableViewer createChartSetViewer(Composite parent) {
-        TableViewer viewer = new TableViewer(parent, SWT.BORDER
+        final TableViewer viewer = new TableViewer(parent, SWT.BORDER
                 | SWT.FULL_SELECTION);
         GridData gridData = new GridData(GridData.FILL_BOTH);
         gridData.heightHint = 300;
@@ -282,7 +282,11 @@ public class LoadChartSetDialog extends Dialog {
                     deleteButton.setEnabled(!selection.isEmpty()
                             && !predefinedChartSets.contains(element));
                 }
-                chartSet = element.toString();
+                if (element != null) {
+                    chartSet = element.toString();
+                } else {
+                    viewer.setSelection(new StructuredSelection(chartSet));
+                }
             }
         });
 

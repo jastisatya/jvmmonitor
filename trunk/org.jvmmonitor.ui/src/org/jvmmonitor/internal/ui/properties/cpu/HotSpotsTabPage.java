@@ -136,10 +136,10 @@ public class HotSpotsTabPage extends AbstractTabPage {
      *            The parent composite
      */
     private void createHotSpotsViewer(Composite composite) {
-        PropertySheet view = (PropertySheet) PlatformUI.getWorkbench()
+        PropertySheet propertySheet = (PropertySheet) PlatformUI.getWorkbench()
                 .getActiveWorkbenchWindow().getActivePage().getActivePart();
-        filteredTree = new HotSpotsFilteredTree(composite, view.getViewSite()
-                .getActionBars()) {
+        filteredTree = new HotSpotsFilteredTree(composite, propertySheet
+                .getViewSite().getActionBars()) {
             @Override
             protected void addMenus(IMenuManager manager) {
                 manager.add(new Separator());

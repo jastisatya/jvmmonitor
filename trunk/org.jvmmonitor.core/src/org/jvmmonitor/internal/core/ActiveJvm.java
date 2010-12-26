@@ -327,6 +327,9 @@ public class ActiveJvm extends AbstractJvm implements IActiveJvm {
 
     /**
      * Sets the error state message.
+     * 
+     * @param errorStateMessage
+     *            The error state message
      */
     protected void setErrorStateMessage(String errorStateMessage) {
         this.errorStateMessage = errorStateMessage;

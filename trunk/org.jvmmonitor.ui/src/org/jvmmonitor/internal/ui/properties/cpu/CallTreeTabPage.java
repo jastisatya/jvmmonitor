@@ -135,10 +135,10 @@ public class CallTreeTabPage extends AbstractTabPage {
      *            The parent composite
      */
     private void createCallTreeViewer(Composite composite) {
-        PropertySheet view = (PropertySheet) PlatformUI.getWorkbench()
+        PropertySheet propertySheet = (PropertySheet) PlatformUI.getWorkbench()
                 .getActiveWorkbenchWindow().getActivePage().getActivePart();
-        filteredTree = new CallTreeFilteredTree(composite, view.getViewSite()
-                .getActionBars()) {
+        filteredTree = new CallTreeFilteredTree(composite, propertySheet
+                .getViewSite().getActionBars()) {
             @Override
             protected void addMenus(IMenuManager manager) {
                 super.addMenus(manager);

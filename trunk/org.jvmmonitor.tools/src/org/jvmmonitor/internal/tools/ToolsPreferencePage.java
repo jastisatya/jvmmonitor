@@ -11,6 +11,7 @@ import java.io.File;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -34,10 +35,11 @@ import org.jvmmonitor.tools.Activator;
  * The preference page at preference dialog: Java > Monitor > Tools.
  * <p>
  * On this preference page, user can configure the settings of two features: one
- * is to attach to JVM without giving port number, and the other is to detect
- * the running JVMs on local host. Those features works only with SUN JDK/JRE
- * (maybe also with Open JDK and JRockit), since it requires a vender specific
- * package <tt>tools.jar</tt>.
+ * is to detect the running JVMs on local host, and the other is to view the
+ * heap histogram. Those features work only with JVM based on SUN JDK (e.g. Sun
+ * JDK, Open JDK, Java for Mac, and maybe JRockit), since it requires a vender
+ * specific package contained in <tt>tools.jar</tt> on Windows/Linux, or
+ * <tt>classes.jar</tt> on Mac.
  */
 public class ToolsPreferencePage extends PreferencePage implements
         IWorkbenchPreferencePage, IConstants {
@@ -69,13 +71,14 @@ public class ToolsPreferencePage extends PreferencePage implements
         layout.marginWidth = 0;
         composite.setLayout(layout);
 
-        Label label = new Label(composite, SWT.WRAP);
-        label.setText(Messages.toolsPreferencePageLabel);
-        GridData layoutData = new GridData(GridData.FILL_HORIZONTAL);
-        layoutData.widthHint = 300;
-        label.setLayoutData(layoutData);
-
-        createJdkRootDirectoryGroup(composite);
+        if (!Util.isMac()) {
+            Label label = new Label(composite, SWT.WRAP);
+            label.setText(Messages.toolsPreferencePageLabel);
+            GridData layoutData = new GridData(GridData.FILL_HORIZONTAL);
+            layoutData.widthHint = 300;
+            label.setLayoutData(layoutData);
+            createJdkRootDirectoryGroup(composite);
+        }
         createUpdatePeriodTextField(composite);
         createMemoryGroup(composite);
 

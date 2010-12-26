@@ -229,8 +229,12 @@ public class TimelineSection extends AbstractJvmPropertySection {
      */
     @Override
     protected void addLocalMenus(IMenuManager manager) {
-        manager.add(saveChartSetAsAction);
-        manager.add(loadChartSetAction);
+        if (manager.find(saveChartSetAsAction.getId()) == null) {
+            manager.add(saveChartSetAsAction);
+        }
+        if (manager.find(loadChartSetAction.getId()) == null) {
+            manager.add(loadChartSetAction);
+        }
         manager.add(separator);
     }
 
