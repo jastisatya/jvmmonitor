@@ -157,7 +157,9 @@ public class ThreadsSection extends AbstractJvmPropertySection {
             manager.add(layoutMenu);
             for (ToggleOrientationAction action : sashForm
                     .getOrientationActions()) {
-                layoutMenu.add(action);
+                if (layoutMenu.find(action.getId()) == null) {
+                    layoutMenu.add(action);
+                }
             }
         }
     }

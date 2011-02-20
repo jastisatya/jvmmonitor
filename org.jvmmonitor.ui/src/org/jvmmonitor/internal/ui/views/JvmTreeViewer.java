@@ -7,6 +7,9 @@
 package org.jvmmonitor.internal.ui.views;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IStatusLineManager;
@@ -96,10 +99,28 @@ public class JvmTreeViewer extends TreeViewer implements
         setLabelProvider(new DecoratingStyledCellLabelProvider(
                 new JvmTreeLabelProvider(), PlatformUI.getWorkbench()
                         .getDecoratorManager().getLabelDecorator(), null));
-        setInput(new Object[0]);
 
         createContextMenu(actionBars);
         addListeners();
+
+        new Job(Messages.initializeJvmExplorer) {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+
+                // make sure not to instantiate JVM model in UI thread
+                JvmModel.getInstance();
+
+                Display.getDefault().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        setInput(new Object[0]);
+                        JvmModel.getInstance().addJvmModelChangeListener(
+                                JvmTreeViewer.this);
+                    }
+                });
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     /*
@@ -189,7 +210,6 @@ public class JvmTreeViewer extends TreeViewer implements
      * Adds listeners.
      */
     private void addListeners() {
-        JvmModel.getInstance().addJvmModelChangeListener(this);
         addDoubleClickListener(this);
         addSelectionChangedListener(this);
         addSelectionChangedListener(startMonitoringAction);

@@ -34,6 +34,7 @@ public class ToggleOrientationAction extends Action {
     public ToggleOrientationAction(Orientation orientation) {
         super(orientation.label, AS_RADIO_BUTTON);
         setImageDescriptor(Activator.getImageDescriptor(orientation.imagePath));
+        setId(getClass().getName() + orientation.toString());
 
         this.orientation = orientation;
     }
