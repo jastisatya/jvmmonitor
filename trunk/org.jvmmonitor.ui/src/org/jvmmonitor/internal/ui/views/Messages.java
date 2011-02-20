@@ -163,8 +163,11 @@ public final class Messages extends NLS {
     // job names
 
     /** */
+    public static String initializeJvmExplorer;
+
+    /** */
     public static String refreshStatusLineJobLabel;
-    
+
     /** */
     public static String startMonitoringJobLabel;
 

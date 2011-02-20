@@ -199,7 +199,7 @@ abstract public class AbstractJvmPropertySection extends
         }
 
         // note that setInput() is invoked only when section is activated
-        if (!isSectionActivated) {
+        if (!isSectionActivated && !propertySheet.isPinned()) {
             jvm = (IActiveJvm) e.jvm;
             return;
         }
