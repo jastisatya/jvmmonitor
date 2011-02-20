@@ -72,7 +72,12 @@ public class JvmExplorer extends ViewPart implements
     @Override
     public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         if (adapter == IPropertySheetPage.class) {
-            return new TabbedPropertySheetPage(this);
+            return new TabbedPropertySheetPage(this){
+                @Override
+                public void resizeScrolledComposite() {
+                    // no scroll bar except for section itself
+                }
+            };
         }
         return super.getAdapter(adapter);
     }

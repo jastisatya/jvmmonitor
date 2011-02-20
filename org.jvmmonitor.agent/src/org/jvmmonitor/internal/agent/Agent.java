@@ -147,6 +147,8 @@ public class Agent {
                 CpuBciProfilerMXBean.PROFILER_MXBEAN_NAME);
         ObjectName dataTransferObjectName = new ObjectName(
                 DataTransferMXBean.DATA_TRANSFER_MXBEAN_NAME);
+        ObjectName swtResourceMonitorObjectName = new ObjectName(
+                SWTResourceMonitorMXBean.SWT_RESOURCE_MONITOR_MXBEAN_NAME);
 
         if (!server.isRegistered(profilerObjectName)) {
             CpuBciProfilerMXBeanImpl profiler = new CpuBciProfilerMXBeanImpl(
@@ -158,6 +160,16 @@ public class Agent {
         if (!server.isRegistered(dataTransferObjectName)) {
             DataTransferMXBeanImpl dataTransfer = new DataTransferMXBeanImpl();
             server.registerMBean(dataTransfer, dataTransferObjectName);
+            agentLoaded = true;
+        }
+
+        if (!server.isRegistered(swtResourceMonitorObjectName)) {
+            SWTResourceMonitorMXBeanImpl swtResourceMonitor = new SWTResourceMonitorMXBeanImpl(
+                    inst);
+            if (swtResourceMonitor.isSuppoted()) {
+                server.registerMBean(swtResourceMonitor,
+                        swtResourceMonitorObjectName);
+            }
             agentLoaded = true;
         }
 

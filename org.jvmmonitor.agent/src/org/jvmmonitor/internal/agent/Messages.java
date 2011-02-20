@@ -46,6 +46,18 @@ public class Messages {
     /** The error message that reading file failed. */
     static final String CANNOT_READ_FILE = "Cannot read file: %s";
 
+    /** The error message that setting SWT resource tracking state failed. */
+    static final String CANNOT_SET_RESOURCE_TRACKING_STATE = "Cannot set SWT resource tracking state.";
+
+    /** The error message that getting SWT resource tracking state failed. */
+    static final String CANNOT_GET_RESOURCE_TRACKING_STATE = "Cannot get SWT resource tracking state.";
+
+    /** The error message that getting SWT resources failed. */
+    static final String CANNOT_GET_RESOURCES = "Cannot get SWT resources.";
+
+    /** The error message that clearing SWT resource tracking data failed. */
+    static final String CANNOT_CLEAR_RESOURCE_TRACKING_DATA = "Cannot clear SWT resource tracking data";
+
     /** The info message that agent got loaded. */
     static final String AGENT_LOADED = "Agent has been loaded.";
 
