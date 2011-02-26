@@ -190,7 +190,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
         }
 
         for (TimelineChart chart : charts) {
-            if (!chart.isDisposed()) {
+            if (!chart.isDisposed() && chart.isVisible()) {
                 chart.refresh();
             }
         }

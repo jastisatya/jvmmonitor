@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 JVM Monitor project. All rights reserved. 
+ * Copyright (c) 2010-2011 JVM Monitor project. All rights reserved. 
  * 
  * This code is distributed under the terms of the Eclipse Public License v1.0
  * which is available at http://www.eclipse.org/legal/epl-v10.html
@@ -28,7 +28,7 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.jvmmonitor.core.IHeapElement;
 import org.jvmmonitor.core.dump.HeapDumpParser;
 import org.jvmmonitor.internal.ui.IHelpContextIds;
-import org.jvmmonitor.internal.ui.properties.memory.HeapComposite;
+import org.jvmmonitor.internal.ui.properties.memory.HeapHistogramPage;
 import org.jvmmonitor.internal.ui.properties.memory.IHeapInput;
 import org.jvmmonitor.ui.Activator;
 import org.jvmmonitor.ui.ISharedImages;
@@ -39,8 +39,8 @@ import org.xml.sax.SAXException;
  */
 public class HeapDumpEditor extends AbstractDumpEditor {
 
-    /** The heap composite. */
-    HeapComposite heapComposite;
+    /** The heap histogram. */
+    HeapHistogramPage heapComposite;
 
     /** The heap list elements. */
     List<IHeapElement> heapListElements;
@@ -110,7 +110,7 @@ public class HeapDumpEditor extends AbstractDumpEditor {
      * Creates the memory page.
      */
     private void createMemoryPage() {
-        heapComposite = new HeapComposite(getContainer(), getEditorSite()
+        heapComposite = new HeapHistogramPage(getContainer(), getEditorSite()
                 .getActionBars());
         heapComposite.setInput(new IHeapInput() {
             @Override

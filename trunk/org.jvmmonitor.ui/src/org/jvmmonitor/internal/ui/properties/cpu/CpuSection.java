@@ -145,7 +145,9 @@ public class CpuSection extends AbstractJvmPropertySection {
      */
     @Override
     public void refresh() {
-        if (getJvm() == null) {
+        if (getJvm() == null
+                || (!callTree.isVisible() && !hotSpots.isVisible() && !callerCallee
+                        .isVisible())) {
             return;
         }
 

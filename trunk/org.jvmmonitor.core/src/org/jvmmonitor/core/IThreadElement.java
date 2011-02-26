@@ -14,7 +14,7 @@ import java.lang.Thread.State;
  * 
  * @see java.lang.management.ThreadInfo
  */
-public interface IThreadElement {
+public interface IThreadElement extends IStackTraceProvider {
 
     /**
      * Gets the thread name.
@@ -71,13 +71,6 @@ public interface IThreadElement {
      * @return The lock owner name
      */
     String getLockOwnerName();
-
-    /**
-     * Gets the stack trace elements.
-     * 
-     * @return The stack trace elements
-     */
-    StackTraceElement[] getStackTraceElements();
 
     /**
      * Gets the state if the thread is suspended.

@@ -1,7 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011 JVM Monitor project. All rights reserved. 
+ * 
+ * This code is distributed under the terms of the Eclipse Public License v1.0
+ * which is available at http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
 package org.jvmmonitor.internal.agent;
 
 import java.beans.ConstructorProperties;
-import java.util.Set;
+import java.util.List;
 
 /**
  * The SWT resource that is converted into <tt>CompositeData</tt>.
@@ -12,7 +18,7 @@ public class SWTResourceCompositeData {
     private String name;
 
     /** The stack traces to show how the resource was created. */
-    private Set<StackTraceElementCompositeData> stackTrace;
+    private List<StackTraceElementCompositeData> stackTrace;
 
     /**
      * The constructor.
@@ -23,7 +29,8 @@ public class SWTResourceCompositeData {
      *            The stack trace
      */
     @ConstructorProperties({ "name", "stackTrace" })
-    public SWTResourceCompositeData(String name, Set<StackTraceElementCompositeData> stackTrace) {
+    public SWTResourceCompositeData(String name,
+            List<StackTraceElementCompositeData> stackTrace) {
         this.name = name;
         this.stackTrace = stackTrace;
     }
@@ -42,7 +49,7 @@ public class SWTResourceCompositeData {
      * 
      * @return The stack trace
      */
-    public Set<StackTraceElementCompositeData> getStackTrace() {
+    public List<StackTraceElementCompositeData> getStackTrace() {
         return stackTrace;
     }
 }

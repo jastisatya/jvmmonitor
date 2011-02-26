@@ -22,6 +22,7 @@ import org.jvmmonitor.core.Activator;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.IHost;
 import org.jvmmonitor.core.IJvm;
+import org.jvmmonitor.core.ISWTResourceMonitor;
 import org.jvmmonitor.core.IThreadElement;
 import org.jvmmonitor.core.JvmCoreException;
 import org.jvmmonitor.core.JvmModel;
@@ -61,6 +62,9 @@ public class ActiveJvm extends AbstractJvm implements IActiveJvm {
 
     /** The CPU profiler. */
     private ICpuProfiler cpuProfiler;
+
+    /** The SWT resource monitor. */
+    private ISWTResourceMonitor swtResourceMonitor;
 
     /**
      * The constructor for local JVM.
@@ -193,6 +197,10 @@ public class ActiveJvm extends AbstractJvm implements IActiveJvm {
             JvmModel.getInstance().getAgentLoadHandler().loadAgent(this);
         }
 
+        if (swtResourceMonitor.isSupported()) {
+            swtResourceMonitor.setTracking(true);
+        }
+
         JvmModel.getInstance().fireJvmModelChangeEvent(
                 new JvmModelEvent(State.JvmConnected, this));
     }
@@ -206,6 +214,13 @@ public class ActiveJvm extends AbstractJvm implements IActiveJvm {
 
         ((CpuProfiler) cpuProfiler).dispose();
         mBeanServer.dispose();
+        try {
+            if (swtResourceMonitor.isSupported()) {
+                swtResourceMonitor.setTracking(false);
+            }
+        } catch (JvmCoreException e) {
+            // do nothing
+        }
 
         JvmModel.getInstance().fireJvmModelChangeEvent(
                 new JvmModelEvent(State.JvmDisconnected, this));
@@ -257,6 +272,14 @@ public class ActiveJvm extends AbstractJvm implements IActiveJvm {
     @Override
     public ICpuProfiler getCpuProfiler() {
         return cpuProfiler;
+    }
+
+    /*
+     * @see IActiveJvm#getSWTResourceMonitor()
+     */
+    @Override
+    public ISWTResourceMonitor getSWTResourceMonitor() {
+        return swtResourceMonitor;
     }
 
     /*
@@ -345,6 +368,7 @@ public class ActiveJvm extends AbstractJvm implements IActiveJvm {
         isConnected = false;
         cpuProfiler = new CpuProfiler(this);
         mBeanServer = new MBeanServer(url, this);
+        swtResourceMonitor = new SWTResourceMonitor(this);
     }
 
     /**

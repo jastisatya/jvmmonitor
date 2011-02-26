@@ -53,6 +53,29 @@ public final class Messages extends NLS {
     /** */
     public static String deltaColumnToolTip;
 
+    /** */
+    public static String heapHistogramLabel;
+
+    // SWT resources
+
+    /** */
+    public static String swtResourcesLabel;
+
+    /** */
+    public static String nameColumnLabel;
+
+    /** */
+    public static String nameColumnToolTip;
+
+    /** */
+    public static String clearResourcesLabel;
+
+    /** */
+    public static String clearResourcesJobLabel;
+
+    /** */
+    public static String layoutLabel;
+    
     // dump hprof dialog
 
     /** */
@@ -116,4 +139,7 @@ public final class Messages extends NLS {
 
     /** */
     public static String refreshHeapDataFailedMsg;
+    
+    /** */
+    public static String clearSWTResoucesFailedMsg;
 }

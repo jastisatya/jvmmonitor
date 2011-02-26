@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IActionBars;
 import org.jvmmonitor.internal.ui.properties.AbstractSashForm;
+import org.jvmmonitor.internal.ui.properties.StackTraceViewer;
 
 /**
  * The sash form to show thread and stack traces.
