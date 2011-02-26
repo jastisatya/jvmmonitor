@@ -69,6 +69,13 @@ public interface IActiveJvm extends IJvm {
     ICpuProfiler getCpuProfiler();
 
     /**
+     * Gets the SWT resource monitor.
+     * 
+     * @return The SWT resource monitor
+     */
+    ISWTResourceMonitor getSWTResourceMonitor();
+
+    /**
      * Gets the MBean server.
      * 
      * @return The MBean server

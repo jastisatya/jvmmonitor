@@ -114,8 +114,10 @@ abstract public class AbstractDumpEditor extends MultiPageEditorPart {
         if (infoImage != null) {
             infoImage.dispose();
         }
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(
-                resourceChangeListener);
+        if (resourceChangeListener != null) {
+            ResourcesPlugin.getWorkspace().removeResourceChangeListener(
+                    resourceChangeListener);
+        }
     }
 
     /**

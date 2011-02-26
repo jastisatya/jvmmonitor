@@ -6,55 +6,42 @@
  *******************************************************************************/
 package org.jvmmonitor.internal.ui.properties.memory;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.RuntimeMXBean;
-
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.PageBook;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.IHeapElement;
-import org.jvmmonitor.core.JvmCoreException;
+import org.jvmmonitor.core.ISWTResourceElement;
 import org.jvmmonitor.internal.ui.IHelpContextIds;
-import org.jvmmonitor.internal.ui.RefreshJob;
-import org.jvmmonitor.internal.ui.actions.RefreshAction;
 import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
-import org.jvmmonitor.ui.Activator;
 
 /**
  * The memory section.
  */
 public class MemorySection extends AbstractJvmPropertySection {
 
-    /** The 64 bit OS architecture. */
-    private static final String ARCH_64BIT = "64"; //$NON-NLS-1$
+    /** The default tab height. */
+    private static int defaultTabHeight;
 
-    /** The action to refresh section. */
-    RefreshAction refreshAction;
+    /** The heap histogram page. */
+    HeapHistogramPage heapHistogramPage;
 
-    /** The action to run garbage collector. */
-    GarbageCollectorAction garbageCollectorAction;
+    /** The SWT resource page. */
+    SWTResourcesPage swtResourcePage;
 
-    /** The action to clear heap delta. */
-    ClearHeapDeltaAction clearHeapDeltaAction;
+    /** The tab folder. */
+    private CTabFolder tabFolder;
 
-    /** The action to dump heap. */
-    DumpHeapAction dumpHeapAction;
+    private PageBook heapHistogramPageBook;
 
-    /** The action to dump hprof. */
-    DumpHprofAction dumpHprofAction;
-
-    /** The separator. */
-    private Separator separator;
-
-    /** The heap composite. */
-    HeapComposite heapComposite;
+    private Label heapHistogramMessageLabel;
 
     /*
      * @see AbstractPropertySection#createControls(Composite,
@@ -62,8 +49,18 @@ public class MemorySection extends AbstractJvmPropertySection {
      */
     @Override
     public void createControls(Composite parent) {
-        heapComposite = new HeapComposite(parent, getActionBars());
-        createActions();
+        tabFolder = getWidgetFactory().createTabFolder(parent,
+                SWT.BOTTOM | SWT.FLAT);
+
+        heapHistogramPageBook = new PageBook(tabFolder, SWT.NONE);
+        heapHistogramMessageLabel = new Label(heapHistogramPageBook, SWT.NONE);
+        heapHistogramPage = new HeapHistogramPage(this, heapHistogramPageBook,
+                tabFolder, getActionBars());
+
+        swtResourcePage = new SWTResourcesPage(this, tabFolder, getActionBars());
+
+        defaultTabHeight = tabFolder.getTabHeight();
+        tabFolder.setTabHeight(0);
 
         PlatformUI.getWorkbench().getHelpSystem()
                 .setHelp(parent, IHelpContextIds.MEMORY_PAGE);
@@ -74,50 +71,15 @@ public class MemorySection extends AbstractJvmPropertySection {
      */
     @Override
     public void refresh() {
-        if (getJvm() == null || !isSupported()) {
+        if (getJvm() == null) {
             return;
         }
-
-        refreshJob = new RefreshJob(NLS.bind(
-                Messages.refreshMemorySectionJobLabel, getJvm().getPid()),
-                getId()) {
-            @Override
-            protected void refreshModel(IProgressMonitor monitor) {
-                try {
-                    IActiveJvm jvm = getJvm();
-                    if (jvm != null && jvm.isConnected() && !jvm.isRemote()
-                            && !isRefreshSuspended()) {
-                        jvm.getMBeanServer().refreshHeapCache();
-                    }
-                } catch (JvmCoreException e) {
-                    Activator.log(Messages.refreshHeapDataFailedMsg, e);
-                }
-            }
-
-            @Override
-            protected void refreshUI() {
-                if (heapComposite.isDisposed()) {
-                    return;
-                }
-
-                IActiveJvm jvm = getJvm();
-                boolean isConnected = jvm != null && jvm.isConnected();
-                boolean isRemote = jvm != null && jvm.isRemote();
-                refreshBackground(heapComposite.getChildren(), isConnected
-                        && !isRemote);
-                dumpHprofAction.setEnabled(isConnected);
-                dumpHeapAction.setEnabled(!hasErrorMessage());
-                refreshAction.setEnabled(isConnected && !isRemote);
-                garbageCollectorAction.setEnabled(isConnected);
-                clearHeapDeltaAction.setEnabled(isConnected && !isRemote);
-
-                if (!heapComposite.isDisposed()) {
-                    heapComposite.refresh();
-                }
-            }
-        };
-
-        refreshJob.schedule();
+        if (!heapHistogramPage.isDisposed() && heapHistogramPage.isVisible()) {
+            heapHistogramPage.refresh();
+        }
+        if (!swtResourcePage.isDisposed() && swtResourcePage.isVisible()) {
+            swtResourcePage.refresh(false);
+        }
     }
 
     /*
@@ -127,10 +89,27 @@ public class MemorySection extends AbstractJvmPropertySection {
     @Override
     protected void setInput(IWorkbenchPart part, ISelection selection,
             final IActiveJvm newJvm, IActiveJvm oldJvm) {
-        heapComposite.setInput(new IHeapInput() {
+        int tabHeight;
+        if (newJvm.getSWTResourceMonitor().isSupported()) {
+            tabHeight = defaultTabHeight;
+        } else {
+            tabHeight = 0;
+            tabFolder.setSelection(0);
+        }
+        tabFolder.setTabHeight(tabHeight);
+        tabFolder.layout();
+
+        heapHistogramPage.setInput(new IHeapInput() {
             @Override
             public IHeapElement[] getHeapListElements() {
                 return newJvm.getMBeanServer().getHeapCache();
+            }
+        });
+
+        swtResourcePage.setInput(new ISWTResorceInput() {
+            @Override
+            public ISWTResourceElement[] getSWTResourceElements() {
+                return newJvm.getSWTResourceMonitor().getResources();
             }
         });
     }
@@ -140,21 +119,10 @@ public class MemorySection extends AbstractJvmPropertySection {
      */
     @Override
     protected void addToolBarActions(IToolBarManager manager) {
-        manager.insertAfter("defaults", separator); //$NON-NLS-1$
-        if (manager.find(refreshAction.getId()) == null) {
-            manager.insertAfter("defaults", refreshAction); //$NON-NLS-1$
-        }
-        if (manager.find(garbageCollectorAction.getId()) == null) {
-            manager.insertAfter("defaults", garbageCollectorAction); //$NON-NLS-1$
-        }
-        if (manager.find(clearHeapDeltaAction.getId()) == null) {
-            manager.insertAfter("defaults", clearHeapDeltaAction); //$NON-NLS-1$
-        }
-        if (manager.find(dumpHeapAction.getId()) == null) {
-            manager.insertAfter("defaults", dumpHeapAction); //$NON-NLS-1$
-        }
-        if (manager.find(dumpHprofAction.getId()) == null) {
-            manager.insertAfter("defaults", dumpHprofAction); //$NON-NLS-1$
+        if (tabFolder.getSelectionIndex() == 0) {
+            heapHistogramPage.addToolBarActions(manager);
+        } else {
+            swtResourcePage.addToolBarActions(manager);
         }
     }
 
@@ -163,12 +131,38 @@ public class MemorySection extends AbstractJvmPropertySection {
      */
     @Override
     protected void removeToolBarActions(IToolBarManager manager) {
-        manager.remove(separator);
-        manager.remove(refreshAction.getId());
-        manager.remove(garbageCollectorAction.getId());
-        manager.remove(clearHeapDeltaAction.getId());
-        manager.remove(dumpHeapAction.getId());
-        manager.remove(dumpHprofAction.getId());
+        if (tabFolder.getSelectionIndex() == 0) {
+            heapHistogramPage.removeToolBarActions(manager);
+        } else {
+            swtResourcePage.removeToolBarActions(manager);
+        }
+    }
+
+    /*
+     * @see AbstractJvmPropertySection#addLocalMenus(IMenuManager)
+     */
+    @Override
+    protected void addLocalMenus(IMenuManager manager) {
+        if (tabFolder.getSelectionIndex() == 1) {
+            swtResourcePage.addLocalMenus(manager);
+        }
+    }
+
+    /*
+     * @see AbstractJvmPropertySection#removeLocalMenus(IMenuManager)
+     */
+    @Override
+    protected void removeLocalMenus(IMenuManager manager) {
+        if (tabFolder.getSelectionIndex() == 1) {
+            swtResourcePage.removeLocalMenus(manager);
+        }
+    }
+
+    @Override
+    protected void activateSection() {
+        heapHistogramPage
+                .updateLocalToolBar(tabFolder.getSelectionIndex() == 0);
+        swtResourcePage.updateLocalToolBar(tabFolder.getSelectionIndex() == 1);
     }
 
     /*
@@ -192,50 +186,28 @@ public class MemorySection extends AbstractJvmPropertySection {
         IActiveJvm jvm = getJvm();
         if (jvm != null && jvm.isConnected()) {
             if (jvm.isRemote()) {
-                setErrorMessageLabel(Messages.notSupportedOnRemoteHostMsg);
-            } else if (!isSupported()) {
-                setErrorMessageLabel(Messages.notSupportedForEclipseItselfOn64bitOS);
+                setMessageLabel(Messages.notSupportedOnRemoteHostMsg);
+            } else if (!heapHistogramPage.isSupported()) {
+                setMessageLabel(Messages.notSupportedForEclipseItselfOn64bitOS);
+            } else {
+                setMessageLabel("");//$NON-NLS-1$
             }
+            heapHistogramPageBook.showPage(heapHistogramMessageLabel.getText()
+                    .isEmpty() ? heapHistogramPage : heapHistogramMessageLabel);
         }
     }
 
     /**
-     * Creates the actions.
-     */
-    private void createActions() {
-        refreshAction = new RefreshAction(this);
-        garbageCollectorAction = new GarbageCollectorAction(this);
-        clearHeapDeltaAction = new ClearHeapDeltaAction(heapComposite, this);
-        dumpHeapAction = new DumpHeapAction(this);
-        dumpHprofAction = new DumpHprofAction(this);
-        separator = new Separator();
-    }
-
-    /**
-     * Gets the state indicating if heap histogram is supported.
-     * <p>
-     * WORKAROUND: Heap histogram is disabled on 64bit OS when monitoring
-     * eclipse itself, due to the issue that the method heapHisto() of the class
-     * HotSpotVirtualMachine causes continuously increasing the committed heap
-     * memory.
+     * Sets the message label inside the heap histogram page.
      * 
-     * @return <tt>true</tt> if heap histogram is supported
+     * @param message
+     *            The message
      */
-    private boolean isSupported() {
-        IActiveJvm jvm = getJvm();
-        if (jvm == null) {
-            return false;
+    private void setMessageLabel(String message) {
+        if (!heapHistogramMessageLabel.isDisposed()
+                && !heapHistogramPageBook.isDisposed()) {
+            heapHistogramMessageLabel.setText(message);
+            heapHistogramPageBook.showPage(heapHistogramMessageLabel);
         }
-
-        OperatingSystemMXBean osMBean = ManagementFactory
-                .getOperatingSystemMXBean();
-        RuntimeMXBean runtimeMBean = ManagementFactory.getRuntimeMXBean();
-        if (osMBean.getArch().contains(ARCH_64BIT)
-                && runtimeMBean.getName()
-                        .contains(String.valueOf(jvm.getPid()))) {
-            return false;
-        }
-
-        return true;
     }
 }

@@ -186,12 +186,30 @@ public class TimelineChart extends Chart implements IPropertyChangeListener {
      *            The color
      */
     private void setColor(ILineSeries series, int[] rgb) {
-        if (rgb != null) {
+        if (rgb != null && !hasColor(rgb)) {
             Color color = new Color(Display.getDefault(), rgb[0], rgb[1],
                     rgb[2]);
             series.setLineColor(color);
             colors.add(color);
         }
+    }
+
+    /**
+     * Checks if the given color is already available in this chart.
+     * 
+     * @param rgb
+     *            The RGB
+     * @return <tt>true</tt> if the given color is already available in this
+     *         chart
+     */
+    private boolean hasColor(int[] rgb) {
+        for (Color color : colors) {
+            if (color.getRGB().red == rgb[0] && color.getRGB().green == rgb[1]
+                    && color.getRGB().blue == rgb[2]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

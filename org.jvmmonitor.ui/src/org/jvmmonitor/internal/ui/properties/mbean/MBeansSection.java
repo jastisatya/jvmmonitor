@@ -27,7 +27,7 @@ public class MBeansSection extends AbstractJvmPropertySection {
 
     /** The layout menu id. */
     private static final String LAYOUT_MENU_ID = "layout"; //$NON-NLS-1$
-    
+
     /** The sash form. */
     private MBeanSashForm sashForm;
 
@@ -54,7 +54,7 @@ public class MBeansSection extends AbstractJvmPropertySection {
      */
     @Override
     public void refresh() {
-        if (sashForm.isDisposed()) {
+        if (sashForm.isDisposed() || !sashForm.isVisible()) {
             return;
         }
         IActiveJvm jvm = getJvm();

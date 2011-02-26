@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 JVM Monitor project. All rights reserved. 
+ * Copyright (c) 2011 JVM Monitor project. All rights reserved. 
  * 
  * This code is distributed under the terms of the Eclipse Public License v1.0
  * which is available at http://www.eclipse.org/legal/epl-v10.html
@@ -13,17 +13,18 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.widgets.Display;
 import org.jvmmonitor.core.IActiveJvm;
+import org.jvmmonitor.core.JvmCoreException;
 import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
 import org.jvmmonitor.ui.Activator;
 import org.jvmmonitor.ui.ISharedImages;
 
 /**
- * The action to clear heap delta.
+ * The action to clear SWT resources.
  */
-public class ClearHeapDeltaAction extends Action {
+public class ClearSWTResourceAction extends Action {
 
-    /** The heap composite. */
-    HeapHistogramPage heapComposite;
+    /** The SWT resource page. */
+    SWTResourcesPage resourcePage;
 
     /** The property section. */
     AbstractJvmPropertySection section;
@@ -31,21 +32,21 @@ public class ClearHeapDeltaAction extends Action {
     /**
      * The constructor.
      * 
-     * @param heapComposite
-     *            The heap composite
+     * @param resourcePage
+     *            The SWT resource page
      * @param section
      *            The property section
      */
-    public ClearHeapDeltaAction(HeapHistogramPage heapComposite,
+    public ClearSWTResourceAction(SWTResourcesPage resourcePage,
             AbstractJvmPropertySection section) {
-        setText(Messages.clearDeltaLabel);
+        setText(Messages.clearResourcesLabel);
         setImageDescriptor(Activator
                 .getImageDescriptor(ISharedImages.CLEAR_IMG_PATH));
         setDisabledImageDescriptor(Activator
                 .getImageDescriptor(ISharedImages.DISABLED_CLEAR_IMG_PATH));
         setId(getClass().getName());
 
-        this.heapComposite = heapComposite;
+        this.resourcePage = resourcePage;
         this.section = section;
     }
 
@@ -54,7 +55,7 @@ public class ClearHeapDeltaAction extends Action {
      */
     @Override
     public void run() {
-        new Job(Messages.clearHeapDeltaJobLabel) {
+        new Job(Messages.clearResourcesJobLabel) {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 IActiveJvm jvm = section.getJvm();
@@ -62,11 +63,16 @@ public class ClearHeapDeltaAction extends Action {
                     return Status.CANCEL_STATUS;
                 }
 
-                jvm.getMBeanServer().clearHeapDelta();
+                try {
+                    jvm.getSWTResourceMonitor().clear();
+                } catch (JvmCoreException e) {
+                    Activator.log(Messages.clearSWTResoucesFailedMsg, e);
+                    return Status.CANCEL_STATUS;
+                }
                 Display.getDefault().asyncExec(new Runnable() {
                     @Override
                     public void run() {
-                        heapComposite.refresh();
+                        resourcePage.refresh(true);
                     }
                 });
                 return Status.OK_STATUS;
