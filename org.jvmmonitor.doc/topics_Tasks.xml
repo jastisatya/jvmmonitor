@@ -24,6 +24,8 @@
       </topic>
       <topic href="tasks/analyzing_object_references.html" label="Analyzing object references">
       </topic>
+      <topic href="tasks/identifying_SWT_resource_leak.html" label="Identifying SWT resource leak">
+      </topic>
    </topic>
    <topic href="tasks/monitoring_CPU_usage.html" label="Monitoring CPU usage">
       <topic href="tasks/configuring_CPU_profiler.html" label="Configuring CPU profiler">
