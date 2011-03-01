@@ -149,6 +149,9 @@ public final class Messages extends NLS {
     /** */
     public static String loadChartSetLabel;
 
+    /** */
+    public static String loadDefaultChartSetLabel;
+
     // tooltip
 
     /** */

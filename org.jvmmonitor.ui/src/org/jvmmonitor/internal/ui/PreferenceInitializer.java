@@ -27,6 +27,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
         store.setDefault(IConstants.UPDATE_PERIOD, DEFAULT_UPDATE_PERIOD);
         store.setDefault(IConstants.LEGEND_VISIBILITY, false);
-        store.setDefault(IConstants.TAKE_STACK_TRACES_INTO_ACCOUNT, true);
+        store.setDefault(IConstants.WIDE_SCOPE_THREAD_FILTER, true);
+        store.setDefault(IConstants.WIDE_SCOPE_SWT_RESOURCE_FILTER, true);
     }
 }

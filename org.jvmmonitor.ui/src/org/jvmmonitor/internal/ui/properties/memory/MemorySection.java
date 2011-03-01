@@ -158,8 +158,12 @@ public class MemorySection extends AbstractJvmPropertySection {
         }
     }
 
+    /*
+     * @see AbstractJvmPropertySection#activateSection()
+     */
     @Override
     protected void activateSection() {
+        super.activateSection();
         heapHistogramPage
                 .updateLocalToolBar(tabFolder.getSelectionIndex() == 0);
         swtResourcePage.updateLocalToolBar(tabFolder.getSelectionIndex() == 1);

@@ -30,7 +30,12 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
+import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.Hyperlink;
+import org.eclipse.ui.part.PageBook;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.JvmCoreException;
 import org.jvmmonitor.core.JvmModelEvent;
@@ -79,8 +84,14 @@ public class TimelineSection extends AbstractJvmPropertySection {
     /** The MBean server change listener. */
     private IMBeanServerChangeListener mBeanServerChangeListener;
 
-    /** The section container. */
-    private Composite sectionContainer;
+    /** The charts page. */
+    private Composite chartsPage;
+
+    /** The message page. */
+    private Composite messagePage;
+
+    /** The page book. */
+    private PageBook timelinePageBook;
 
     /**
      * The constructor.
@@ -101,12 +112,16 @@ public class TimelineSection extends AbstractJvmPropertySection {
      */
     @Override
     protected void createControls(Composite parent) {
-        sectionContainer = parent;
+        timelinePageBook = new PageBook(parent, SWT.NONE);
+        chartsPage = new Composite(timelinePageBook, SWT.NONE);
+        messagePage = createMessagePage();
+
         parent.setBackground(Display.getDefault().getSystemColor(
                 SWT.COLOR_LIST_BACKGROUND));
         GridLayout layout = new GridLayout(2, true);
         layout.horizontalSpacing = 15;
-        sectionContainer.setLayout(layout);
+        chartsPage.setLayout(layout);
+        timelinePageBook.showPage(chartsPage);
 
         mBeanServerChangeListener = new IMBeanServerChangeListener() {
             @Override
@@ -139,7 +154,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
     public void jvmModelChanged(JvmModelEvent event) {
         super.jvmModelChanged(event);
 
-        if (event.state == State.JvmConnected && !sectionContainer.isDisposed()) {
+        if (event.state == State.JvmConnected && !chartsPage.isDisposed()) {
             final IActiveJvm newJvm = (IActiveJvm) event.jvm;
             Display.getDefault().asyncExec(new Runnable() {
                 @Override
@@ -185,7 +200,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
 
         IActiveJvm jvm = getJvm();
         if (jvm == null || !jvm.isConnected() || suspendRefresh
-                || sectionContainer.isDisposed()) {
+                || chartsPage.isDisposed()) {
             return;
         }
 
@@ -278,17 +293,44 @@ public class TimelineSection extends AbstractJvmPropertySection {
     }
 
     /**
+     * Creates the message label.
+     */
+    private Composite createMessagePage() {
+        messagePage = new Composite(timelinePageBook, SWT.NONE);
+        messagePage.setLayout(new GridLayout(3, false));
+        messagePage.setBackground(Display.getDefault().getSystemColor(
+                SWT.COLOR_LIST_BACKGROUND));
+
+        FormToolkit toolkit = new FormToolkit(Display.getDefault());
+        Hyperlink hyperlink = toolkit.createHyperlink(messagePage,
+                Messages.loadDefaultChartSetLabel, SWT.NONE);
+        hyperlink.addHyperlinkListener(new HyperlinkAdapter() {
+            @Override
+            public void linkActivated(HyperlinkEvent event) {
+                try {
+                    new LoadChartSetAction(TimelineSection.this)
+                            .loadDefaultChartSet();
+                } catch (JvmCoreException e) {
+                    Activator.log(Messages.loadChartSetFailedMsg, e);
+                }
+            }
+        });
+        return messagePage;
+    }
+
+    /**
      * Refreshes the connection indicator.
      */
     private void refreshConnectionIndicator() {
         IActiveJvm jvm = getJvm();
         boolean isConnected = jvm != null && jvm.isConnected();
-        refreshBackground(sectionContainer, isConnected);
+        refreshBackground(chartsPage, isConnected);
         for (TimelineChart chart : charts) {
             refreshBackground(chart, isConnected);
             refreshBackground(chart.getPlotArea(), isConnected);
             refreshBackground(chart.getSection(), isConnected);
         }
+        refreshBackground(messagePage, isConnected);
 
         clearAction.setEnabled(isConnected);
         refreshAction.setEnabled(isConnected);
@@ -315,7 +357,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
      *            True if JVM gets connected
      */
     void reconstructCharts(IActiveJvm activeJvm, boolean connected) {
-        if (sectionContainer.isDisposed()) {
+        if (chartsPage.isDisposed()) {
             return;
         }
 
@@ -328,23 +370,30 @@ public class TimelineSection extends AbstractJvmPropertySection {
             }
         }
 
-        sectionContainer.setVisible(false);
+        List<IMonitoredMXBeanGroup> groups = activeJvm.getMBeanServer()
+                .getMonitoredAttributeGroups();
+        if (groups.size() == 0) {
+            timelinePageBook.showPage(messagePage);
+            return;
+        }
+
+        timelinePageBook.showPage(chartsPage);
+        chartsPage.setVisible(false);
         for (TimelineChart chart : charts) {
             chart.dispose();
         }
         charts.clear();
 
-        List<IMonitoredMXBeanGroup> groups = activeJvm.getMBeanServer()
-                .getMonitoredAttributeGroups();
-        GridLayout layout = (GridLayout) sectionContainer.getLayout();
+        GridLayout layout = (GridLayout) chartsPage.getLayout();
         layout.numColumns = (groups.size() > 1) ? 2 : 1;
-        sectionContainer.setLayout(layout);
+        chartsPage.setLayout(layout);
 
         for (IMonitoredMXBeanGroup group : groups) {
-            createSection(sectionContainer, group);
+            createSection(chartsPage, group);
         }
-        sectionContainer.layout();
-        sectionContainer.setVisible(true);
+
+        chartsPage.layout();
+        chartsPage.setVisible(true);
         refresh();
     }
 

@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.ActionFactory;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.IHost;
 import org.jvmmonitor.core.IJvmModelChangeListener;
@@ -230,12 +229,9 @@ public class JvmTreeViewer extends TreeViewer implements
         startMonitoringAction = new StartMonitoringAction();
         stopMonitoringAction = new StopMonitoringAction(this);
         openSnapshotAction = new OpenSnapshotAction();
-        copyAction = new CopyAction();
+        copyAction = CopyAction.createCopyAction(actionBars);
         deleteAction = new DeleteAction(this, actionBars);
         renameAction = new RenameAction(this, actionBars);
-
-        actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(),
-                copyAction);
 
         MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
         menuMgr.setRemoveAllWhenShown(true);

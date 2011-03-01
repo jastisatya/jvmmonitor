@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -18,9 +19,11 @@ import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionFactory;
 import org.jvmmonitor.core.ISnapshot;
 
 /**
@@ -45,6 +48,28 @@ public class CopyAction extends Action implements ISelectionChangedListener {
         setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
 
         filesData = new ArrayList<String>();
+    }
+
+    /**
+     * Creates copy action. If copy action is found in the given action bars,
+     * the found action will be returned, otherwise copy action will be newly
+     * created and set to the given action bars as a global action.
+     * 
+     * @param actionBars
+     *            The action bars.
+     * @return The copy action
+     */
+    public static CopyAction createCopyAction(IActionBars actionBars) {
+        IAction action = actionBars.getGlobalActionHandler(ActionFactory.COPY
+                .getId());
+        if (action instanceof CopyAction) {
+            return (CopyAction) action;
+        }
+
+        CopyAction copyAction = new CopyAction();
+        actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(),
+                copyAction);
+        return copyAction;
     }
 
     /*

@@ -145,9 +145,7 @@ public class CpuSection extends AbstractJvmPropertySection {
      */
     @Override
     public void refresh() {
-        if (getJvm() == null
-                || (!callTree.isVisible() && !hotSpots.isVisible() && !callerCallee
-                        .isVisible())) {
+        if (getJvm() == null || !isVisible()) {
             return;
         }
 
@@ -289,7 +287,7 @@ public class CpuSection extends AbstractJvmPropertySection {
      */
     @Override
     protected void updateActions() {
-        if (getJvm() == null) {
+        if (getJvm() == null || !isVisible()) {
             return;
         }
 
@@ -431,6 +429,29 @@ public class CpuSection extends AbstractJvmPropertySection {
     }
 
     /**
+     * Gets the state indicating if section is visible.
+     * 
+     * @return <tt>true</tt> if section is visible
+     */
+    private boolean isVisible() {
+        final boolean[] visible = new boolean[] { true };
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                visible[0] = callTree != null
+                        && hotSpots != null
+                        && callerCallee != null
+                        && !callTree.isDisposed()
+                        && !hotSpots.isDisposed()
+                        && !callerCallee.isDisposed()
+                        && (callTree.isVisible() || hotSpots.isVisible() || callerCallee
+                                .isVisible());
+            }
+        });
+        return visible[0];
+    }
+
+    /**
      * Contributes to action bars.
      */
     private void contributeToActionBars() {
@@ -440,8 +461,7 @@ public class CpuSection extends AbstractJvmPropertySection {
                 new OpenDeclarationAction());
         actionBars.setGlobalActionHandler(ActionFactory.FIND.getId(),
                 new FindAction());
-        actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(),
-                new CopyAction());
+        CopyAction.createCopyAction(actionBars);
     }
 
     /**

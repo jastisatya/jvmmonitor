@@ -51,5 +51,11 @@ public final class Messages extends NLS {
     public static String threadsGroupLabel;
 
     /** */
-    public static String takeStackTracesIntoAccountLabel;
+    public static String memoryGroupLabel;
+    
+    /** */
+    public static String wideScopeThreadFilterLabel;
+    
+    /** */
+    public static String wideScopeSWTResourceFilterLabel;
 }

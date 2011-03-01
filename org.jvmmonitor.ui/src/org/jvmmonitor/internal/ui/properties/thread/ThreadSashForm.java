@@ -51,7 +51,7 @@ public class ThreadSashForm extends AbstractSashForm {
     @Override
     protected void createSashFormControls(SashForm sashForm,
             IActionBars actionBars) {
-        threadViewer = new ThreadFilteredTree(sashForm).getViewer();
+        threadViewer = new ThreadFilteredTree(sashForm, actionBars).getViewer();
         threadViewer
                 .setContentProvider(new ThreadContentProvider(threadViewer));
         threadViewer.setLabelProvider(new ThreadLabelProvider(threadViewer));

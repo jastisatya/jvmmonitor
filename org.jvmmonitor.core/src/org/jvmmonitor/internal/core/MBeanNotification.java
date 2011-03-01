@@ -6,7 +6,9 @@
  *******************************************************************************/
 package org.jvmmonitor.internal.core;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,6 +20,7 @@ import javax.management.MBeanNotificationInfo;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.management.openmbean.CompositeData;
 
 import org.jvmmonitor.core.JvmCoreException;
 import org.jvmmonitor.core.JvmModel;
@@ -64,7 +67,7 @@ public class MBeanNotification implements IMBeanNotification {
                 if (list == null) {
                     list = new ArrayList<Notification>();
                 }
-                list.add(notification);
+                list.add(new DecoratedNotification(notification));
                 notifications.put(objectName, list);
             }
         };
@@ -161,5 +164,79 @@ public class MBeanNotification implements IMBeanNotification {
         }
         listeners.clear();
         notifications.clear();
+    }
+
+    /**
+     * The decorated notification having detailed text for toString();
+     */
+    private static class DecoratedNotification extends Notification {
+
+        /** The serial version UDI. */
+        private static final long serialVersionUID = 1L;
+
+        /** The date format. */
+        private static final String DATE_FORMAT = "yyyy/MM/dd HH:mm:ss.SSS"; //$NON-NLS-1$
+
+        /**
+         * The constructor.
+         * 
+         * @param notification
+         *            The notification
+         */
+        public DecoratedNotification(Notification notification) {
+            super(notification.getType(), notification.getSource(),
+                    notification.getSequenceNumber(), notification
+                            .getTimeStamp(), notification.getMessage());
+            setUserData(notification.getUserData());
+        }
+
+        @Override
+        public String toString() {
+            StringBuffer buffer = new StringBuffer();
+
+            buffer.append(
+                    new SimpleDateFormat(DATE_FORMAT).format(new Date(
+                            getTimeStamp()))).append('\n');
+            buffer.append("Sequence Number: ").append(getSequenceNumber())//$NON-NLS-1$
+                    .append('\n');
+            buffer.append("Source: ").append(getSource()).append('\n');//$NON-NLS-1$
+            buffer.append("Type: ").append(getType()).append('\n').append('\n'); //$NON-NLS-1$
+            buffer.append(getMessage()).append('\n');
+
+            parseObject(buffer, getUserData(), 0);
+
+            return buffer.toString();
+        }
+
+        /**
+         * Parse the given object and store into the given string buffer.
+         * 
+         * @param buffer
+         *            The string buffer
+         * @param object
+         *            The object
+         * @param indentation
+         *            The indentation
+         */
+        protected void parseObject(StringBuffer buffer, Object object,
+                int indentation) {
+            int indent = 0;
+            if (object instanceof CompositeData) {
+                CompositeData compositeData = (CompositeData) object;
+                for (String key : compositeData.getCompositeType().keySet()) {
+                    Object value = compositeData.get(key);
+                    if (value instanceof CompositeData) {
+                        buffer.append(key).append(":\n"); //$NON-NLS-1$
+                        parseObject(buffer, value, ++indent);
+                    } else {
+                        for (int i = 0; i < indent; i++) {
+                            buffer.append('\t');
+                        }
+                        buffer.append(key)
+                                .append(": ").append(value).append('\n'); //$NON-NLS-1$
+                    }
+                }
+            }
+        }
     }
 }

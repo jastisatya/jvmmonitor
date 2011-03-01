@@ -100,7 +100,7 @@ public class ThreadLabelProvider extends LabelProvider implements
 
             // stack traces
             if (Activator.getDefault().getPreferenceStore()
-                    .getBoolean(IConstants.TAKE_STACK_TRACES_INTO_ACCOUNT)) {
+                    .getBoolean(IConstants.WIDE_SCOPE_THREAD_FILTER)) {
                 for (StackTraceElement element : ((IThreadElement) obj)
                         .getStackTraceElements()) {
                     buffer.append(element.getClassName()).append('.')
