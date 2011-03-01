@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.internal.ui.IHelpContextIds;
@@ -93,12 +92,10 @@ public class OverviewSection extends AbstractJvmPropertySection {
             @Override
             protected List<Action> createActions(IActionBars actionBars) {
                 List<Action> actions = new ArrayList<Action>();
-                CopyAction copyAction = new CopyAction();
+                CopyAction copyAction = CopyAction.createCopyAction(actionBars);
                 actions.add(copyAction);
                 showInTimelineAction = new MyShowInTimelineAction(
                         OverviewSection.this);
-                actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(),
-                        copyAction);
                 actions.add(showInTimelineAction);
                 return actions;
             }

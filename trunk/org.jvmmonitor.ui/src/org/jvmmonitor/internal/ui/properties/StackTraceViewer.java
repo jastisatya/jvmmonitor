@@ -44,7 +44,7 @@ public class StackTraceViewer extends TableViewer {
         super(parent, SWT.MULTI);
         setContentProvider(new StackTraceContentProvider());
         setLabelProvider(new StackTraceLabelProvider());
-        
+
         createContextMenu(actionBars);
 
         addSelectionChangedListener(openAction);
@@ -68,8 +68,8 @@ public class StackTraceViewer extends TableViewer {
 
         // create actions
         openAction = new OpenDeclarationAction();
-        copyAction = new CopyAction();
         actionBars.setGlobalActionHandler(JdtActionConstants.OPEN, openAction);
+        copyAction = CopyAction.createCopyAction(actionBars);
 
         // create menu manager
         MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$

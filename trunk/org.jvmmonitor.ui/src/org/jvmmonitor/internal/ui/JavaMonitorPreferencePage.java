@@ -43,7 +43,13 @@ public class JavaMonitorPreferencePage extends PreferencePage implements
     private Button legendVisibilityButton;
 
     /** The check box to take stack traces into account when filtering threads. */
-    private Button takeStackTracesIntoAccountButton;
+    private Button wideScopeThreadFilterButton;
+
+    /**
+     * The check box to take stack traces into account when filtering SWT
+     * resources.
+     */
+    private Button wideScopeSWTResourcesFilterButton;
 
     /*
      * @see PreferencePage#createContents(Composite)
@@ -59,14 +65,12 @@ public class JavaMonitorPreferencePage extends PreferencePage implements
         createUpdatePeriodText(composite);
         createTimelineGroup(composite);
         createThreadsGroup(composite);
+        createMemoryGroup(composite);
 
         applyDialogFont(composite);
 
-        PlatformUI
-                .getWorkbench()
-                .getHelpSystem()
-                .setHelp(parent,
-                        IHelpContextIds.JAVA_MONITOR_PREFERENCE_PAGE);
+        PlatformUI.getWorkbench().getHelpSystem()
+                .setHelp(parent, IHelpContextIds.JAVA_MONITOR_PREFERENCE_PAGE);
 
         return composite;
     }
@@ -88,9 +92,11 @@ public class JavaMonitorPreferencePage extends PreferencePage implements
                 updatePeriodText.getText());
         getPreferenceStore().setValue(IConstants.LEGEND_VISIBILITY,
                 legendVisibilityButton.getSelection());
+        getPreferenceStore().setValue(IConstants.WIDE_SCOPE_THREAD_FILTER,
+                wideScopeThreadFilterButton.getSelection());
         getPreferenceStore().setValue(
-                IConstants.TAKE_STACK_TRACES_INTO_ACCOUNT,
-                takeStackTracesIntoAccountButton.getSelection());
+                IConstants.WIDE_SCOPE_SWT_RESOURCE_FILTER,
+                wideScopeSWTResourcesFilterButton.getSelection());
 
         applyChanges();
         return true;
@@ -118,8 +124,10 @@ public class JavaMonitorPreferencePage extends PreferencePage implements
         updatePeriodText.setText(updatePeriod);
         legendVisibilityButton.setSelection(getPreferenceStore()
                 .getDefaultBoolean(IConstants.LEGEND_VISIBILITY));
-        takeStackTracesIntoAccountButton.setSelection(getPreferenceStore()
-                .getDefaultBoolean(IConstants.TAKE_STACK_TRACES_INTO_ACCOUNT));
+        wideScopeThreadFilterButton.setSelection(getPreferenceStore()
+                .getDefaultBoolean(IConstants.WIDE_SCOPE_THREAD_FILTER));
+        wideScopeSWTResourcesFilterButton.setSelection(getPreferenceStore()
+                .getDefaultBoolean(IConstants.WIDE_SCOPE_SWT_RESOURCE_FILTER));
         super.performDefaults();
     }
 
@@ -185,15 +193,39 @@ public class JavaMonitorPreferencePage extends PreferencePage implements
         group.setLayout(layout);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        takeStackTracesIntoAccountButton = new Button(group, SWT.CHECK);
-        takeStackTracesIntoAccountButton
-                .setText(Messages.takeStackTracesIntoAccountLabel);
-        takeStackTracesIntoAccountButton.setSelection(getPreferenceStore()
-                .getBoolean(IConstants.TAKE_STACK_TRACES_INTO_ACCOUNT));
+        wideScopeThreadFilterButton = new Button(group, SWT.CHECK);
+        wideScopeThreadFilterButton
+                .setText(Messages.wideScopeThreadFilterLabel);
+        wideScopeThreadFilterButton.setSelection(getPreferenceStore()
+                .getBoolean(IConstants.WIDE_SCOPE_THREAD_FILTER));
 
         GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
         gridData.horizontalSpan = 2;
-        takeStackTracesIntoAccountButton.setLayoutData(gridData);
+        wideScopeThreadFilterButton.setLayoutData(gridData);
+    }
+
+    /**
+     * Creates the memory group.
+     * 
+     * @param parent
+     *            The parent composite
+     */
+    private void createMemoryGroup(Composite parent) {
+        Group group = new Group(parent, SWT.NONE);
+        group.setText(Messages.memoryGroupLabel);
+        GridLayout layout = new GridLayout(1, false);
+        group.setLayout(layout);
+        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        wideScopeSWTResourcesFilterButton = new Button(group, SWT.CHECK);
+        wideScopeSWTResourcesFilterButton
+                .setText(Messages.wideScopeSWTResourceFilterLabel);
+        wideScopeSWTResourcesFilterButton.setSelection(getPreferenceStore()
+                .getBoolean(IConstants.WIDE_SCOPE_SWT_RESOURCE_FILTER));
+
+        GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+        gridData.horizontalSpan = 2;
+        wideScopeSWTResourcesFilterButton.setLayoutData(gridData);
     }
 
     /**

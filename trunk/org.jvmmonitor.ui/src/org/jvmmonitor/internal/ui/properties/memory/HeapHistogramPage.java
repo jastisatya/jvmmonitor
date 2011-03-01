@@ -84,9 +84,6 @@ public class HeapHistogramPage extends Composite implements
     /** The action to configure columns. */
     ConfigureColumnsAction configureColumnsAction;
 
-    /** The copy action. */
-    CopyAction copyAction;
-
     /** The columns with visibility state. */
     private LinkedHashMap<String, Boolean> columns;
 
@@ -374,11 +371,10 @@ public class HeapHistogramPage extends Composite implements
      */
     private void createContextMenu(IActionBars actionBars) {
         openAction = new OpenDeclarationAction();
-        copyAction = new CopyAction();
+        final CopyAction copyAction = CopyAction.createCopyAction(actionBars);
         configureColumnsAction = new ConfigureColumnsAction(this);
         heapViewer.addSelectionChangedListener(openAction);
         heapViewer.addSelectionChangedListener(copyAction);
-
         actionBars.setGlobalActionHandler(JdtActionConstants.OPEN, openAction);
         heapViewer.addOpenListener(new IOpenListener() {
             @Override

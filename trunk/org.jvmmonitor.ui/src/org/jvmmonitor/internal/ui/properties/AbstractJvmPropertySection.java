@@ -52,7 +52,7 @@ abstract public class AbstractJvmPropertySection extends
         AbstractPropertySection implements IJvmModelChangeListener {
 
     /** The page book. */
-    protected PageBook pageBook;
+    private PageBook pageBook;
 
     /** The error message label. */
     private Label errorMessageLabel;
@@ -261,19 +261,6 @@ abstract public class AbstractJvmPropertySection extends
      */
     public boolean isRefreshSuspended() {
         return suspendRefresh;
-    }
-
-    /**
-     * Sets the error message label.
-     * 
-     * @param message
-     *            The message
-     */
-    public void setErrorMessageLabel(String message) {
-        if (!errorMessageLabel.isDisposed() && !pageBook.isDisposed()) {
-            errorMessageLabel.setText(message);
-            pageBook.showPage(errorMessageLabel);
-        }
     }
 
     /**

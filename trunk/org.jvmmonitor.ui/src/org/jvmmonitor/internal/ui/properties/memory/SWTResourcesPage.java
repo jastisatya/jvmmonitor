@@ -13,7 +13,6 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.osgi.util.NLS;
@@ -43,8 +42,8 @@ public class SWTResourcesPage extends AbstractSashForm {
     /** The layout menu id. */
     private static final String LAYOUT_MENU_ID = "layout"; //$NON-NLS-1$
 
-    /** The resource viewer. */
-    TreeViewer resourceViewer;
+    /** The resource filtered viewer. */
+    SWTResourceFilteredTree resourceFilteredTree;
 
     /** The stack trace viewer. */
     StackTraceViewer stackTraceViewer;
@@ -94,6 +93,9 @@ public class SWTResourcesPage extends AbstractSashForm {
                 refreshBackground();
                 updateLocalToolBar(tabSelected);
                 updateLocalMenus(tabSelected);
+                if (!tabSelected) {
+                    resourceFilteredTree.updateStatusLine(null);
+                }
             }
         });
     }
@@ -104,10 +106,11 @@ public class SWTResourcesPage extends AbstractSashForm {
     @Override
     protected void createSashFormControls(SashForm sashForm,
             IActionBars actionBars) {
-        resourceViewer = new SWTResourceFilteredTree(sashForm).getViewer();
+        resourceFilteredTree = new SWTResourceFilteredTree(sashForm, actionBars);
+        TreeViewer resourceViewer = resourceFilteredTree.getViewer();
         resourceViewer.setContentProvider(new SWTResourceContentProvider(
                 resourceViewer));
-        resourceViewer.setLabelProvider(new LabelProvider());
+        resourceViewer.setLabelProvider(new SWTResourceLabelProvider());
         resourceViewer
                 .addSelectionChangedListener(new ISelectionChangedListener() {
                     @Override
@@ -155,8 +158,14 @@ public class SWTResourcesPage extends AbstractSashForm {
                     return;
                 }
 
+                TreeViewer resourceViewer = resourceFilteredTree.getViewer();
                 if (!resourceViewer.getControl().isDisposed()) {
                     resourceViewer.refresh();
+                    IActiveJvm jvm = section.getJvm();
+                    if (jvm != null) {
+                        resourceFilteredTree.updateStatusLine(jvm
+                                .getSWTResourceMonitor().getResources());
+                    }
 
                     // select the first item if no item is selected
                     if (resourceViewer.getSelection().isEmpty()) {
@@ -185,7 +194,7 @@ public class SWTResourcesPage extends AbstractSashForm {
      */
     public void setInput(ISWTResorceInput input) {
         if (!section.isRefreshSuspended()) {
-            resourceViewer.setInput(input);
+            resourceFilteredTree.getViewer().setInput(input);
         }
     }
 

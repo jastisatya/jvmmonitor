@@ -54,7 +54,7 @@ public class MBeansSection extends AbstractJvmPropertySection {
      */
     @Override
     public void refresh() {
-        if (sashForm.isDisposed() || !sashForm.isVisible()) {
+        if (sashForm == null || sashForm.isDisposed() || !sashForm.isVisible()) {
             return;
         }
         IActiveJvm jvm = getJvm();

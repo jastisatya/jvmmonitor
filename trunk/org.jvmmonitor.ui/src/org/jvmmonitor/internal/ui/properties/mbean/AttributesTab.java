@@ -35,7 +35,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.JvmCoreException;
@@ -171,11 +170,9 @@ public class AttributesTab extends Composite {
             @Override
             protected List<Action> createActions(IActionBars actionBars) {
                 List<Action> actions = new ArrayList<Action>();
-                CopyAction copyAction = new CopyAction();
+                CopyAction copyAction = CopyAction.createCopyAction(actionBars);
                 actions.add(copyAction);
                 showInTimelineAction = new MyShowInTimelineAction(section);
-                actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(),
-                        copyAction);
                 actions.add(showInTimelineAction);
                 return actions;
             }

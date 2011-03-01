@@ -6,9 +6,7 @@
  *******************************************************************************/
 package org.jvmmonitor.internal.ui.properties.mbean;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -36,6 +34,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jvmmonitor.core.IActiveJvm;
@@ -51,14 +50,8 @@ import org.jvmmonitor.ui.Activator;
 public class NotificationFilteredTree extends FilteredTree implements
         IConfigurableColumns, IPropertyChangeListener, IDoubleClickListener {
 
-    /** The date format. */
-    private static final String DATE_FORMAT = "yyyy/MM/dd HH:mm:ss.SSS"; //$NON-NLS-1$
-
     /** The columns with visibility state. */
     private LinkedHashMap<String, Boolean> columns;
-
-    /** The copy action. */
-    CopyAction copyAction;
 
     /** The configure columns action. */
     ConfigureColumnsAction configureColumnsAction;
@@ -100,7 +93,7 @@ public class NotificationFilteredTree extends FilteredTree implements
 
         loadColumnsPreference();
         configureTree();
-        createContextMenu();
+        createContextMenu(section.getActionBars());
         setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
 
         Activator.getDefault().getPreferenceStore()
@@ -350,17 +343,12 @@ public class NotificationFilteredTree extends FilteredTree implements
 
     /**
      * Creates the context menu.
+     * 
+     * @param actionBars
+     *            The action bars
      */
-    private void createContextMenu() {
-        copyAction = new CopyAction() {
-            @Override
-            protected String getString(Object element) {
-                if (element instanceof Notification) {
-                    return getNotificationString((Notification) element);
-                }
-                return ""; //$NON-NLS-1$
-            }
-        };
+    private void createContextMenu(IActionBars actionBars) {
+        final CopyAction copyAction = CopyAction.createCopyAction(actionBars);
         clearAction = new Action(Messages.clearLabel) {
             @Override
             public void run() {
@@ -389,32 +377,5 @@ public class NotificationFilteredTree extends FilteredTree implements
 
         Menu menu = menuMgr.createContextMenu(getViewer().getControl());
         getViewer().getControl().setMenu(menu);
-    }
-
-    /**
-     * Gets the notification string.
-     * 
-     * @param notification
-     *            The notification
-     * @return The notification string
-     */
-    String getNotificationString(Notification notification) {
-        StringBuffer buffer = new StringBuffer();
-
-        buffer.append(
-                new SimpleDateFormat(DATE_FORMAT).format(new Date(notification
-                        .getTimeStamp()))).append('\n');
-        buffer.append(Messages.sequenceNumberLabel).append(' ')
-                .append(notification.getSequenceNumber()).append('\n');
-        buffer.append(Messages.sourceLabel).append(' ')
-                .append(notification.getSource()).append('\n');
-        buffer.append(Messages.typeLabel).append(' ')
-                .append(notification.getType()).append("\n\n"); //$NON-NLS-1$
-        buffer.append(notification.getMessage()).append('\n');
-
-        new AttributeParser()
-                .parseObject(buffer, notification.getUserData(), 0);
-
-        return buffer.toString();
     }
 }

@@ -20,8 +20,11 @@ public interface IConstants {
     /** The preference key for update period. */
     static final String UPDATE_PERIOD = "UpdatePeriod";
 
-    /** The preference key for threads filter. */
-    static final String TAKE_STACK_TRACES_INTO_ACCOUNT = "TakeStackTracesIntoAccount";
+    /** The preference key for threads filter to take stack traces into account. */
+    static final String WIDE_SCOPE_THREAD_FILTER = "WideScopeThreadFilter";
+
+    /** The preference key for SWT resources filter to take stack traces into account. */
+    static final String WIDE_SCOPE_SWT_RESOURCE_FILTER = "WideScopeSWTResourcesFilter";
 
     /** The preference key for default chart set. */
     static final String DEFAULT_CHART_SET = "DefaultChartSet";

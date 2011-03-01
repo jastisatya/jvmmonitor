@@ -6,17 +6,29 @@
  *******************************************************************************/
 package org.jvmmonitor.internal.ui.properties.memory;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.StatusLineContributionItem;
+import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.jvmmonitor.core.ISWTResourceElement;
 import org.jvmmonitor.internal.ui.actions.CopyAction;
 
 /**
@@ -24,17 +36,20 @@ import org.jvmmonitor.internal.ui.actions.CopyAction;
  */
 public class SWTResourceFilteredTree extends FilteredTree {
 
-    /** The copy action. */
-    CopyAction copyAction;
+    /** The action bars. */
+    private IActionBars actionBars;
 
     /**
      * The constructor.
      * 
      * @param parent
      *            The parent composite
+     * @param actionBars
+     *            The action bars
      */
-    protected SWTResourceFilteredTree(Composite parent) {
+    protected SWTResourceFilteredTree(Composite parent, IActionBars actionBars) {
         super(parent, SWT.MULTI | SWT.FULL_SELECTION, new PatternFilter(), true);
+        this.actionBars = actionBars;
 
         configureTree();
         createContextMenu();
@@ -53,6 +68,54 @@ public class SWTResourceFilteredTree extends FilteredTree {
         data.horizontalIndent = 2;
         data.verticalIndent = 2;
         filterComposite.setLayoutData(data);
+    }
+
+    /**
+     * Updates the status line.
+     * 
+     * @param resourceElements
+     *            The SWT resource elements
+     */
+    public void updateStatusLine(ISWTResourceElement[] resourceElements) {
+        IStatusLineManager manager = actionBars.getStatusLineManager();
+
+        IContributionItem[] items = manager.getItems();
+        StatusLineContributionItem resourceCountContributionItem = null;
+        for (IContributionItem item : items) {
+            if (item instanceof StatusLineContributionItem) {
+                resourceCountContributionItem = (StatusLineContributionItem) item;
+            }
+        }
+
+        // create the status line
+        if (resourceCountContributionItem == null) {
+            resourceCountContributionItem = new StatusLineContributionItem(
+                    "ResourceCountContributionItem"); //$NON-NLS-1$
+            manager.add(resourceCountContributionItem);
+        }
+
+        if (resourceElements == null) {
+            resourceCountContributionItem.setText(Util.ZERO_LENGTH_STRING);
+            return;
+        }
+
+        Map<String, Integer> resources = new HashMap<String, Integer>();
+        for (ISWTResourceElement resourceElement : resourceElements) {
+            String name = resourceElement.getName().split(" ")[0]; //$NON-NLS-1$
+            Integer count = resources.get(name);
+            resources.put(name, count == null ? 1 : ++count);
+        }
+
+        // set text on status line
+        List<String> list = new ArrayList<String>(resources.keySet());
+        Collections.sort(list);
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("Total: ").append(resourceElements.length); //$NON-NLS-1$
+        for (String name : list) {
+            buffer.append(", ").append(name); //$NON-NLS-1$
+            buffer.append(": ").append(resources.get(name)); //$NON-NLS-1$
+        }
+        resourceCountContributionItem.setText(buffer.toString());
     }
 
     /**
@@ -77,7 +140,7 @@ public class SWTResourceFilteredTree extends FilteredTree {
      * Creates the context menu.
      */
     private void createContextMenu() {
-        copyAction = new CopyAction();
+        final CopyAction copyAction = CopyAction.createCopyAction(actionBars);
         getViewer().addSelectionChangedListener(copyAction);
 
         MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$

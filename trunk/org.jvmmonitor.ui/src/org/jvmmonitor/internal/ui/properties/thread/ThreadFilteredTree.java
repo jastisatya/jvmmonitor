@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jvmmonitor.internal.ui.IConfigurableColumns;
@@ -41,9 +42,6 @@ public class ThreadFilteredTree extends FilteredTree implements
     /** The columns with visibility state. */
     private LinkedHashMap<String, Boolean> columns;
 
-    /** The copy action. */
-    CopyAction copyAction;
-
     /** The configure columns action. */
     ConfigureColumnsAction configureColumnsAction;
 
@@ -52,13 +50,15 @@ public class ThreadFilteredTree extends FilteredTree implements
      * 
      * @param parent
      *            The parent composite
+     * @param actionBars
+     *            The action bars
      */
-    protected ThreadFilteredTree(Composite parent) {
+    protected ThreadFilteredTree(Composite parent, IActionBars actionBars) {
         super(parent, SWT.MULTI | SWT.FULL_SELECTION, new PatternFilter(), true);
 
         loadColumnsPreference();
         configureTree();
-        createContextMenu();
+        createContextMenu(actionBars);
         setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
 
         Activator.getDefault().getPreferenceStore()
@@ -227,10 +227,13 @@ public class ThreadFilteredTree extends FilteredTree implements
 
     /**
      * Creates the context menu.
+     * 
+     * @param actionBars
+     *            The action bars
      */
-    private void createContextMenu() {
-        copyAction = new CopyAction();
+    private void createContextMenu(IActionBars actionBars) {
         configureColumnsAction = new ConfigureColumnsAction(this);
+        final CopyAction copyAction = CopyAction.createCopyAction(actionBars);
         getViewer().addSelectionChangedListener(copyAction);
 
         MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
