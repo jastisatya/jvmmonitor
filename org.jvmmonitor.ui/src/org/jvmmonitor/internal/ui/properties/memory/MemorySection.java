@@ -39,8 +39,10 @@ public class MemorySection extends AbstractJvmPropertySection {
     /** The tab folder. */
     private CTabFolder tabFolder;
 
+    /** The heap histogram page book. */
     private PageBook heapHistogramPageBook;
 
+    /** The heap histogram message label. */
     private Label heapHistogramMessageLabel;
 
     /*

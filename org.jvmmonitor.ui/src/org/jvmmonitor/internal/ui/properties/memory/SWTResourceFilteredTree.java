@@ -20,6 +20,8 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.StatusLineContributionItem;
 import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -141,7 +143,17 @@ public class SWTResourceFilteredTree extends FilteredTree {
      */
     private void createContextMenu() {
         final CopyAction copyAction = CopyAction.createCopyAction(actionBars);
-        getViewer().addSelectionChangedListener(copyAction);
+        getViewer().getControl().addFocusListener(new FocusListener() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                getViewer().removeSelectionChangedListener(copyAction);
+            }
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                getViewer().addSelectionChangedListener(copyAction);
+            }
+        });
 
         MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
         menuMgr.setRemoveAllWhenShown(true);

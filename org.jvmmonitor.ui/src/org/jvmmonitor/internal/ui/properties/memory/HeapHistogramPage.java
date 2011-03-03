@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.ui.actions.JdtActionConstants;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -30,6 +29,8 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridLayout;
@@ -77,9 +78,6 @@ public class HeapHistogramPage extends Composite implements
 
     /** The action to dump hprof. */
     DumpHprofAction dumpHprofAction;
-
-    /** the open action */
-    OpenDeclarationAction openAction;
 
     /** The action to configure columns. */
     ConfigureColumnsAction configureColumnsAction;
@@ -370,12 +368,22 @@ public class HeapHistogramPage extends Composite implements
      *            The action bars
      */
     private void createContextMenu(IActionBars actionBars) {
-        openAction = new OpenDeclarationAction();
+        final OpenDeclarationAction openAction = OpenDeclarationAction
+                .createOpenDeclarationAction(actionBars);
         final CopyAction copyAction = CopyAction.createCopyAction(actionBars);
         configureColumnsAction = new ConfigureColumnsAction(this);
         heapViewer.addSelectionChangedListener(openAction);
-        heapViewer.addSelectionChangedListener(copyAction);
-        actionBars.setGlobalActionHandler(JdtActionConstants.OPEN, openAction);
+        heapViewer.getControl().addFocusListener(new FocusListener() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                heapViewer.removeSelectionChangedListener(copyAction);
+            }
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                heapViewer.addSelectionChangedListener(copyAction);
+            }
+        });
         heapViewer.addOpenListener(new IOpenListener() {
             @Override
             public void open(OpenEvent event) {

@@ -12,7 +12,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.ui.actions.JdtActionConstants;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
@@ -457,8 +456,7 @@ public class CpuSection extends AbstractJvmPropertySection {
     private void contributeToActionBars() {
         IActionBars actionBars = getActionBars();
 
-        actionBars.setGlobalActionHandler(JdtActionConstants.OPEN,
-                new OpenDeclarationAction());
+        OpenDeclarationAction.createOpenDeclarationAction(actionBars);
         actionBars.setGlobalActionHandler(ActionFactory.FIND.getId(),
                 new FindAction());
         CopyAction.createCopyAction(actionBars);

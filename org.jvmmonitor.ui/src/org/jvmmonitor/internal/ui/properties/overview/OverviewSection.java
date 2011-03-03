@@ -128,7 +128,8 @@ public class OverviewSection extends AbstractJvmPropertySection {
      */
     @Override
     public void refresh() {
-        if (getJvm() == null || !viewer.getControl().isVisible()) {
+        if (getJvm() == null || viewer.getControl().isDisposed()
+                || !viewer.getControl().isVisible()) {
             return;
         }
 
