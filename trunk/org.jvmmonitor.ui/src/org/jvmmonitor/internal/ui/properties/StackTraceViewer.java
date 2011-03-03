@@ -6,7 +6,6 @@
  *******************************************************************************/
 package org.jvmmonitor.internal.ui.properties;
 
-import org.eclipse.jdt.ui.actions.JdtActionConstants;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -15,6 +14,8 @@ import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
@@ -48,8 +49,17 @@ public class StackTraceViewer extends TableViewer {
         createContextMenu(actionBars);
 
         addSelectionChangedListener(openAction);
-        addSelectionChangedListener(copyAction);
+        getControl().addFocusListener(new FocusListener() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                removeSelectionChangedListener(copyAction);
+            }
 
+            @Override
+            public void focusGained(FocusEvent e) {
+                addSelectionChangedListener(copyAction);
+            }
+        });
         addOpenListener(new IOpenListener() {
             @Override
             public void open(OpenEvent event) {
@@ -67,8 +77,8 @@ public class StackTraceViewer extends TableViewer {
     private void createContextMenu(IActionBars actionBars) {
 
         // create actions
-        openAction = new OpenDeclarationAction();
-        actionBars.setGlobalActionHandler(JdtActionConstants.OPEN, openAction);
+        openAction = OpenDeclarationAction
+                .createOpenDeclarationAction(actionBars);
         copyAction = CopyAction.createCopyAction(actionBars);
 
         // create menu manager

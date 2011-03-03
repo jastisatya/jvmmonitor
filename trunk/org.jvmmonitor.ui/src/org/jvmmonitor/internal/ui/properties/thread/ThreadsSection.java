@@ -61,7 +61,8 @@ public class ThreadsSection extends AbstractJvmPropertySection {
      */
     @Override
     public void refresh() {
-        if (getJvm() == null || !sashForm.isVisible()) {
+        if (getJvm() == null || sashForm == null || sashForm.isDisposed()
+                || !sashForm.isVisible()) {
             return;
         }
 

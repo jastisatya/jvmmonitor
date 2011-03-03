@@ -38,6 +38,7 @@ import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -45,6 +46,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
@@ -84,6 +86,31 @@ public class OpenDeclarationAction extends Action implements
         setActionDefinitionId(IJavaEditorActionDefinitionIds.OPEN_EDITOR);
 
         innterClassIndices = new ArrayList<Integer>();
+    }
+
+    /**
+     * Creates open declaration action. If the open declaration action is found
+     * in the given action bars, the found action will be returned, otherwise
+     * the open declaration action will be newly created and set to the given
+     * action bars as a global action.
+     * 
+     * @param actionBars
+     *            The action bars.
+     * @return The open declaration action
+     */
+    public static OpenDeclarationAction createOpenDeclarationAction(
+            IActionBars actionBars) {
+        IAction action = actionBars
+                .getGlobalActionHandler(IJavaEditorActionDefinitionIds.OPEN_EDITOR);
+        if (action instanceof OpenDeclarationAction) {
+            return (OpenDeclarationAction) action;
+        }
+
+        OpenDeclarationAction openDeclarationAction = new OpenDeclarationAction();
+        actionBars.setGlobalActionHandler(
+                IJavaEditorActionDefinitionIds.OPEN_EDITOR,
+                openDeclarationAction);
+        return openDeclarationAction;
     }
 
     /*
