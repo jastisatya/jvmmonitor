@@ -219,8 +219,6 @@ abstract public class AbstractJvmPropertySection extends
             return;
         }
 
-        updateActions();
-
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
@@ -462,13 +460,6 @@ abstract public class AbstractJvmPropertySection extends
     }
 
     /**
-     * Updates the enable state of actions.
-     */
-    protected void updateActions() {
-        // do nothing
-    }
-
-    /**
      * Updates the page.
      */
     protected void updatePage() {
@@ -564,7 +555,6 @@ abstract public class AbstractJvmPropertySection extends
         if (toolBarManager != null) {
             addToolBarActions(toolBarManager);
             toolBarManager.update(false);
-            updateActions();
         }
     }
 
@@ -582,7 +572,6 @@ abstract public class AbstractJvmPropertySection extends
                     addLocalMenus(menuManager);
                     menuManager.add(preferencesAction);
                     menuManager.update(false);
-                    updateActions();
                 }
             }
         });

@@ -151,8 +151,17 @@ public class CpuSection extends AbstractJvmPropertySection {
         refreshJob = new RefreshJob(NLS.bind(
                 Messages.refeshCpuProfileDataJobLabel, getJvm().getPid()),
                 getId() + "Tree") { //$NON-NLS-1$
+
+            private boolean isCpuProfilerReady;
+            private boolean isPackageSpecified;
+            private boolean enableSuspend;
+
             @Override
             protected void refreshModel(IProgressMonitor monitor) {
+                isCpuProfilerReady = isCpuProfilerReady();
+                isPackageSpecified = isPackageSpecified();
+                enableSuspend = isCpuProfilerRunning();
+
                 IActiveJvm jvm = getJvm();
                 if (jvm == null
                         || !jvm.isConnected()
@@ -162,10 +171,8 @@ public class CpuSection extends AbstractJvmPropertySection {
                 }
 
                 try {
-                    if (jvm.isConnected()) {
-                        jvm.getCpuProfiler().refreshBciProfileCache(monitor);
-                        jvm.getCpuProfiler().getCpuModel().refreshMaxValues();
-                    }
+                    jvm.getCpuProfiler().refreshBciProfileCache(monitor);
+                    jvm.getCpuProfiler().getCpuModel().refreshMaxValues();
                 } catch (JvmCoreException e) {
                     Activator.log(Messages.refreshCpuProfileDataFailedMsg, e);
                 }
@@ -173,13 +180,23 @@ public class CpuSection extends AbstractJvmPropertySection {
 
             @Override
             protected void refreshUI() {
+                IActiveJvm jvm = getJvm();
+                boolean isConnected = jvm != null && jvm.isConnected();
+
+                suspendCpuProfilingAction.setEnabled(enableSuspend
+                        && isCpuProfilerReady && isConnected);
+                resumeCpuProfilingAction.setEnabled(!enableSuspend
+                        && isCpuProfilerReady && isPackageSpecified
+                        && isConnected);
+                clearCpuProfilingDataAction.setEnabled(isCpuProfilerReady
+                        && isPackageSpecified && isConnected);
+                dumpCpuProfilingDataAction.setEnabled(!hasErrorMessage());
+
                 if (callTree.isDisposed() || hotSpots.isDisposed()
                         || callerCallee.isDisposed()) {
                     return;
                 }
 
-                IActiveJvm jvm = getJvm();
-                boolean isConnected = jvm != null && jvm.isConnected();
                 refreshBackground(callTree.getChildren(), isConnected);
                 refreshBackground(hotSpots.getChildren(), isConnected);
                 refreshBackground(callerCallee.getChildren(), isConnected);
@@ -279,53 +296,6 @@ public class CpuSection extends AbstractJvmPropertySection {
         manager.remove(clearCpuProfilingDataAction.getId());
         manager.remove(dumpCpuProfilingDataAction.getId());
         manager.remove(separator);
-    }
-
-    /*
-     * @see AbstractJvmPropertySection#updateActions()
-     */
-    @Override
-    protected void updateActions() {
-        if (getJvm() == null || !isVisible()) {
-            return;
-        }
-
-        refreshJob = new RefreshJob(NLS.bind(
-                Messages.refreshLocalToolbarJobLabel, getJvm().getPid()),
-                getId() + "Actions") { //$NON-NLS-1$
-            private boolean isCpuProfilerReady;
-            private boolean isPackageSpecified;
-            private boolean enableSuspend;
-
-            @Override
-            protected void refreshModel(IProgressMonitor monitor) {
-                /*
-                 * The state can be changed not only by this plug-in but also by
-                 * any other applications via MXBean.
-                 */
-                isCpuProfilerReady = isCpuProfilerReady();
-                isPackageSpecified = isPackageSpecified();
-                enableSuspend = isCpuProfilerRunning();
-            }
-
-            @Override
-            protected void refreshUI() {
-                boolean enableResume = !enableSuspend;
-                IActiveJvm jvm = getJvm();
-                boolean isConnected = jvm != null && jvm.isConnected();
-
-                suspendCpuProfilingAction.setEnabled(enableSuspend
-                        && isCpuProfilerReady && isConnected);
-                resumeCpuProfilingAction.setEnabled(enableResume
-                        && isCpuProfilerReady && isPackageSpecified
-                        && isConnected);
-                clearCpuProfilingDataAction.setEnabled(isCpuProfilerReady
-                        && isPackageSpecified && isConnected);
-                dumpCpuProfilingDataAction.setEnabled(!hasErrorMessage());
-            }
-        };
-
-        refreshJob.schedule();
     }
 
     /*
@@ -557,7 +527,7 @@ public class CpuSection extends AbstractJvmPropertySection {
             }
         }
         if (type == null
-                || jvm.getCpuProfiler().getState() == ProfilerState.AGENT_NOT_LOADED) {
+                || jvm.getCpuProfiler().getState() != ProfilerState.READY) {
             type = DEFAULT_PROFILER_TYPE;
         }
 

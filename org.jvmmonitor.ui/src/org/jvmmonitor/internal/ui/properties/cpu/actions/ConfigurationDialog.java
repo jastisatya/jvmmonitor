@@ -73,6 +73,9 @@ public class ConfigurationDialog extends SelectionDialog {
     /** The error message label. */
     private Label warningMessageLabel;
 
+    /** The BCI button. */
+    private Button bciButton;
+
     /**
      * The constructor.
      * 
@@ -197,11 +200,14 @@ public class ConfigurationDialog extends SelectionDialog {
         String warningMessage = ""; //$NON-NLS-1$
         if (profilerState == ProfilerState.INVALID_VERSION) {
             warningMessage = Messages.invalidVersionMsg;
-        } else if (profilerState == ProfilerState.AGENT_NOT_LOADED) {
+        } else if (profilerState == ProfilerState.AGENT_NOT_LOADED
+                || profilerState == ProfilerState.UNKNOWN) {
             warningMessage = Messages.agentNotLoadedMsg;
         }
         warningImageLabel.setVisible(!warningMessage.isEmpty());
         warningMessageLabel.setText(warningMessage);
+        bciButton.setEnabled(profilerState == ProfilerState.READY
+                || profilerState == ProfilerState.RUNNING);
 
         getOkButton().setEnabled(isValid);
         return isValid;
@@ -232,7 +238,7 @@ public class ConfigurationDialog extends SelectionDialog {
 
         createSamplingPeriodText(group);
 
-        Button bciButton = new Button(group, SWT.RADIO);
+        bciButton = new Button(group, SWT.RADIO);
         bciButton.setText(Messages.bciButtonLabel);
         bciButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -405,8 +411,8 @@ public class ConfigurationDialog extends SelectionDialog {
                     for (Object object : elements) {
                         packages.add(((String) object).trim());
                     }
-                    String[] items = packages
-                            .toArray(new String[packages.size()]);
+                    String[] items = packages.toArray(new String[packages
+                            .size()]);
                     Arrays.sort(items);
                     packagesViewer.setInput(items);
                     packagesViewer.refresh();

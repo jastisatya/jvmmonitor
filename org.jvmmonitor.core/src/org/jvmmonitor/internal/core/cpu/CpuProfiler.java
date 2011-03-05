@@ -290,6 +290,11 @@ public class CpuProfiler implements ICpuProfiler {
         if (type == ProfilerType.BCI) {
             validateAgent();
 
+            ProfilerState state = getState();
+            if (state != ProfilerState.READY && state != ProfilerState.RUNNING) {
+                return;
+            }
+
             StringBuffer buffer = new StringBuffer();
             for (String item : packages) {
                 if (buffer.length() > 0) {
@@ -319,9 +324,15 @@ public class CpuProfiler implements ICpuProfiler {
     public Set<String> getProfiledPackages() throws JvmCoreException {
         if (type == ProfilerType.BCI) {
             validateAgent();
+
+            Set<String> packages = new HashSet<String>();
+            ProfilerState state = getState();
+            if (state != ProfilerState.READY && state != ProfilerState.RUNNING) {
+                return packages;
+            }
+
             ObjectName objectName = jvm.getMBeanServer().getObjectName(
                     PROFILER_MXBEAN_NAME);
-            Set<String> packages = new HashSet<String>();
             if (jvm.isConnected()) {
                 for (String item : (String[]) jvm.getMBeanServer()
                         .getAttribute(objectName, PROFILED_PACKAGES)) {

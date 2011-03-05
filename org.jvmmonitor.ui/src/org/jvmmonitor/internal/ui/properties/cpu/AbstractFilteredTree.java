@@ -8,7 +8,6 @@ package org.jvmmonitor.internal.ui.properties.cpu;
 
 import java.util.LinkedHashMap;
 
-import org.eclipse.jdt.ui.actions.JdtActionConstants;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -214,8 +213,7 @@ abstract public class AbstractFilteredTree extends FilteredTree implements
     protected void createContextMenu() {
 
         // create actions
-        openAction = (OpenDeclarationAction) actionBars
-                .getGlobalActionHandler(JdtActionConstants.OPEN);
+        openAction = OpenDeclarationAction.createOpenDeclarationAction(actionBars);
         copyAction = (CopyAction) actionBars
                 .getGlobalActionHandler(ActionFactory.COPY.getId());
         findAction = (FindAction) actionBars

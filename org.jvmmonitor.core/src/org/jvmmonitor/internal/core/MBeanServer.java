@@ -544,8 +544,7 @@ public class MBeanServer implements IMBeanServer {
                 new String[] { String.class.getCanonicalName(), "boolean" }); //$NON-NLS-1$
 
         if (jvm.isRemote() && transfer) {
-            fileStore = dump(SnapshotType.Hprof,
-                    new File(hprofFileName).getName(), monitor);
+            fileStore = dump(SnapshotType.Hprof, hprofFileName, monitor);
         }
 
         return fileStore;
@@ -1087,15 +1086,17 @@ public class MBeanServer implements IMBeanServer {
     private IFileStore dump(SnapshotType type, String dumpFileName,
             IProgressMonitor monitor) throws JvmCoreException {
 
-        String fileName = dumpFileName;
-        if (fileName == null) {
+        String simpleFileName;
+        if (dumpFileName == null) {
             StringBuffer stringBuffer = new StringBuffer();
             stringBuffer.append(new Date().getTime()).append('.')
                     .append(type.getExtension());
-            fileName = stringBuffer.toString();
+            simpleFileName = stringBuffer.toString();
+        } else {
+            simpleFileName = new File(dumpFileName).getName();
         }
 
-        IFileStore fileStore = Util.getFileStore(fileName,
+        IFileStore fileStore = Util.getFileStore(simpleFileName,
                 jvm.getBaseDirectory());
 
         // restore the terminated JVM if already removed
@@ -1123,7 +1124,7 @@ public class MBeanServer implements IMBeanServer {
                         String.class.getCanonicalName(), "int", "int" };//$NON-NLS-1$ //$NON-NLS-2$
                 do {
                     bytes = (byte[]) invoke(objectName, "read", new Object[] { //$NON-NLS-1$
-                            fileName, offset, SIZE }, SIGNATURES);
+                            dumpFileName, offset, SIZE }, SIGNATURES);
                     os.write(bytes);
                     offset += SIZE;
                     if (monitor != null && monitor.isCanceled()) {

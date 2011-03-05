@@ -131,9 +131,6 @@ public final class Messages extends NLS {
     public static String refeshCpuProfileDataJobLabel;
 
     /** */
-    public static String refreshLocalToolbarJobLabel;
-
-    /** */
     public static String refeshCpuSectionJobLabel;
 
     /** */

@@ -75,7 +75,7 @@ public final class Messages extends NLS {
 
     /** */
     public static String layoutLabel;
-    
+
     // dump hprof dialog
 
     /** */
@@ -89,6 +89,12 @@ public final class Messages extends NLS {
 
     /** */
     public static String transferHprofFileLabel;
+
+    /** */
+    public static String transferingHprofFileNotSupportedMsg;
+
+    /** */
+    public static String fileNameEmptyMsg;
 
     // instruction message
 
@@ -139,7 +145,7 @@ public final class Messages extends NLS {
 
     /** */
     public static String refreshHeapDataFailedMsg;
-    
+
     /** */
     public static String clearSWTResoucesFailedMsg;
 }
