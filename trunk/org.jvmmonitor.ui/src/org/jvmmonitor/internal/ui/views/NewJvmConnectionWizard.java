@@ -57,7 +57,7 @@ public class NewJvmConnectionWizard extends Wizard implements INewWizard {
      */
     @Override
     public void addPages() {
-        page = new NewJvmConnectionWizardPage();
+        page = new NewJvmConnectionWizardPage(viewer.getSelection());
         addPage(page);
     }
 

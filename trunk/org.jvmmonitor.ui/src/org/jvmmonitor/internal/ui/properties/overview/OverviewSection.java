@@ -22,6 +22,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -108,7 +110,12 @@ public class OverviewSection extends AbstractJvmPropertySection {
         viewer.setContentProvider(new OverviewContentProvider(
                 overviewProperties));
         viewer.setLabelProvider(new OverviewLabelProvider());
-
+        ((Tree) viewer.getControl()).addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                storeTreeExpansionState();
+            }
+        });
         PlatformUI.getWorkbench().getHelpSystem()
                 .setHelp(parent, IHelpContextIds.OVERVIEW_PAGE);
     }
@@ -226,7 +233,7 @@ public class OverviewSection extends AbstractJvmPropertySection {
     /**
      * Stores the tree expansion state.
      */
-    private void storeTreeExpansionState() {
+    void storeTreeExpansionState() {
         Tree tree = (Tree) viewer.getControl();
         if (tree.isDisposed()) {
             return;

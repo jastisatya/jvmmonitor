@@ -208,7 +208,7 @@ public class HeapHistogramPage extends Composite implements
      */
     public void refresh() {
         // for dump editor
-        if (section == null || !isSupported()) {
+        if (section == null) {
             return;
         }
 
@@ -216,6 +216,9 @@ public class HeapHistogramPage extends Composite implements
                 .getJvm().getPid()), getId()) {
             @Override
             protected void refreshModel(IProgressMonitor monitor) {
+                if (!isSupported()) {
+                    return;
+                }
                 try {
                     IActiveJvm jvm = section.getJvm();
                     if (jvm != null && jvm.isConnected() && !jvm.isRemote()
@@ -230,19 +233,24 @@ public class HeapHistogramPage extends Composite implements
             @Override
             protected void refreshUI() {
                 IActiveJvm jvm = section.getJvm();
-                if (!heapViewer.getControl().isDisposed() && jvm.isConnected()) {
-                    heapViewer.refresh();
-                }
                 boolean isConnected = jvm != null && jvm.isConnected();
                 boolean isRemote = jvm != null && jvm.isRemote();
-
+                boolean isSupported = isSupported();
+                if (!heapViewer.getControl().isDisposed()
+                        && heapViewer.getControl().isVisible() && isConnected
+                        && isSupported) {
+                    heapViewer.refresh();
+                }
                 refreshBackground();
 
                 dumpHprofAction.setEnabled(isConnected);
-                dumpHeapAction.setEnabled(!section.hasErrorMessage());
-                refreshAction.setEnabled(isConnected && !isRemote);
+                dumpHeapAction.setEnabled(!section.hasErrorMessage()
+                        && !isRemote && isSupported);
+                refreshAction.setEnabled(isConnected && !isRemote
+                        && isSupported);
                 garbageCollectorAction.setEnabled(isConnected);
-                clearHeapDeltaAction.setEnabled(isConnected && !isRemote);
+                clearHeapDeltaAction.setEnabled(isConnected && !isRemote
+                        && isSupported);
             }
         }.schedule();
     }

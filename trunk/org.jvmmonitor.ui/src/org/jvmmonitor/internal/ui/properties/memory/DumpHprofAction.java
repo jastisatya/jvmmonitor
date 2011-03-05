@@ -22,19 +22,31 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.dialogs.IInputValidator;
-import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.util.Util;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.ISnapshot.SnapshotType;
 import org.jvmmonitor.core.JvmCoreException;
+import org.jvmmonitor.core.cpu.ICpuProfiler.ProfilerState;
+import org.jvmmonitor.core.cpu.ICpuProfiler.ProfilerType;
 import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
 import org.jvmmonitor.internal.ui.views.OpenSnapshotAction;
 import org.jvmmonitor.ui.Activator;
@@ -82,13 +94,14 @@ public class DumpHprofAction extends Action {
         try {
             if (jvm.isRemote()) {
                 final FileNameInputDialog dialog = new FileNameInputDialog(
-                        getInitialFileName(jvm));
+                        section.getPart().getSite().getShell(),
+                        getInitialFileName(jvm), isAgentLoaded(jvm));
 
                 Display.getDefault().syncExec(new Runnable() {
                     @Override
                     public void run() {
                         if (dialog.open() == Window.OK) {
-                            fileName[0] = dialog.getValue();
+                            fileName[0] = dialog.getFileName();
                             transfer[0] = dialog.isFileTransfered();
                         }
                     }
@@ -182,67 +195,72 @@ public class DumpHprofAction extends Action {
     }
 
     /**
-     * The input validator.
+     * Gets the state indicating if agent is loaded.
+     * 
+     * @param jvm
+     *            The JVM
+     * @return <tt>true</tt> if agent is loaded
      */
-    private static class InputValidator implements IInputValidator {
-
-        /** The invalid characters. */
-        private static final char[] INVALID_CHARACTERS = new char[] { '*', '?',
-                '"', '<', '>', '|' };
-
-        /**
-         * The constructor.
-         */
-        public InputValidator() {
-            // do nothing
-        }
-
-        /*
-         * @see IInputValidator#isValid(String)
-         */
-        @Override
-        public String isValid(String newText) {
-
-            // check if text is empty
-            if (newText.isEmpty()) {
-                return ""; //$NON-NLS-1$
-            }
-
-            // check if invalid characters are contained
-            for (char c : INVALID_CHARACTERS) {
-                if (newText.indexOf(c) != -1) {
-                    return Messages.pathContainsInvalidCharactersMsg;
-                }
-            }
-
-            return null;
-        }
+    boolean isAgentLoaded(IActiveJvm jvm) {
+        ProfilerState state = jvm.getCpuProfiler().getState(ProfilerType.BCI);
+        return state == ProfilerState.READY || state == ProfilerState.RUNNING;
     }
 
     /**
      * The dialog to input file name.
      */
-    private class FileNameInputDialog extends InputDialog {
+    private static class FileNameInputDialog extends Dialog {
 
         /** The dialog settings key for transfer. */
         private static final String TRANSFER_KEY = "transfer"; //$NON-NLS-1$
 
+        /** The invalid characters. */
+        private static final char[] INVALID_CHARACTERS = new char[] { '*', '?',
+                '"', '<', '>', '|' };
+
         /** <tt>true</tt> to transfer hprof file to local host. */
         boolean isFileTransfered;
+
+        /** The file name text field. */
+        Text fileNameField;
+
+        /** The message label. */
+        private Label messageLabel;
+
+        /** The file name. */
+        String fileName;
+
+        /** The state indicating if agent is loaded. */
+        private boolean isAgentLoaded;
+
+        /** The label to show info/error image. */
+        private Label imageLabel;
 
         /**
          * The constructor.
          * 
          * @param initialFileName
          *            The initial file name
+         * @param isAgentLoaded
          */
-        public FileNameInputDialog(String initialFileName) {
-            super(section.getPart().getSite().getShell(),
-                    Messages.dumpHprofTitle, Messages.hprofFileLabel,
-                    initialFileName, new InputValidator());
+        public FileNameInputDialog(Shell shell, String initialFileName,
+                boolean isAgentLoaded) {
+            super(shell);
+            this.fileName = initialFileName;
+            this.isAgentLoaded = isAgentLoaded;
             isFileTransfered = Activator.getDefault()
                     .getDialogSettings(getClass().getName())
                     .getBoolean(TRANSFER_KEY);
+        }
+
+        /*
+         * @see Dialog#create()
+         */
+        @Override
+        public void create() {
+            super.create();
+            getShell().setText(Messages.dumpHprofTitle);
+            validate();
         }
 
         /*
@@ -250,17 +268,23 @@ public class DumpHprofAction extends Action {
          */
         @Override
         protected Control createDialogArea(Composite parent) {
-            Composite control = (Composite) super.createDialogArea(parent);
-            final Button button = new Button(control, SWT.CHECK);
-            button.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    isFileTransfered = button.getSelection();
-                }
-            });
-            button.setText(Messages.transferHprofFileLabel);
-            button.setSelection(isFileTransfered);
-            return control;
+            Composite composite = (Composite) super.createDialogArea(parent);
+
+            addFileNameField(composite);
+            addTransferFileButton(composite);
+            addMessageLabel(composite);
+
+            applyDialogFont(composite);
+
+            return composite;
+        }
+
+        /*
+         * @see Dialog#isResizable()
+         */
+        @Override
+        protected boolean isResizable() {
+            return true;
         }
 
         /*
@@ -274,12 +298,132 @@ public class DumpHprofAction extends Action {
         }
 
         /**
+         * Gets the file name.
+         * 
+         * @return The file name
+         */
+        protected String getFileName() {
+            return fileName;
+        }
+
+        /**
+         * Adds the file name text field.
+         * 
+         * @param parent
+         *            The parent composite
+         */
+        private void addFileNameField(Composite parent) {
+            Composite composite = new Composite(parent, SWT.NULL);
+            composite.setLayout(new GridLayout(1, false));
+            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+            
+            Label label = new Label(composite, SWT.NONE);
+            label.setText(Messages.hprofFileLabel);
+
+            fileNameField = new Text(composite, SWT.BORDER);
+            GridData gridData = new GridData(SWT.FILL, SWT.NONE, true, false);
+            gridData.widthHint = convertHorizontalDLUsToPixels(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH);
+            fileNameField.setLayoutData(gridData);
+
+            fileNameField.setText(fileName);
+            fileNameField.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    if (validate()) {
+                        fileName = fileNameField.getText();
+                    }
+                }
+            });
+        }
+
+        /**
+         * Adds the transfer file button.
+         * 
+         * @param parent
+         *            The parent composite
+         */
+        private void addTransferFileButton(Composite parent) {
+            Composite composite = new Composite(parent, SWT.NULL);
+            composite.setLayout(new GridLayout(1, false));
+            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+            
+            final Button button = new Button(composite, SWT.CHECK);
+            button.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    isFileTransfered = button.getSelection();
+                }
+            });
+            button.setText(Messages.transferHprofFileLabel);
+            button.setSelection(isFileTransfered);
+            button.setEnabled(isAgentLoaded);
+        }
+
+        /**
+         * Adds the message label.
+         * 
+         * @param parent
+         *            The parent composite
+         */
+        private void addMessageLabel(Composite parent) {
+            Composite composite = new Composite(parent, SWT.NULL);
+            composite.setLayout(new GridLayout(2, false));
+            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            imageLabel = new Label(composite, SWT.NONE);
+            imageLabel.setImage(JFaceResources
+                    .getImage(Dialog.DLG_IMG_MESSAGE_INFO));
+
+            messageLabel = new Label(composite, SWT.NONE);
+            messageLabel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        }
+
+        /**
          * Gets the state indicating if file is transfered to local host.
          * 
          * @return <tt>true</tt> if file is transfered to local host
          */
         protected boolean isFileTransfered() {
             return isFileTransfered;
+        }
+
+        /**
+         * Validates the entered file name.
+         * 
+         * @return <tt>true</tt> if the entered file name is valid
+         */
+        boolean validate() {
+
+            // check if agent is loaded
+            String message = Util.ZERO_LENGTH_STRING;
+            Image image = null;
+            if (!isAgentLoaded) {
+                message = Messages.transferingHprofFileNotSupportedMsg;
+                image = JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_INFO);
+            }
+
+            // check if text is empty
+            String newText = fileNameField.getText();
+            if (newText.isEmpty()) {
+                message = Messages.fileNameEmptyMsg;
+                image = JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_ERROR);
+            }
+
+            // check if invalid characters are contained
+            for (char c : INVALID_CHARACTERS) {
+                if (fileNameField.getText().indexOf(c) != -1) {
+                    message = Messages.pathContainsInvalidCharactersMsg;
+                    image = JFaceResources
+                            .getImage(Dialog.DLG_IMG_MESSAGE_ERROR);
+                    break;
+                }
+            }
+
+            imageLabel.setImage(image);
+            messageLabel.setText(message);
+
+            getButton(IDialogConstants.OK_ID).setEnabled(message.isEmpty());
+            return true;
         }
     }
 }

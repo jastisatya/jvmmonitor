@@ -12,6 +12,8 @@ import java.util.List;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -28,6 +30,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.jvmmonitor.core.IHost;
+import org.jvmmonitor.core.IJvm;
 import org.jvmmonitor.core.JvmModel;
 import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.ui.Activator;
@@ -82,11 +85,19 @@ public class NewJvmConnectionWizardPage extends WizardPage {
     /** The host and port radio button. */
     Button hostAndPortButton;
 
+    /** The selection. */
+    private ISelection selection;
+
     /**
      * The constructor.
+     * 
+     * @param selection
+     *            The selection
      */
-    public NewJvmConnectionWizardPage() {
+    public NewJvmConnectionWizardPage(ISelection selection) {
         super(PAGE_NAME);
+
+        this.selection = selection;
         setTitle(Messages.newJvmConnectionPageTitle);
         setDescription(Messages.createNewJvmConnectionMsg);
         ImageDescriptor image = Activator
@@ -269,6 +280,10 @@ public class NewJvmConnectionWizardPage extends WizardPage {
             }
         }
         remoteHostText.setFocus();
+        String hostName = getSelectedHost();
+        if (hostName != null && !IHost.LOCALHOST.equals(hostName)) {
+            remoteHostText.setText(hostName);
+        }
 
         portText = addComboTextField(parent, Messages.portTextLabel,
                 PORT_HISTORY_KEY);
@@ -308,6 +323,24 @@ public class NewJvmConnectionWizardPage extends WizardPage {
         urlText = addComboTextField(parent, Messages.jmxUrlTextLabel,
                 URL_HISTORY_KEY);
         urlText.setEnabled(false);
+    }
+
+    /**
+     * Gets the selected host.
+     * 
+     * @return The selected host, or <tt>null</tt> if not selected
+     */
+    private String getSelectedHost() {
+        if (selection instanceof IStructuredSelection) {
+            Object element = ((IStructuredSelection) selection)
+                    .getFirstElement();
+            if (element instanceof IHost) {
+                return ((IHost) element).getName();
+            } else if (element instanceof IJvm) {
+                return (((IJvm) element).getHost()).getName();
+            }
+        }
+        return null;
     }
 
     /**
@@ -396,6 +429,10 @@ public class NewJvmConnectionWizardPage extends WizardPage {
      * Validates the specified text.
      */
     void validate() {
+        if (hostAndPortButton == null || portText == null) {
+            return; // not yet completed creating controls
+        }
+
         String errorMsg = null;
         if (hostAndPortButton.getSelection()) {
             if (getRemoteHost().isEmpty()) {
