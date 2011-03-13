@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -212,11 +213,13 @@ public class HeapHistogramPage extends Composite implements
             return;
         }
 
+        final boolean isVisible = isVisible();
+
         new RefreshJob(NLS.bind(Messages.refreshMemorySectionJobLabel, section
                 .getJvm().getPid()), getId()) {
             @Override
             protected void refreshModel(IProgressMonitor monitor) {
-                if (!isSupported()) {
+                if (!isSupported() || !isVisible) {
                     return;
                 }
                 try {
@@ -237,8 +240,7 @@ public class HeapHistogramPage extends Composite implements
                 boolean isRemote = jvm != null && jvm.isRemote();
                 boolean isSupported = isSupported();
                 if (!heapViewer.getControl().isDisposed()
-                        && heapViewer.getControl().isVisible() && isConnected
-                        && isSupported) {
+                        && heapViewer.getControl().isVisible() && isSupported) {
                     heapViewer.refresh();
                 }
                 refreshBackground();
@@ -253,6 +255,13 @@ public class HeapHistogramPage extends Composite implements
                         && isSupported);
             }
         }.schedule();
+    }
+
+    /**
+     * Invoked when section is deactivated.
+     */
+    protected void deactivated() {
+        Job.getJobManager().cancel(getId());
     }
 
     /**

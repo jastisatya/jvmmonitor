@@ -13,6 +13,7 @@ import javax.management.Attribute;
 import javax.management.ObjectName;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewer;
@@ -132,7 +133,7 @@ public class AttributesTab extends Composite {
      * @param selection
      *            The selection
      */
-    public void selectionChanged(ISelection selection) {
+    protected void selectionChanged(ISelection selection) {
         if (selection instanceof IStructuredSelection) {
             Object element = ((IStructuredSelection) selection)
                     .getFirstElement();
@@ -144,8 +145,15 @@ public class AttributesTab extends Composite {
     /**
      * Refreshes.
      */
-    public void refresh() {
+    protected void refresh() {
         refresh(false);
+    }
+
+    /**
+     * Invoked when section is deactivated.
+     */
+    protected void deactivated() {
+        Job.getJobManager().cancel(toString());
     }
 
     /**
@@ -220,9 +228,7 @@ public class AttributesTab extends Composite {
             return;
         }
 
-        RefreshJob refreshJob = new RefreshJob(
-                Messages.refreshAttributeTabJobLabel, section.getId()
-                        + AttributesTab.class.getName()) {
+        new RefreshJob(Messages.refreshAttributeTabJobLabel, toString()) {
             @Override
             protected void refreshModel(IProgressMonitor monitor) {
                 IActiveJvm jvm = section.getJvm();
@@ -238,8 +244,7 @@ public class AttributesTab extends Composite {
                     viewer.refresh();
                 }
             }
-        };
-        refreshJob.schedule();
+        }.schedule();
     }
 
     /**

@@ -128,13 +128,7 @@ public final class Messages extends NLS {
     // job names
 
     /** */
-    public static String refeshCpuProfileDataJobLabel;
-
-    /** */
     public static String refeshCpuSectionJobLabel;
-
-    /** */
-    public static String setProfiledPackagesJobLabel;
 
     // error log messages
 

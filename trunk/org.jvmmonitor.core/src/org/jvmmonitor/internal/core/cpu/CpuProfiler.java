@@ -336,7 +336,9 @@ public class CpuProfiler implements ICpuProfiler {
             if (jvm.isConnected()) {
                 for (String item : (String[]) jvm.getMBeanServer()
                         .getAttribute(objectName, PROFILED_PACKAGES)) {
-                    packages.add(item);
+                    if (!item.isEmpty()) {
+                        packages.add(item);
+                    }
                 }
             }
             return packages;

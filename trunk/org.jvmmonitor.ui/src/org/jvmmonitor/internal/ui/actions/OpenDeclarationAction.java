@@ -39,6 +39,7 @@ import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -140,6 +141,9 @@ public class OpenDeclarationAction extends Action implements
             return;
         }
         if (source == null) {
+            MessageDialog.openError(PlatformUI.getWorkbench()
+                    .getActiveWorkbenchWindow().getShell(),
+                    Messages.errorLabel, Messages.openDeclarationFailedMsg);
             return;
         }
 
@@ -203,7 +207,8 @@ public class OpenDeclarationAction extends Action implements
             className = ((StackTraceElement) element).getClassName();
             methodName = ((StackTraceElement) element).getMethodName();
             parameters = new String[0];
-        } else if (element instanceof IHeapElement) {
+        } else if (element instanceof IHeapElement
+                && !((IHeapElement) element).getClassName().endsWith("[]")) { //$NON-NLS-1$
             className = ((IHeapElement) element).getClassName();
             methodName = null;
             parameters = new String[0];

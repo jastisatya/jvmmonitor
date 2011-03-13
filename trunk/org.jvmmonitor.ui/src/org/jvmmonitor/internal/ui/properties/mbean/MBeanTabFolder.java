@@ -81,10 +81,19 @@ public class MBeanTabFolder extends PageBook {
     /**
      * Refreshes.
      */
-    public void refresh() {
+    protected void refresh() {
         attributeTab.refresh();
         operationsTab.refresh();
         notificationTab.refresh();
+    }
+
+    /**
+     * Invoked when section is deactivated.
+     */
+    protected void deactivated() {
+        attributeTab.deactivated();
+        operationsTab.deactivated();
+        notificationTab.deactivated();
     }
 
     /**

@@ -11,6 +11,7 @@ import javax.management.MBeanOperationInfo;
 import javax.management.ObjectName;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -127,10 +128,8 @@ public class OperationsTab extends Composite {
     /**
      * Refreshes.
      */
-    public void refresh() {
-        RefreshJob refreshJob = new RefreshJob(
-                Messages.refreshOperationsTabJobLabel, section.getId()
-                        + OperationsTab.class.getName()) {
+    protected void refresh() {
+        new RefreshJob(Messages.refreshOperationsTabJobLabel, toString()) {
 
             /** The MBean operations. */
             private MBeanOperationInfo[] operations;
@@ -173,8 +172,14 @@ public class OperationsTab extends Composite {
                     tableViewer.refresh();
                 }
             }
-        };
-        refreshJob.schedule();
+        }.schedule();
+    }
+
+    /**
+     * Invoked when section is deactivated.
+     */
+    protected void deactivated() {
+        Job.getJobManager().cancel(toString());
     }
 
     /**

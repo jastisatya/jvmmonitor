@@ -9,7 +9,6 @@ package org.jvmmonitor.internal.ui.properties.timeline;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -126,12 +125,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
         mBeanServerChangeListener = new IMBeanServerChangeListener() {
             @Override
             public void serverChanged(MBeanServerEvent event) {
-                new RefreshJob(Messages.reconstructChartJobLabel, getId()) {
-                    @Override
-                    protected void refreshModel(IProgressMonitor monitor) {
-                        // do nothing
-                    }
-
+                new RefreshJob(Messages.reconstructChartJobLabel, toString()) {
                     @Override
                     protected void refreshUI() {
                         IActiveJvm jvm = getJvm();
@@ -422,7 +416,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
         formLayout.marginWidth = 0;
         flatFormComposite.setLayout(formLayout);
         TimelineChart chart = new TimelineChart(flatFormComposite, section,
-                group, SWT.NONE, getId());
+                group, SWT.NONE, toString() + getJvm().getPid());
         charts.add(chart);
 
         FormData data;

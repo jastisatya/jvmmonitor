@@ -9,6 +9,7 @@ package org.jvmmonitor.internal.agent;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -23,6 +24,12 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
     /** The state indicating if transformation is needed. */
     private boolean transformNeeded;
 
+    /** The previous profiled packages. */
+    private Set<String> previousProfiledPackages;
+
+    /** The class file transformer. */
+    private ClassFileTransformerImpl classFileTransformer;
+
     /**
      * The constructor.
      * 
@@ -33,6 +40,9 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
     public CpuBciProfilerMXBeanImpl(Instrumentation inst) throws IOException {
         this.inst = inst;
         transformNeeded = true;
+        previousProfiledPackages = new HashSet<String>();
+        classFileTransformer = new ClassFileTransformerImpl();
+
         CpuBciProfiler.initialize();
         if (Config.getInstance().isProfilerEnabled()) {
             setRunning(true);
@@ -40,14 +50,14 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
     }
 
     /*
-     * @see CpuProfilerMXBean#setRunning(boolean)
+     * @see CpuBciProfilerMXBean#setRunning(boolean)
      */
     @Override
     public void setRunning(boolean run) {
         if (run) {
             try {
                 if (transformNeeded) {
-                    inst.addTransformer(new ClassFileTransformerImpl(), true);
+                    inst.addTransformer(classFileTransformer, true);
                     retransformClasses();
                     transformNeeded = false;
                 }
@@ -57,6 +67,7 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
             }
         } else {
             try {
+                inst.removeTransformer(classFileTransformer);
                 Config.getInstance().setProfilerEnabled(false);
             } catch (Throwable t) {
                 Agent.logError(t, Messages.CANNOT_SUSPEND);
@@ -115,7 +126,7 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
     }
 
     /*
-     * @see CpuProfilerMXBean#getDumpDir()
+     * @see CpuBciProfilerMXBean#getDumpDir()
      */
     @Override
     public String getDumpDir() {
@@ -123,7 +134,7 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
     }
 
     /*
-     * @see CpuProfilerMXBean#setDumpDir(String)
+     * @see CpuBciProfilerMXBean#setDumpDir(String)
      */
     @Override
     public void setDumpDir(String dir) {
@@ -139,19 +150,30 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
     }
 
     /*
-     * @see CpuProfilerMXBean#setFilter(String, String)
+     * @see CpuBciProfilerMXBean#setFilter(String, String)
      */
     @Override
     public void setFilter(String key, String value) {
         if (Constants.PROFILED_PACKAGES_PROP_KEY.equals(key)) {
+            previousProfiledPackages = new HashSet<String>(
+                    Config.getInstance().profiledPackages);
+
             Config.getInstance().profiledPackages.clear();
             Config.getInstance().addElements(
                     Config.getInstance().profiledPackages, value);
+
+            if (isRunning()
+                    && !previousProfiledPackages
+                            .equals(Config.getInstance().profiledPackages)) {
+                retransformClasses();
+            } else {
+                transformNeeded = true;
+            }
         }
     }
 
     /*
-     * @see CpuProfilerMXBean#getProfiledClassloaders()
+     * @see CpuBciProfilerMXBean#getProfiledClassloaders()
      */
     @Override
     public String[] getProfiledClassloaders() {
@@ -160,7 +182,7 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
     }
 
     /*
-     * @see CpuProfilerMXBean#getProfiledPackages()
+     * @see CpuBciProfilerMXBean#getProfiledPackages()
      */
     @Override
     public String[] getProfiledPackages() {
@@ -169,7 +191,7 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
     }
 
     /*
-     * @see CpuProfilerMXBean#getIgnoredPackages()
+     * @see CpuBciProfilerMXBean#getIgnoredPackages()
      */
     @Override
     public String[] getIgnoredPackages() {
@@ -181,12 +203,14 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
      * Re-transforms the loaded classes.
      */
     private void retransformClasses() {
+        Set<String> targetPackages = new HashSet<String>();
+        targetPackages.addAll(Config.getInstance().profiledPackages);
+        targetPackages.addAll(previousProfiledPackages);
+
         for (@SuppressWarnings("rawtypes")
         Class clazz : inst.getAllLoadedClasses()) {
             String className = clazz.getName();
-            if (!isMatch(className, Config.getInstance().profiledPackages)
-                    || isMatch(className, Config.getInstance().ignoredPackages)
-                    || className.startsWith("[")) {
+            if (className.startsWith("[") || !matchs(className, targetPackages)) {
                 continue;
             }
 
@@ -210,7 +234,7 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
      *            the list of packages
      * @return true if the given class belongs to one of the packages list
      */
-    private boolean isMatch(String className, Set<String> packages) {
+    private boolean matchs(String className, Set<String> packages) {
         if (packages.isEmpty()) {
             return false;
         }
