@@ -6,11 +6,10 @@
  *******************************************************************************/
 package org.jvmmonitor.internal.ui.properties.cpu;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
@@ -33,7 +32,6 @@ import org.jvmmonitor.core.JvmModelEvent;
 import org.jvmmonitor.core.JvmModelEvent.State;
 import org.jvmmonitor.core.cpu.CpuModelEvent;
 import org.jvmmonitor.core.cpu.ICpuModelChangeListener;
-import org.jvmmonitor.core.cpu.ICpuProfiler;
 import org.jvmmonitor.core.cpu.ICpuProfiler.ProfilerState;
 import org.jvmmonitor.core.cpu.ICpuProfiler.ProfilerType;
 import org.jvmmonitor.internal.ui.IConstants;
@@ -55,7 +53,7 @@ import org.jvmmonitor.ui.Activator;
 public class CpuSection extends AbstractJvmPropertySection {
 
     /** The default profiler sampling period. */
-    private static final Integer DEFAULT_SAMPLING_PERIOD = 50;
+    static final Integer DEFAULT_SAMPLING_PERIOD = 50;
 
     /** The default profiler type. */
     private static final ProfilerType DEFAULT_PROFILER_TYPE = ProfilerType.SAMPLING;
@@ -103,7 +101,7 @@ public class CpuSection extends AbstractJvmPropertySection {
                 Display.getDefault().asyncExec(new Runnable() {
                     @Override
                     public void run() {
-                        refreshUI();
+                        refreshViewers();
                     }
                 });
             }
@@ -133,8 +131,6 @@ public class CpuSection extends AbstractJvmPropertySection {
         hotSpots = new HotSpotsTabPage(this, tabFolder);
         callerCallee = new CallerCalleeTabPage(this, tabFolder);
 
-        setProfiledPackages();
-
         PlatformUI.getWorkbench().getHelpSystem()
                 .setHelp(parent, IHelpContextIds.CPU_PAGE);
     }
@@ -144,29 +140,34 @@ public class CpuSection extends AbstractJvmPropertySection {
      */
     @Override
     public void refresh() {
-        if (getJvm() == null || !isVisible()) {
+        if (!isSectionActivated) {
             return;
         }
+        refresh(false);
+    }
 
-        refreshJob = new RefreshJob(NLS.bind(
-                Messages.refeshCpuProfileDataJobLabel, getJvm().getPid()),
-                getId() + "Tree") { //$NON-NLS-1$
+    private void refresh(final boolean initConfig) {
+        new RefreshJob(NLS.bind(Messages.refeshCpuSectionJobLabel, getJvm()
+                .getPid()), toString()) {
 
             private boolean isCpuProfilerReady;
             private boolean isPackageSpecified;
-            private boolean enableSuspend;
+            private boolean isCpuProfilerRunning;
 
             @Override
             protected void refreshModel(IProgressMonitor monitor) {
                 isCpuProfilerReady = isCpuProfilerReady();
                 isPackageSpecified = isPackageSpecified();
-                enableSuspend = isCpuProfilerRunning();
+                isCpuProfilerRunning = isCpuProfilerRunning();
+
+                if (initConfig) {
+                    setProfiledPackages();
+                    setProfilerSamplingPeriod();
+                    setProfilerType();
+                }
 
                 IActiveJvm jvm = getJvm();
-                if (jvm == null
-                        || !jvm.isConnected()
-                        || jvm.getCpuProfiler().getState() != ICpuProfiler.ProfilerState.RUNNING
-                        || isRefreshSuspended()) {
+                if (jvm == null || !isCpuProfilerRunning) {
                     return;
                 }
 
@@ -182,28 +183,25 @@ public class CpuSection extends AbstractJvmPropertySection {
             protected void refreshUI() {
                 IActiveJvm jvm = getJvm();
                 boolean isConnected = jvm != null && jvm.isConnected();
+                updatePage(isPackageSpecified);
 
-                suspendCpuProfilingAction.setEnabled(enableSuspend
+                suspendCpuProfilingAction.setEnabled(isCpuProfilerRunning
                         && isCpuProfilerReady && isConnected);
-                resumeCpuProfilingAction.setEnabled(!enableSuspend
+                resumeCpuProfilingAction.setEnabled(!isCpuProfilerRunning
                         && isCpuProfilerReady && isPackageSpecified
                         && isConnected);
                 clearCpuProfilingDataAction.setEnabled(isCpuProfilerReady
                         && isPackageSpecified && isConnected);
                 dumpCpuProfilingDataAction.setEnabled(!hasErrorMessage());
 
-                if (callTree.isDisposed() || hotSpots.isDisposed()
-                        || callerCallee.isDisposed()) {
-                    return;
+                if (!isDisposed()) {
+                    refreshBackground(callTree.getChildren(), isConnected);
+                    refreshBackground(hotSpots.getChildren(), isConnected);
+                    refreshBackground(callerCallee.getChildren(), isConnected);
+                    refreshViewers();
                 }
-
-                refreshBackground(callTree.getChildren(), isConnected);
-                refreshBackground(hotSpots.getChildren(), isConnected);
-                refreshBackground(callerCallee.getChildren(), isConnected);
-                CpuSection.this.refreshUI();
             }
-        };
-        refreshJob.schedule();
+        }.schedule();
     }
 
     /*
@@ -221,21 +219,8 @@ public class CpuSection extends AbstractJvmPropertySection {
         }
 
         if (event.state == State.JvmConnected) {
-            setProfilerType();
-            setProfiledPackages();
-            setProfilerSamplingPeriod();
+            refresh(true);
         }
-
-        if (event.state != State.CpuProfilerConfigChanged) {
-            return;
-        }
-
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                updatePage();
-            }
-        });
     }
 
     /*
@@ -253,9 +238,7 @@ public class CpuSection extends AbstractJvmPropertySection {
                 .addModelChangeListener(cpuModelChangeListener);
 
         if (newJvm.isConnected()) {
-            setProfilerType();
-            setProfiledPackages();
-            setProfilerSamplingPeriod();
+            refresh(true);
         }
 
         callTree.setInput(newJvm);
@@ -299,35 +282,12 @@ public class CpuSection extends AbstractJvmPropertySection {
     }
 
     /*
-     * @see AbstractJvmPropertySection#updatePage()
+     * @see AbstractJvmPropertySection#deactivateSection()
      */
     @Override
-    protected void updatePage() {
-        super.updatePage();
-
-        IActiveJvm jvm = getJvm();
-        if (jvm == null || !jvm.isConnected()) {
-            return;
-        }
-
-        refreshJob = new RefreshJob(NLS.bind(Messages.refeshCpuSectionJobLabel,
-                jvm.getPid()), getId() + "Page") { //$NON-NLS-1$
-
-            /** The state indicating if packages are specified. */
-            private boolean isPackageSpecified;
-
-            @Override
-            protected void refreshModel(IProgressMonitor monitor) {
-                isPackageSpecified = isPackageSpecified();
-            }
-
-            @Override
-            protected void refreshUI() {
-                updatePage(isPackageSpecified);
-            }
-        };
-
-        refreshJob.schedule();
+    protected void deactivateSection() {
+        super.deactivateSection();
+        Job.getJobManager().cancel(toString());
     }
 
     /**
@@ -350,7 +310,7 @@ public class CpuSection extends AbstractJvmPropertySection {
      * @param tabItem
      *            The tab item
      */
-    public void tabSelectionChanged(CTabItem tabItem) {
+    protected void tabSelectionChanged(CTabItem tabItem) {
         clearStatusLine();
 
         AbstractTabPage page = (AbstractTabPage) tabItem.getControl();
@@ -379,45 +339,25 @@ public class CpuSection extends AbstractJvmPropertySection {
     }
 
     /**
-     * Refreshes the UI.
+     * Refreshes the viewers.
      */
-    void refreshUI() {
-        if (hotSpots.isDisposed() || callTree.isDisposed()
-                || callerCallee.isDisposed()) {
-            return;
-        }
-        if (callTree.isVisible()) {
+    void refreshViewers() {
+        if (isSectionActivated && !isDisposed()) {
             callTree.refresh();
-        }
-        if (hotSpots.isVisible()) {
             hotSpots.refresh();
-        }
-        if (callerCallee.isVisible()) {
             callerCallee.refresh();
         }
     }
 
     /**
-     * Gets the state indicating if section is visible.
+     * Gets the state indicating if pages are disposed.
      * 
-     * @return <tt>true</tt> if section is visible
+     * @return <tt>true</tt> if pages are disposed
      */
-    private boolean isVisible() {
-        final boolean[] visible = new boolean[] { true };
-        Display.getDefault().syncExec(new Runnable() {
-            @Override
-            public void run() {
-                visible[0] = callTree != null
-                        && hotSpots != null
-                        && callerCallee != null
-                        && !callTree.isDisposed()
-                        && !hotSpots.isDisposed()
-                        && !callerCallee.isDisposed()
-                        && (callTree.isVisible() || hotSpots.isVisible() || callerCallee
-                                .isVisible());
-            }
-        });
-        return visible[0];
+    boolean isDisposed() {
+        return callTree == null || hotSpots == null || callerCallee == null
+                || callTree.isDisposed() || hotSpots.isDisposed()
+                || callerCallee.isDisposed();
     }
 
     /**
@@ -435,58 +375,44 @@ public class CpuSection extends AbstractJvmPropertySection {
     /**
      * Sets the profiled packages to CPU profiler.
      */
-    private void setProfiledPackages() {
-        new Job(Messages.setProfiledPackagesJobLabel) {
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    IActiveJvm jvm = getJvm();
-                    if (jvm == null) {
-                        return Status.CANCEL_STATUS;
-                    }
-                    Set<String> packages = jvm.getCpuProfiler()
-                            .getProfiledPackages();
-                    if (packages.isEmpty()) {
-                        String packagesString = Activator.getDefault()
-                                .getDialogSettings(CpuSection.class.getName())
-                                .get(IConstants.PACKAGES_KEY);
-                        if (packagesString != null) {
-                            if (packagesString.contains(",")) { //$NON-NLS-1$
-                                for (String item : packagesString.split(",")) { //$NON-NLS-1$
-                                    packages.add(item);
-                                }
-                            } else if (!packagesString.isEmpty()) {
-                                packages.add(packagesString);
-                            }
-
-                            jvm.getCpuProfiler().setProfiledPackages(packages);
-                        }
-                    }
-                } catch (JvmCoreException e) {
-                    Activator.log(Messages.setProfiledPackagesFailedMsg, e);
-                }
-                return Status.OK_STATUS;
-            }
-
-        }.schedule();
-    }
-
-    /**
-     * Sets the profiler sampling period.
-     */
-    private void setProfilerSamplingPeriod() {
+    void setProfiledPackages() {
         IActiveJvm jvm = getJvm();
         if (jvm == null) {
             return;
         }
-        Integer period = jvm.getCpuProfiler().getSamplingPeriod();
-        if (period != null) {
+        Set<String> packages = new HashSet<String>();
+        String packagesString = Activator.getDefault()
+                .getDialogSettings(CpuSection.class.getName())
+                .get(IConstants.PACKAGES_KEY);
+        if (packagesString != null) {
+            if (packagesString.contains(",")) { //$NON-NLS-1$
+                for (String item : packagesString.split(",")) { //$NON-NLS-1$
+                    packages.add(item);
+                }
+            } else if (!packagesString.isEmpty()) {
+                packages.add(packagesString);
+            }
+            try {
+                jvm.getCpuProfiler().setProfiledPackages(packages);
+            } catch (JvmCoreException e) {
+                Activator.log(Messages.setProfiledPackagesFailedMsg, e);
+            }
+        }
+    }
+    
+    /**
+     * Sets the profiler sampling period.
+     */
+    void setProfilerSamplingPeriod() {
+        IActiveJvm jvm = getJvm();
+        if (jvm == null) {
             return;
         }
-
+        
+        Integer period = null;
         String periodString = Activator.getDefault()
-                .getDialogSettings(CpuSection.class.getName())
-                .get(IConstants.PROFILER_SAMPLING_PERIOD_KEY);
+        .getDialogSettings(CpuSection.class.getName())
+        .get(IConstants.PROFILER_SAMPLING_PERIOD_KEY);
         if (periodString != null) {
             try {
                 period = Integer.valueOf(periodString);
@@ -497,24 +423,19 @@ public class CpuSection extends AbstractJvmPropertySection {
         if (period == null) {
             period = DEFAULT_SAMPLING_PERIOD;
         }
-
         jvm.getCpuProfiler().setSamplingPeriod(period);
     }
 
     /**
      * Sets the profiler type.
      */
-    private void setProfilerType() {
+    void setProfilerType() {
         IActiveJvm jvm = getJvm();
         if (jvm == null) {
             return;
         }
 
-        ProfilerType type = jvm.getCpuProfiler().getProfilerType();
-        if (type != null) {
-            return;
-        }
-
+        ProfilerType type = null;
         String typeString = Activator.getDefault()
                 .getDialogSettings(CpuSection.class.getName())
                 .get(IConstants.PROFILER_TYPE_KEY);
@@ -526,8 +447,7 @@ public class CpuSection extends AbstractJvmPropertySection {
                 }
             }
         }
-        if (type == null
-                || jvm.getCpuProfiler().getState() != ProfilerState.READY) {
+        if (type == null) {
             type = DEFAULT_PROFILER_TYPE;
         }
 

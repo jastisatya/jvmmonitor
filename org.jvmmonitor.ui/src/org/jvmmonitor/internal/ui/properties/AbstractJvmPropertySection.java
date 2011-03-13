@@ -41,7 +41,6 @@ import org.jvmmonitor.core.IJvmModelChangeListener;
 import org.jvmmonitor.core.JvmModel;
 import org.jvmmonitor.core.JvmModelEvent;
 import org.jvmmonitor.core.JvmModelEvent.State;
-import org.jvmmonitor.internal.ui.RefreshJob;
 import org.jvmmonitor.internal.ui.actions.PreferencesAction;
 import org.jvmmonitor.ui.Activator;
 
@@ -63,9 +62,6 @@ abstract public class AbstractJvmPropertySection extends
     /** The active JVM. */
     private IActiveJvm jvm;
 
-    /** The refresh job. */
-    protected RefreshJob refreshJob;
-
     /** The state indicating if suspending refresh. */
     protected boolean suspendRefresh;
 
@@ -82,7 +78,7 @@ abstract public class AbstractJvmPropertySection extends
     IAction preferencesAction;
 
     /** The state indicating if section is activated. */
-    private boolean isSectionActivated;
+    protected boolean isSectionActivated;
 
     /**
      * The constructor.
@@ -340,15 +336,6 @@ abstract public class AbstractJvmPropertySection extends
      */
     public IActionBars getActionBars() {
         return propertySheet.getViewSite().getActionBars();
-    }
-
-    /**
-     * Gets the section id.
-     * 
-     * @return The section id
-     */
-    public String getId() {
-        return toString();
     }
 
     /**

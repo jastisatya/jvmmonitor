@@ -6,9 +6,12 @@
  *******************************************************************************/
 package org.jvmmonitor.internal.ui.properties.memory;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.widgets.Composite;
@@ -20,6 +23,7 @@ import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.IHeapElement;
 import org.jvmmonitor.core.ISWTResourceElement;
 import org.jvmmonitor.internal.ui.IHelpContextIds;
+import org.jvmmonitor.internal.ui.RefreshJob;
 import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
 
 /**
@@ -28,7 +32,7 @@ import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
 public class MemorySection extends AbstractJvmPropertySection {
 
     /** The default tab height. */
-    private static int defaultTabHeight;
+    static int defaultTabHeight;
 
     /** The heap histogram page. */
     HeapHistogramPage heapHistogramPage;
@@ -37,7 +41,7 @@ public class MemorySection extends AbstractJvmPropertySection {
     SWTResourcesPage swtResourcePage;
 
     /** The tab folder. */
-    private CTabFolder tabFolder;
+    CTabFolder tabFolder;
 
     /** The heap histogram page book. */
     private PageBook heapHistogramPageBook;
@@ -73,15 +77,11 @@ public class MemorySection extends AbstractJvmPropertySection {
      */
     @Override
     public void refresh() {
-        if (getJvm() == null) {
+        if (!isSectionActivated) {
             return;
         }
-        if (!heapHistogramPage.isDisposed() && heapHistogramPage.isVisible()) {
-            heapHistogramPage.refresh();
-        }
-        if (!swtResourcePage.isDisposed() && swtResourcePage.isVisible()) {
-            swtResourcePage.refresh(false);
-        }
+        heapHistogramPage.refresh();
+        swtResourcePage.refresh(false);
     }
 
     /*
@@ -91,15 +91,7 @@ public class MemorySection extends AbstractJvmPropertySection {
     @Override
     protected void setInput(IWorkbenchPart part, ISelection selection,
             final IActiveJvm newJvm, IActiveJvm oldJvm) {
-        int tabHeight;
-        if (newJvm.getSWTResourceMonitor().isSupported()) {
-            tabHeight = defaultTabHeight;
-        } else {
-            tabHeight = 0;
-            tabFolder.setSelection(0);
-        }
-        tabFolder.setTabHeight(tabHeight);
-        tabFolder.layout();
+        updateTabHeight(newJvm);
 
         heapHistogramPage.setInput(new IHeapInput() {
             @Override
@@ -177,9 +169,10 @@ public class MemorySection extends AbstractJvmPropertySection {
     @Override
     protected void deactivateSection() {
         super.deactivateSection();
-        if (refreshJob != null) {
-            refreshJob.cancel();
-        }
+        Job.getJobManager().cancel(toString());
+
+        heapHistogramPage.deactivated();
+        swtResourcePage.deactivated();
     }
 
     /*
@@ -201,6 +194,37 @@ public class MemorySection extends AbstractJvmPropertySection {
             heapHistogramPageBook.showPage(heapHistogramMessageLabel.getText()
                     .isEmpty() ? heapHistogramPage : heapHistogramMessageLabel);
         }
+    }
+
+    /**
+     * Updates the tab height.
+     * 
+     * @param jvm
+     *            The JVM
+     */
+    private void updateTabHeight(final IActiveJvm jvm) {
+        new RefreshJob(NLS.bind(Messages.refreshMemorySectionJobLabel,
+                jvm.getPid()), toString()) {
+            private boolean isSupported;
+
+            @Override
+            protected void refreshModel(IProgressMonitor monitor) {
+                isSupported = jvm.getSWTResourceMonitor().isSupported();
+            }
+
+            @Override
+            protected void refreshUI() {
+                int tabHeight;
+                if (isSupported) {
+                    tabHeight = defaultTabHeight;
+                } else {
+                    tabHeight = 0;
+                    tabFolder.setSelection(0);
+                }
+                tabFolder.setTabHeight(tabHeight);
+                tabFolder.layout();
+            }
+        }.schedule();
     }
 
     /**

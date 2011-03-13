@@ -67,11 +67,7 @@ abstract public class RefreshJob extends Job {
      */
     @Override
     public boolean belongsTo(Object family) {
-        if (family instanceof RefreshJob) {
-            RefreshJob job = (RefreshJob) family;
-            return job.equals(this);
-        }
-        return false;
+        return jobId.equals(family.toString());
     }
 
     /*
@@ -79,9 +75,10 @@ abstract public class RefreshJob extends Job {
      */
     @Override
     public boolean shouldSchedule() {
-        Job[] runningJobs = Job.getJobManager().find(this);
+        Job[] runningJobs = Job.getJobManager().find(jobId);
         for (Job runningJob : runningJobs) {
-            if (belongsTo(runningJob)) {
+            if (runningJob instanceof RefreshJob
+                    && belongsTo(((RefreshJob) runningJob).getJobId())) {
                 return false;
             }
         }
@@ -114,12 +111,16 @@ abstract public class RefreshJob extends Job {
      * @param monitor
      *            The progress monitor
      */
-    abstract protected void refreshModel(IProgressMonitor monitor);
+    protected void refreshModel(IProgressMonitor monitor) {
+        // do nothing
+    }
 
     /**
      * Refreshes the UI.
      */
-    abstract protected void refreshUI();
+    protected void refreshUI() {
+        // do nothing
+    }
 
     /**
      * Gets the job ID.

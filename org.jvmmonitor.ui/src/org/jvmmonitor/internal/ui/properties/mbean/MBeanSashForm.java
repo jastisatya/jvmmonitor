@@ -7,6 +7,7 @@
 package org.jvmmonitor.internal.ui.properties.mbean;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.DecoratingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -86,9 +87,8 @@ public class MBeanSashForm extends AbstractSashForm {
      * Refreshes the appearance.
      */
     protected void refresh() {
-        RefreshJob refreshJob = new RefreshJob(
-                Messages.refreshMBeanSectionJobLabel, section.getId()
-                        + MBeanSashForm.class.getName()) {
+        new RefreshJob(Messages.refreshMBeanSectionJobLabel,
+                toString()) {
 
             @Override
             protected void refreshModel(IProgressMonitor monitor) {
@@ -106,7 +106,8 @@ public class MBeanSashForm extends AbstractSashForm {
                 }
 
                 mBeanViewer.refresh();
-                
+                mBeanTabFolder.refresh();
+
                 IActiveJvm jvm = section.getJvm();
                 if (jvm != null && jvm.isConnected()) {
                     mBeanViewer
@@ -122,19 +123,14 @@ public class MBeanSashForm extends AbstractSashForm {
                     TreeItem[] items = mBeanViewer.getTree().getItems();
                     if (items != null && items.length > 0) {
                         mBeanViewer.getTree().select(items[0]);
-                        mBeanTabFolder.selectionChanged(mBeanViewer.getSelection());
+                        mBeanTabFolder.selectionChanged(mBeanViewer
+                                .getSelection());
                     } else {
                         mBeanTabFolder.selectionChanged(null);
                     }
                 }
             }
-        };
-
-        refreshJob.schedule();
-
-        if (!mBeanTabFolder.isDisposed()) {
-            mBeanTabFolder.refresh();
-        }
+        }.schedule();
     }
 
     /**
@@ -160,4 +156,15 @@ public class MBeanSashForm extends AbstractSashForm {
             return getStyledStringProvider().getStyledText(element).toString();
         }
     }
+
+    /**
+     * Invoked when section is deactivated.
+     */
+    protected void deactivated() {
+        Job.getJobManager().cancel(toString());
+        if (!mBeanTabFolder.isDisposed()) {
+            mBeanTabFolder.deactivated();
+        }
+    }
+
 }

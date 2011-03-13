@@ -92,7 +92,7 @@ public final class Messages extends NLS {
     /** */
     public static String searchingSoruceMsg;
 
-    // error log messages
+    // error messages
 
     /** */
     public static String addAttributeFailedMsg;
@@ -105,4 +105,10 @@ public final class Messages extends NLS {
 
     /** */
     public static String highlightMethodFailedMsg;
+    
+    /** */
+    public static String openDeclarationFailedMsg;
+
+    /** */
+    public static String errorLabel;
 }

@@ -54,14 +54,18 @@ public class MBeansSection extends AbstractJvmPropertySection {
      */
     @Override
     public void refresh() {
-        if (sashForm == null || sashForm.isDisposed() || !sashForm.isVisible()) {
+        if (!isSectionActivated) {
             return;
         }
+
         IActiveJvm jvm = getJvm();
         boolean isConnected = jvm != null && jvm.isConnected();
         refreshAction.setEnabled(isConnected);
-        refreshBackground(sashForm.getChildren(), isConnected);
-        sashForm.refresh();
+
+        if (sashForm != null && !sashForm.isDisposed()) {
+            refreshBackground(sashForm.getChildren(), isConnected);
+            sashForm.refresh();
+        }
     }
 
     /*
@@ -127,5 +131,14 @@ public class MBeansSection extends AbstractJvmPropertySection {
     @Override
     protected void removeLocalMenus(IMenuManager manager) {
         manager.remove(layoutMenu);
+    }
+    
+    /*
+     * @see AbstractJvmPropertySection#deactivateSection()
+     */
+    @Override
+    protected void deactivateSection() {
+        super.deactivateSection();
+        sashForm.deactivated();
     }
 }

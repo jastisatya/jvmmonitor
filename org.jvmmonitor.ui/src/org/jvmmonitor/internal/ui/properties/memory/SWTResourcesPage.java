@@ -7,6 +7,7 @@
 package org.jvmmonitor.internal.ui.properties.memory;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
@@ -132,18 +133,19 @@ public class SWTResourcesPage extends AbstractSashForm {
      * @param force
      *            <tt>true</tt> to force refresh
      */
-    public void refresh(final boolean force) {
+    protected void refresh(final boolean force) {
+        final boolean isVisible = isVisible();
+
         new RefreshJob(NLS.bind(Messages.refreshMemorySectionJobLabel, section
-                .getJvm().getPid()), section.getId()) {
+                .getJvm().getPid()), toString()) {
             @Override
             protected void refreshModel(IProgressMonitor monitor) {
                 try {
                     IActiveJvm jvm = section.getJvm();
-                    if (jvm != null && jvm.isConnected()
-                            && !section.isRefreshSuspended()) {
-                        if (jvm.getSWTResourceMonitor().isSupported()) {
-                            jvm.getSWTResourceMonitor().refreshResourcesCache();
-                        }
+                    if (isVisible && jvm != null && jvm.isConnected()
+                            && !section.isRefreshSuspended()
+                            && jvm.getSWTResourceMonitor().isSupported()) {
+                        jvm.getSWTResourceMonitor().refreshResourcesCache();
                     }
                 } catch (JvmCoreException e) {
                     Activator.log(Messages.refreshHeapDataFailedMsg, e);
@@ -152,16 +154,19 @@ public class SWTResourcesPage extends AbstractSashForm {
 
             @Override
             protected void refreshUI() {
-                refreshBackground();
+                IActiveJvm jvm = section.getJvm();
+                boolean isConnected = jvm != null && jvm.isConnected();
 
-                if (!force && section.isRefreshSuspended()) {
+                refreshBackground();
+                refreshAction.setEnabled(isConnected);
+                clearSWTResourceAction.setEnabled(isConnected);
+                if (!force && section.isRefreshSuspended() || !isVisible) {
                     return;
                 }
 
                 TreeViewer resourceViewer = resourceFilteredTree.getViewer();
                 if (!resourceViewer.getControl().isDisposed()) {
                     resourceViewer.refresh();
-                    IActiveJvm jvm = section.getJvm();
                     if (jvm != null) {
                         resourceFilteredTree.updateStatusLine(jvm
                                 .getSWTResourceMonitor().getResources());
@@ -192,10 +197,17 @@ public class SWTResourcesPage extends AbstractSashForm {
      * @param input
      *            The SWT resource input
      */
-    public void setInput(ISWTResorceInput input) {
+    protected void setInput(ISWTResorceInput input) {
         if (!section.isRefreshSuspended()) {
             resourceFilteredTree.getViewer().setInput(input);
         }
+    }
+
+    /**
+     * Invoked when section is deactivated.
+     */
+    protected void deactivated() {
+        Job.getJobManager().cancel(toString());
     }
 
     /**

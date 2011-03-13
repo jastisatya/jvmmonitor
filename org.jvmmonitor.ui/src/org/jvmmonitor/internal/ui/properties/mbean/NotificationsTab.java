@@ -9,6 +9,7 @@ package org.jvmmonitor.internal.ui.properties.mbean;
 import javax.management.ObjectName;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -139,15 +140,9 @@ public class NotificationsTab extends PageBook {
     /**
      * Refreshes.
      */
-    public void refresh() {
-        RefreshJob refreshJob = new RefreshJob(
-                Messages.refreshNotificationTabJobLabel, section.getId()
-                        + NotificationsTab.class.getName()) {
-
-            /** The state indicating if notification is subscribed. */
+    protected void refresh() {
+        new RefreshJob(Messages.refreshNotificationTabJobLabel, toString()) {
             private boolean isSubscribed;
-
-            /** The state indicating if notification is subscribed. */
             private boolean isSupported;
 
             @Override
@@ -183,8 +178,7 @@ public class NotificationsTab extends PageBook {
                 treeViewer.refresh();
                 updatePage(isSubscribed);
             }
-        };
-        refreshJob.schedule();
+        }.schedule();
     }
 
     /**
@@ -195,6 +189,13 @@ public class NotificationsTab extends PageBook {
         if (jvm != null) {
             jvm.getMBeanServer().getMBeanNotification().clear(objectName);
         }
+    }
+
+    /**
+     * Invoked when section is deactivated.
+     */
+    protected void deactivated() {
+        Job.getJobManager().cancel(toString());
     }
 
     /**

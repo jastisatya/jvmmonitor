@@ -187,7 +187,8 @@ abstract public class AbstractDumpEditor extends MultiPageEditorPart {
          */
         @Override
         public void resourceChanged(IResourceChangeEvent event) {
-            if (searchFile(event.getDelta())) {
+            IResourceDelta delta = event.getDelta();
+            if (delta != null && searchFile(delta)) {
                 for (IWorkbenchWindow window : PlatformUI.getWorkbench()
                         .getWorkbenchWindows()) {
                     for (final IWorkbenchPage page : window.getPages()) {

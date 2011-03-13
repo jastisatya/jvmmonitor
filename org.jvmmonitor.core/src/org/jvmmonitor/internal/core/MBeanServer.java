@@ -66,6 +66,7 @@ import org.jvmmonitor.core.JvmModel;
 import org.jvmmonitor.core.JvmModelEvent;
 import org.jvmmonitor.core.JvmModelEvent.State;
 import org.jvmmonitor.core.cpu.ICpuProfiler.ProfilerState;
+import org.jvmmonitor.core.cpu.ICpuProfiler.ProfilerType;
 import org.jvmmonitor.core.mbean.IMBeanNotification;
 import org.jvmmonitor.core.mbean.IMBeanServer;
 import org.jvmmonitor.core.mbean.IMBeanServerChangeListener;
@@ -692,7 +693,8 @@ public class MBeanServer implements IMBeanServer {
      */
     public void setSamplingPeriod(Integer samplingPeriod) {
         this.samplingPeriod = samplingPeriod;
-        if (jvm.getCpuProfiler().getState() == ProfilerState.RUNNING) {
+        if (jvm.getCpuProfiler().getState() == ProfilerState.RUNNING
+                && jvm.getCpuProfiler().getProfilerType() == ProfilerType.SAMPLING) {
             resumeSampling();
         }
     }

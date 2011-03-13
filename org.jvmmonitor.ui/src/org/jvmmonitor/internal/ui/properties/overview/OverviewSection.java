@@ -14,6 +14,7 @@ import javax.management.ObjectName;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
@@ -135,14 +136,12 @@ public class OverviewSection extends AbstractJvmPropertySection {
      */
     @Override
     public void refresh() {
-        if (getJvm() == null || viewer.getControl().isDisposed()
-                || !viewer.getControl().isVisible()) {
+        if (!isSectionActivated) {
             return;
         }
 
-        refreshJob = new RefreshJob(NLS.bind(
-                Messages.refreshOverviewSectionJobLabel, getJvm().getPid()),
-                getId()) {
+        new RefreshJob(NLS.bind(Messages.refreshOverviewSectionJobLabel,
+                getJvm().getPid()), toString()) {
             @Override
             protected void refreshModel(IProgressMonitor monitor) {
                 IActiveJvm jvm = getJvm();
@@ -157,15 +156,13 @@ public class OverviewSection extends AbstractJvmPropertySection {
                 boolean isConnected = jvm != null && jvm.isConnected();
                 refreshAction.setEnabled(isConnected);
 
-                refreshBackground(viewer.getControl(),
-                        jvm != null && jvm.isConnected());
-
                 if (!viewer.getControl().isDisposed()) {
+                    refreshBackground(viewer.getControl(),
+                            jvm != null && jvm.isConnected());
                     viewer.refresh();
                 }
             }
-        };
-        refreshJob.schedule();
+        }.schedule();
     }
 
     /*
@@ -204,6 +201,7 @@ public class OverviewSection extends AbstractJvmPropertySection {
     protected void deactivateSection() {
         super.deactivateSection();
         storeTreeExpansionState();
+        Job.getJobManager().cancel(toString());
     }
 
     /**

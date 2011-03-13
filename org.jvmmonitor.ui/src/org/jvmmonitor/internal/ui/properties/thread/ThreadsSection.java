@@ -7,6 +7,7 @@
 package org.jvmmonitor.internal.ui.properties.thread;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
@@ -61,14 +62,12 @@ public class ThreadsSection extends AbstractJvmPropertySection {
      */
     @Override
     public void refresh() {
-        if (getJvm() == null || sashForm == null || sashForm.isDisposed()
-                || !sashForm.isVisible()) {
+        if (!isSectionActivated) {
             return;
         }
 
-        refreshJob = new RefreshJob(NLS.bind(
-                Messages.refreshThreadsSectionJobLabel, getJvm().getPid()),
-                getId()) {
+        new RefreshJob(NLS.bind(Messages.refreshThreadsSectionJobLabel,
+                getJvm().getPid()), toString()) {
 
             @Override
             protected void refreshModel(IProgressMonitor monitor) {
@@ -89,14 +88,12 @@ public class ThreadsSection extends AbstractJvmPropertySection {
                 dumpThreadsAction.setEnabled(!hasErrorMessage());
                 refreshAction.setEnabled(isConnected);
 
-                if (!sashForm.isDisposed()) {
+                if (sashForm != null && !sashForm.isDisposed()) {
                     refreshBackground(sashForm.getChildren(), isConnected);
                     sashForm.refresh();
                 }
             }
-        };
-
-        refreshJob.schedule();
+        }.schedule();
     }
 
     /*
@@ -171,6 +168,15 @@ public class ThreadsSection extends AbstractJvmPropertySection {
     @Override
     protected void removeLocalMenus(IMenuManager manager) {
         manager.remove(layoutMenu);
+    }
+
+    /*
+     * @see AbstractJvmPropertySection#deactivateSection()
+     */
+    @Override
+    protected void deactivateSection() {
+        super.deactivateSection();
+        Job.getJobManager().cancel(toString());
     }
 
     /**
