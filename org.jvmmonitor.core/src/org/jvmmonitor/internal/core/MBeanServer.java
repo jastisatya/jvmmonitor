@@ -19,6 +19,8 @@ import java.lang.management.ThreadMXBean;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +28,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.Timer;
@@ -168,7 +169,7 @@ public class MBeanServer implements IMBeanServer {
         previousSamplingTime = 0;
         samplingPeriod = 50;
         previousStackTraces = new HashMap<String, StackTraceElement[]>();
-        monitoredAttributeGroups = new ArrayList<IMonitoredMXBeanGroup>();
+        monitoredAttributeGroups = new CopyOnWriteArrayList<IMonitoredMXBeanGroup>();
     }
 
     /*
@@ -396,13 +397,8 @@ public class MBeanServer implements IMBeanServer {
      */
     @Override
     public IThreadElement[] getThreadCache() {
-        IThreadElement[] result = new IThreadElement[threadListElements.size()];
-        int i = 0;
-        for (Iterator<ThreadElement> iterator = threadListElements.values()
-                .iterator(); iterator.hasNext();) {
-            result[result.length - (++i)] = iterator.next();
-        }
-        return result;
+        Collection<ThreadElement> values = threadListElements.values();
+        return values.toArray(new IThreadElement[values.size()]);
     }
 
     /*
@@ -432,7 +428,11 @@ public class MBeanServer implements IMBeanServer {
 
         long[] ids = threadMXBean.findDeadlockedThreads();
         LinkedHashMap<String, ThreadElement> newThreadListElements = new LinkedHashMap<String, ThreadElement>();
-        for (ThreadInfo threadInfo : threadMXBean.dumpAllThreads(true, false)) {
+        List<ThreadInfo> allThreads = Arrays.asList(threadMXBean
+                .dumpAllThreads(true, false));
+        Collections.reverse(allThreads);
+
+        for (ThreadInfo threadInfo : allThreads) {
             String threadName = threadInfo.getThreadName();
             long threadId = threadInfo.getThreadId();
             if (threadInfo.getStackTrace().length == 0
@@ -1197,14 +1197,13 @@ public class MBeanServer implements IMBeanServer {
         buffer.append("arguments=\"").append(getJvmArguments()).append("\">\n"); //$NON-NLS-1$ //$NON-NLS-2$
 
         if (type == SnapshotType.Heap) {
-            for (Entry<String, HeapElement> entry : heapListElements.entrySet()) {
-                entry.getValue().dump(buffer);
+            for (HeapElement element : heapListElements.values()) {
+                element.dump(buffer);
             }
             buffer.append("</heap-profile>"); //$NON-NLS-1$
         } else if (type == SnapshotType.Thread) {
-            for (Entry<String, ThreadElement> entry : threadListElements
-                    .entrySet()) {
-                entry.getValue().dump(buffer);
+            for (ThreadElement element : threadListElements.values()) {
+                element.dump(buffer);
             }
             buffer.append("</thread-profile>"); //$NON-NLS-1$
         }

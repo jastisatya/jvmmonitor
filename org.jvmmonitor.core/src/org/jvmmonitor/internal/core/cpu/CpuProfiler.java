@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.management.Attribute;
@@ -95,6 +96,7 @@ public class CpuProfiler implements ICpuProfiler {
     public CpuProfiler(ActiveJvm jvm) {
         cpuModel = new CpuModel();
         this.jvm = jvm;
+        type = ProfilerType.SAMPLING;
 
         profiledPackages = new HashSet<String>();
     }
@@ -325,7 +327,7 @@ public class CpuProfiler implements ICpuProfiler {
         if (type == ProfilerType.BCI) {
             validateAgent();
 
-            Set<String> packages = new HashSet<String>();
+            Set<String> packages = new LinkedHashSet<String>();
             ProfilerState state = getState();
             if (state != ProfilerState.READY && state != ProfilerState.RUNNING) {
                 return packages;

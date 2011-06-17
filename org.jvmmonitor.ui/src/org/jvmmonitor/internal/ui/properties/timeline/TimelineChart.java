@@ -280,7 +280,8 @@ public class TimelineChart extends Chart implements IPropertyChangeListener {
             getAxisSet().getYAxis(0).getTick()
                     .setFormat(new DecimalFormat("###%")); //$NON-NLS-1$
             getAxisSet().getXAxis(0).adjustRange();
-            getAxisSet().getYAxis(0).setRange(new Range(0, 1.05));
+            getAxisSet().getYAxis(0).setRange(
+                    new Range(0, (getSize().y + 10) / (double) getSize().y));
         } else if (axisUnit == AxisUnit.Count) {
             getAxisSet().getYAxis(0).getTick()
                     .setFormat(NumberFormat.getIntegerInstance());
