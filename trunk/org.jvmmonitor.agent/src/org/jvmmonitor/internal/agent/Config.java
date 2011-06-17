@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
@@ -49,9 +49,9 @@ public class Config {
      * The constructor.
      */
     private Config() {
-        ignoredPackages = new HashSet<String>();
-        profiledPackages = new HashSet<String>();
-        profiledClassLoaders = new HashSet<String>();
+        ignoredPackages = new LinkedHashSet<String>();
+        profiledPackages = new LinkedHashSet<String>();
+        profiledClassLoaders = new LinkedHashSet<String>();
         load();
     }
 

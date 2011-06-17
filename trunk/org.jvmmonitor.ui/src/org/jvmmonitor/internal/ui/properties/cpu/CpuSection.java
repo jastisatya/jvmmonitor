@@ -6,7 +6,7 @@
  *******************************************************************************/
 package org.jvmmonitor.internal.ui.properties.cpu;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -380,7 +380,7 @@ public class CpuSection extends AbstractJvmPropertySection {
         if (jvm == null) {
             return;
         }
-        Set<String> packages = new HashSet<String>();
+        Set<String> packages = new LinkedHashSet<String>();
         String packagesString = Activator.getDefault()
                 .getDialogSettings(CpuSection.class.getName())
                 .get(IConstants.PACKAGES_KEY);

@@ -7,7 +7,7 @@
 package org.jvmmonitor.internal.ui.properties.cpu.actions;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -100,7 +100,7 @@ public class ConfigurationDialog extends SelectionDialog {
         this.profilerType = profilerType;
         this.samplingPeriod = samplingPeriod;
         this.profilerState = bciProfilerState;
-        this.packages = new HashSet<String>(packages);
+        this.packages = new LinkedHashSet<String>(packages);
     }
 
     /*
