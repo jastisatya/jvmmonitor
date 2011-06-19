@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.JvmCoreException;
+import org.jvmmonitor.core.cpu.ICpuProfiler.ProfilerType;
 import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
 import org.jvmmonitor.ui.Activator;
 import org.jvmmonitor.ui.ISharedImages;
@@ -53,6 +54,16 @@ public class ResumeCpuProfilingAction extends Action {
                 IActiveJvm jvm = section.getJvm();
                 if (jvm == null) {
                     return Status.CANCEL_STATUS;
+                }
+
+                if (jvm.getCpuProfiler().getProfilerType() == ProfilerType.BCI) {
+                    try {
+                        jvm.getCpuProfiler().transformClasses(monitor);
+                    } catch (JvmCoreException e) {
+                        Activator.log(Messages.resumeCpuProfilingFailedMsg, e);
+                    } catch (InterruptedException e) {
+                        return Status.CANCEL_STATUS;
+                    }
                 }
 
                 try {

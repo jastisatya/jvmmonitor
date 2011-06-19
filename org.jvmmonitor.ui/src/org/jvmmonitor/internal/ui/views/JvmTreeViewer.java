@@ -161,7 +161,9 @@ public class JvmTreeViewer extends TreeViewer implements
                     setExpandedState(host, true);
                 }
 
-                updateStatusLine((IStructuredSelection) getSelection());
+                if (getControl().isFocusControl()) {
+                    updateStatusLine((IStructuredSelection) getSelection());
+                }
                 refresh();
             }
         });

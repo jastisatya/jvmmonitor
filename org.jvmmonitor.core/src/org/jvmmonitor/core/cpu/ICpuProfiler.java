@@ -33,6 +33,17 @@ public interface ICpuProfiler {
     ProfilerType getProfilerType();
 
     /**
+     * Transforms the classes to prepare CPU BCI profiling or clean up.
+     * 
+     * @param monitor
+     *            The progress monitor
+     * @throws JvmCoreException
+     * @throws InterruptedException
+     */
+    void transformClasses(IProgressMonitor monitor) throws JvmCoreException,
+            InterruptedException;
+
+    /**
      * Resumes the CPU profiling.
      * 
      * @throws JvmCoreException

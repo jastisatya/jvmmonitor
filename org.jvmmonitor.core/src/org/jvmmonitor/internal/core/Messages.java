@@ -115,4 +115,9 @@ public final class Messages extends NLS {
 
     /** */
     public static String jvmNotReachableMsg;
+
+    // job names
+    
+    /** */
+    public static String transformClassesTask;
 }

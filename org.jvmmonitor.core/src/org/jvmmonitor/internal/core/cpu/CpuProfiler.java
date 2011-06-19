@@ -16,6 +16,7 @@ import java.util.Set;
 
 import javax.management.Attribute;
 import javax.management.ObjectName;
+import javax.management.openmbean.CompositeData;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.filesystem.EFS;
@@ -51,6 +52,12 @@ public class CpuProfiler implements ICpuProfiler {
     /** The profiler MXBean name. */
     private static final String PROFILER_MXBEAN_NAME = "org.jvmmonitor:type=CPU BCI Profiler"; //$NON-NLS-1$
 
+    /** The transformClasses method in CpuProfilerMXBean. */
+    private static final String TRANSFORM_CLASSES = "transformClasses"; //$NON-NLS-1$
+
+    /** The interruptTransform method in CpuProfilerMXBean. */
+    private static final String INTERRUPT_TRANSFORM = "interruptTransform"; //$NON-NLS-1$
+
     /** The clear method in CpuProfilerMXBean. */
     private static final String CLEAR = "clear"; //$NON-NLS-1$
 
@@ -59,6 +66,15 @@ public class CpuProfiler implements ICpuProfiler {
 
     /** The setFilter method in CpuProfilerMXBean. */
     private static final String SET_FILTER = "setFilter"; //$NON-NLS-1$
+
+    /** The TransformStatus attribute in CpuProfilerMXBean. */
+    private static final String TRANSFORM_STATUS = "TransformStatus"; //$NON-NLS-1$
+
+    /** The composite key targetClassesCount in TransformStatus. */
+    private static final String TARGET_CLASSES_COUNT = "targetClassesCount"; //$NON-NLS-1$
+
+    /** The composite key transformedClassesCount in TransformStatus. */
+    private static final String TRANSFORMED_CLASSES_COUNT = "transformedClassesCount"; //$NON-NLS-1$
 
     /** The Version attribute in CpuProfilerMXBean. */
     private static final String VERSION = "Version"; //$NON-NLS-1$
@@ -115,6 +131,44 @@ public class CpuProfiler implements ICpuProfiler {
     @Override
     public ProfilerType getProfilerType() {
         return type;
+    }
+
+    /*
+     * @see ICpuProfiler#transformClasses()
+     */
+    @Override
+    public void transformClasses(IProgressMonitor monitor)
+            throws JvmCoreException, InterruptedException {
+        if (type == ProfilerType.BCI) {
+            validateAgent();
+
+            int target = getTransformStatusCompositeValue(TARGET_CLASSES_COUNT);
+            int previousTransformed = getTransformStatusCompositeValue(TRANSFORMED_CLASSES_COUNT);
+
+            monitor.beginTask(Messages.transformClassesTask, target);
+            monitor.worked(previousTransformed);
+
+            // trigger to transform classes in target JVM
+            invokeCpuProfilerMXBeanMethod(TRANSFORM_CLASSES, null, null);
+
+            // monitor the progress
+            while (true) {
+                if (monitor.isCanceled()) {
+                    invokeCpuProfilerMXBeanMethod(INTERRUPT_TRANSFORM, null,
+                            null);
+                    throw new InterruptedException();
+                }
+
+                target = getTransformStatusCompositeValue(TARGET_CLASSES_COUNT);
+                int transformed = getTransformStatusCompositeValue(TRANSFORMED_CLASSES_COUNT);
+                if (target == transformed) {
+                    break;
+                }
+
+                monitor.worked(transformed - previousTransformed);
+                previousTransformed = transformed;
+            }
+        }
     }
 
     /*
@@ -407,28 +461,6 @@ public class CpuProfiler implements ICpuProfiler {
     }
 
     /**
-     * Disposes the resources.
-     */
-    public void dispose() {
-        if (!JvmModel.getInstance().getAgentLoadHandler().isAgentLoaded()) {
-            return;
-        }
-
-        ObjectName objectName = null;
-        try {
-            objectName = jvm.getMBeanServer().getObjectName(
-                    PROFILER_MXBEAN_NAME);
-        } catch (JvmCoreException e) {
-            // do nothing
-            return;
-        }
-
-        if (objectName != null) {
-            jvm.getMBeanServer().unregisterMBean(objectName);
-        }
-    }
-
-    /**
      * Gets the state indicating if the version of loaded agent is valid.
      * 
      * @return True if the version of loaded agent is valid
@@ -450,6 +482,31 @@ public class CpuProfiler implements ICpuProfiler {
         String bundleVersion = Activator.getDefault().getBundle().getVersion()
                 .toString();
         return bundleVersion.startsWith(agentJarVersion);
+    }
+
+    /**
+     * Gets the composite value of transform status corresponding to the given
+     * composite key.
+     * 
+     * @param compositeKey
+     *            The composite key
+     * @return The composite value
+     * @throws JvmCoreException
+     */
+    private int getTransformStatusCompositeValue(String compositeKey)
+            throws JvmCoreException {
+        ObjectName objectName = jvm.getMBeanServer().getObjectName(
+                PROFILER_MXBEAN_NAME);
+        Object attribute = jvm.getMBeanServer().getAttribute(objectName,
+                TRANSFORM_STATUS);
+
+        if (attribute instanceof CompositeData) {
+            Object element = ((CompositeData) attribute).get(compositeKey);
+            if (element instanceof Integer) {
+                return (Integer) element;
+            }
+        }
+        throw new IllegalStateException();
     }
 
     /**

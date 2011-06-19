@@ -19,16 +19,19 @@ import java.util.Set;
 public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
 
     /** The instrumentation. */
-    private Instrumentation inst;
-
-    /** The state indicating if transformation is needed. */
-    private boolean transformNeeded;
-
-    /** The previous profiled packages. */
-    private Set<String> previousProfiledPackages;
+    Instrumentation inst;
 
     /** The class file transformer. */
-    private ClassFileTransformerImpl classFileTransformer;
+    ClassFileTransformerImpl classFileTransformer;
+
+    /** The target classes to transform. */
+    private Set<Class<?>> targetClasses;
+
+    /** The transformed classes. */
+    private Set<Class<?>> transformedClasses;
+
+    /** The state indicating if transformation has to be interrupted. */
+    private boolean interrupted;
 
     /**
      * The constructor.
@@ -39,9 +42,11 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
      */
     public CpuBciProfilerMXBeanImpl(Instrumentation inst) throws IOException {
         this.inst = inst;
-        transformNeeded = true;
-        previousProfiledPackages = new HashSet<String>();
-        classFileTransformer = new ClassFileTransformerImpl();
+        transformedClasses = new HashSet<Class<?>>();
+        targetClasses = new HashSet<Class<?>>();
+        classFileTransformer = new ClassFileTransformerImpl(transformedClasses,
+                targetClasses);
+        interrupted = false;
 
         CpuBciProfiler.initialize();
         if (Config.getInstance().isProfilerEnabled()) {
@@ -50,21 +55,48 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
     }
 
     /*
+     * @see CpuBciProfilerMXBean#transformClasses()
+     */
+    @Override
+    public void transformClasses() {
+        new Thread() {
+            public void run() {
+                try {
+                    inst.addTransformer(classFileTransformer, true);
+                    retransformClasses();
+                    inst.removeTransformer(classFileTransformer);
+                } catch (Throwable t) {
+                    Agent.logError(t, Messages.CANNOT_TRANSFORM_CLASSES);
+                }
+            }
+        }.start();
+    }
+
+    /*
+     * @see CpuBciProfilerMXBean#getTransformStatus()
+     */
+    @Override
+    public TransformStatusCompositeData getTransformStatus() {
+        return new TransformStatusCompositeData(targetClasses.size(),
+                transformedClasses.size());
+    }
+
+    /*
+     * @see CpuBciProfilerMXBean#interruptTransform()
+     */
+    @Override
+    public void interruptTransform() {
+        interrupted = true;
+    }
+
+    /*
      * @see CpuBciProfilerMXBean#setRunning(boolean)
      */
     @Override
     public void setRunning(boolean run) {
         if (run) {
-            try {
-                if (transformNeeded) {
-                    inst.addTransformer(classFileTransformer, true);
-                    retransformClasses();
-                    transformNeeded = false;
-                }
-                Config.getInstance().setProfilerEnabled(true);
-            } catch (Throwable t) {
-                Agent.logError(t, Messages.CANNOT_RESUME);
-            }
+            inst.addTransformer(classFileTransformer, true);
+            Config.getInstance().setProfilerEnabled(true);
         } else {
             try {
                 inst.removeTransformer(classFileTransformer);
@@ -155,19 +187,19 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
     @Override
     public void setFilter(String key, String value) {
         if (Constants.PROFILED_PACKAGES_PROP_KEY.equals(key)) {
-            previousProfiledPackages = new HashSet<String>(
-                    Config.getInstance().profiledPackages);
-
             Config.getInstance().profiledPackages.clear();
             Config.getInstance().addElements(
                     Config.getInstance().profiledPackages, value);
 
-            if (isRunning()
-                    && !previousProfiledPackages
-                            .equals(Config.getInstance().profiledPackages)) {
-                retransformClasses();
-            } else {
-                transformNeeded = true;
+            // store target classes
+            targetClasses.clear();
+            for (Class<?> clazz : inst.getAllLoadedClasses()) {
+                String className = clazz.getName();
+                if (!className.startsWith("[")
+                        && matchs(className,
+                                Config.getInstance().profiledPackages)) {
+                    targetClasses.add(clazz);
+                }
             }
         }
     }
@@ -202,27 +234,51 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
     /**
      * Re-transforms the loaded classes.
      */
-    private void retransformClasses() {
-        Set<String> targetPackages = new HashSet<String>();
-        targetPackages.addAll(Config.getInstance().profiledPackages);
-        targetPackages.addAll(previousProfiledPackages);
+    void retransformClasses() {
+        interrupted = false;
 
-        for (@SuppressWarnings("rawtypes")
-        Class clazz : inst.getAllLoadedClasses()) {
-            String className = clazz.getName();
-            if (className.startsWith("[") || !matchs(className, targetPackages)) {
-                continue;
+        Set<Class<?>> transformedTargetClasses = new HashSet<Class<?>>(
+                transformedClasses);
+        transformedTargetClasses.retainAll(targetClasses);
+        Set<Class<?>> classesToTransform = getClassesToTransform(transformedTargetClasses);
+        transformedClasses.clear();
+        transformedClasses.addAll(transformedTargetClasses);
+
+        // transform classes
+        for (Class<?> clazz : classesToTransform) {
+            if (interrupted) {
+                transformedClasses.retainAll(targetClasses);
+                return;
             }
-
-            Agent.logInfo(Messages.RETRANSFORMED_CLASS, clazz);
 
             try {
                 inst.retransformClasses(clazz);
+                Agent.logInfo(Messages.RETRANSFORMED_CLASS, clazz);
             } catch (UnmodifiableClassException e) {
-                Agent.logError(e, Messages.CANNOT_RETRANSFORM_CLASS,
-                        clazz.getCanonicalName());
+                Agent.logError(e, Messages.CANNOT_RETRANSFORM_CLASS);
+            } catch (InternalError e) {
+                // do nothing
             }
         }
+
+        transformedClasses.clear();
+        transformedClasses.addAll(targetClasses);
+    }
+
+    /**
+     * Gets the classes to transform.
+     * 
+     * @param transformedTargetClasses
+     *            The transformed target classes
+     * @return The classes to transform
+     */
+    private Set<Class<?>> getClassesToTransform(
+            Set<Class<?>> transformedTargetClasses) {
+        Set<Class<?>> classes = new HashSet<Class<?>>();
+        classes.addAll(targetClasses);
+        classes.addAll(transformedClasses);
+        classes.removeAll(transformedTargetClasses);
+        return classes;
     }
 
     /**
