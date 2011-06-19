@@ -21,6 +21,26 @@ import org.jvmmonitor.internal.agent.asm.ClassWriter;
 @SuppressWarnings("nls")
 public class ClassFileTransformerImpl implements ClassFileTransformer {
 
+    /** The target classes to transform. */
+    private Set<Class<?>> targetClasses;
+
+    /** The transformed classes. */
+    private Set<Class<?>> transformedClasses;
+
+    /**
+     * The constructor.
+     * 
+     * @param targetClasses
+     *            The target classes to transform
+     * @param transformedClasses
+     *            The transformed classes
+     */
+    public ClassFileTransformerImpl(Set<Class<?>> targetClasses,
+            Set<Class<?>> transformedClasses) {
+        this.targetClasses = targetClasses;
+        this.transformedClasses = transformedClasses;
+    }
+
     /*
      * @see ClassFileTransformer#transform(ClassLoader, String, Class,
      * ProtectionDomain, byte[])
@@ -36,6 +56,12 @@ public class ClassFileTransformerImpl implements ClassFileTransformer {
             return classfileBuffer;
         }
 
+        /*
+         * Classes could be loaded after collecting targetClasses in
+         * CpuBciProfilerMXBeanImpl.setFilter(String, String)
+         */
+        targetClasses.add(classBeingRedefined);
+        transformedClasses.add(classBeingRedefined);
         Agent.logInfo(Messages.INSTRUMENTED_CLASS, className);
 
         ClassReader reader = new ClassReader(classfileBuffer);

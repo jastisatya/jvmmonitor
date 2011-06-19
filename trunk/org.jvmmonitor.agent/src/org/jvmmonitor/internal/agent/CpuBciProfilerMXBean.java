@@ -19,6 +19,23 @@ public interface CpuBciProfilerMXBean {
     final static String PROFILER_MXBEAN_NAME = "org.jvmmonitor:type=CPU BCI Profiler";
 
     /**
+     * Transforms the classes to prepare profiling or clean up.
+     */
+    void transformClasses();
+
+    /**
+     * Gets the status of transforming classes.
+     * 
+     * @return The status of transforming classes
+     */
+    TransformStatusCompositeData getTransformStatus();
+
+    /**
+     * Interrupts transforming classes.
+     */
+    void interruptTransform();
+
+    /**
      * Sets the state indicating if profiler is running.
      * 
      * @param run

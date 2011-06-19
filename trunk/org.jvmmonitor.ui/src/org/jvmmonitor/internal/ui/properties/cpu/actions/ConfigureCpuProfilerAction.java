@@ -150,7 +150,7 @@ public class ConfigureCpuProfilerAction extends Action {
             dialogSettings.put(IConstants.PROFILER_SAMPLING_PERIOD_KEY,
                     samplingPeriod);
         }
-        String packageString = setPackages(dialog.getPackages());
+        String packageString = setPackages(dialog.getPackages(), monitor);
         dialogSettings.put(IConstants.PACKAGES_KEY, packageString);
         dialogSettings.put(IConstants.PROFILER_TYPE_KEY, type.name());
 
@@ -162,15 +162,23 @@ public class ConfigureCpuProfilerAction extends Action {
      * 
      * @param packages
      *            The packages
+     * @param monitor
+     *            The progress monitor
      * @return The packages string with delimiter ','
      */
-    String setPackages(Set<String> packages) {
+    String setPackages(Set<String> packages, IProgressMonitor monitor) {
         IActiveJvm jvm = cpuSection.getJvm();
         if (jvm != null) {
             try {
                 jvm.getCpuProfiler().setProfiledPackages(packages);
+                if (jvm.getCpuProfiler().getProfilerType() == ProfilerType.BCI
+                        && jvm.getCpuProfiler().getState() == ProfilerState.RUNNING) {
+                    jvm.getCpuProfiler().transformClasses(monitor);
+                }
             } catch (JvmCoreException e) {
                 Activator.log(Messages.setProfiledPackagesFailedMsg, e);
+            } catch (InterruptedException e) {
+                // do nothing
             }
         }
 

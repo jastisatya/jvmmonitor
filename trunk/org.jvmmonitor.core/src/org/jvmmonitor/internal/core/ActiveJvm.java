@@ -212,7 +212,6 @@ public class ActiveJvm extends AbstractJvm implements IActiveJvm {
     public void disconnect() {
         isConnected = false;
 
-        ((CpuProfiler) cpuProfiler).dispose();
         mBeanServer.dispose();
         try {
             if (swtResourceMonitor.isSupported()) {

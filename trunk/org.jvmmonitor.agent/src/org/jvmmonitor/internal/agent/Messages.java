@@ -33,6 +33,9 @@ public class Messages {
     /** The error message that resuming profiler failed. */
     static final String CANNOT_RESUME = "Cannot resume the CPU profiler.";
 
+    /** The error message that transforming classes failed. */
+    static final String CANNOT_TRANSFORM_CLASSES = "Cannot transform the classes.";
+
     /** The error message that dumping to file failed. */
     static final String CANNOT_DUMP_TO_FILE = "Cannot dump the CPU profiling data to file.";
 
