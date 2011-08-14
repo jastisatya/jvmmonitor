@@ -11,20 +11,28 @@
 </h1>
 
 <p>
-    <a href="#Cannot_Find_JVMs">I cannot find any JVMs on JVM Explorer. What is wrong?</a>
+<a href="#Cannot_Find_JVMs">Why cannot I find any JVMs on JVM Explorer?</a>
+</p>
+<p>
+<a href="#Cannot_Connect_to_JVM">Why do I get the message "Monitoring is not supported for the selected JVM"?</a>
 </p>
 <p>
 <a href="#How_to_enable_BCI_CPU_profiler">How can I enable the BCI mode of CPU profiler on remote host?</a>
 </p>
+<br>
+
 
 <a name="Cannot_Find_JVMs"></a>
 <h2>
-    I cannot find any JVMs on JVM Explorer. What is wrong?
+    Why cannot I find any JVMs on JVM Explorer?
 </h2>
 <p>
     At least one JVM (Eclipse itself) should be shown on JVM Explorer. 
     If no JVM is shown, it is likely that Eclipse is not started with supported JDK.
-    For example, Sun JRE might be used instead of Sun JDK 6 or OpenJDK 6.
+    For example, JRE might be used instead of JDK.
+</p>
+<p>
+    To solve the issue,
 </p>
 <ol>
     <li>
@@ -36,8 +44,9 @@
     </li>
     <li>
     To enforce using a desired JDK on Eclipse, specify the option <b>-vm</b> to the eclipse executable, 
-    or specify it in <b>eclipse.ini</b>.
-    See the <img src="./img/hyper_link.gif"/><a href="http://help.eclipse.org/helios/topic/org.eclipse.platform.doc.user/tasks/running_eclipse.htm">
+    or alternatively specify it in <b>eclipse.ini</b>.
+    See the <img src="./img/hyper_link.gif"/>
+    <a href="http://help.eclipse.org/helios/topic/org.eclipse.platform.doc.user/tasks/running_eclipse.htm">
     Workbench User Guide</a> to learn how to specify that option.
     </li>
     <li>
@@ -49,6 +58,45 @@
     you may try specifying the JDK on preference page
     <b>Window > Preferences > Java > Monitor > Tools > JDK Root Directory</b>.
 </p>
+<br>
+
+
+<a name="Cannot_Connect_to_JVM"></a>
+<h2>
+    Why do I get the message "Monitoring is not supported for the selected JVM"?
+</h2>
+<p>
+    There are several cases that this message is shown.
+</p>
+<ul>
+    <li>
+    If you see the additional message "Agent JAR loaded but agent failed to initialize",
+    giving the following JVM option to target JVM may solve the issue.
+    <pre>
+    -Dcom.sun.management.jmxremote
+    </pre>
+    </li>
+    <li>
+    If you see the additional message "Unable to attach to 32-bit process running under WOW64", 
+    your application is running with 32bit Java while using 64bit Eclipse on Windows.
+    Either using 64bit Java for your application or using 32bit Eclipse solves the issue.
+    </li>
+    <li>
+    If you see the additional message "Unable to attach to 64-bit process",
+    your application is running with 64bit Java while using 32bit Eclipse on Windows.
+    Either using 32bit Java for your application or using 64bit Eclipse solves the issue.
+    </li>
+    <li>
+    If you see the additional message "The VM does not support the attach mechanism", 
+    your application might be running with unsupported Java version (e.g. Java 1.5).
+    Using Java 1.6 or 1.7 for your application solves the issue.
+    </li>
+    <li>
+    If you don't see any additional message, your application might be shut down in the meantime.
+    </li>
+</ul>
+<br>
+
 
 <a name="How_to_enable_BCI_CPU_profiler"></a>
 <h2>

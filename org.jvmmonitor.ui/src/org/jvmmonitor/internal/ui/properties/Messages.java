@@ -48,4 +48,9 @@ public final class Messages extends NLS {
 
     /** */
     public static String valueColumnToolTip;
+
+    // instruction message
+
+    /** */
+    public static String seeFaqMsg;
 }

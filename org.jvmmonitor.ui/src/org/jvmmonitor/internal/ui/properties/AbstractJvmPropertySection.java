@@ -21,6 +21,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -31,6 +32,10 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.part.PageBook;
 import org.eclipse.ui.part.PageSite;
 import org.eclipse.ui.views.properties.PropertySheet;
@@ -50,14 +55,23 @@ import org.jvmmonitor.ui.Activator;
 abstract public class AbstractJvmPropertySection extends
         AbstractPropertySection implements IJvmModelChangeListener {
 
+    /** The URL for FAQ page. */
+    private static final String FAQ_URL = "/org.jvmmonitor.doc/faq.html#Cannot_Connect_to_JVM"; //$NON-NLS-1$
+
     /** The page book. */
     private PageBook pageBook;
 
-    /** The error message label. */
-    private Label errorMessageLabel;
+    /** The message page. */
+    private Composite messagePage;
 
-    /** The composite. */
-    private Composite composite;
+    /** The message label. */
+    private Label messageLabel;
+
+    /** The hyper link to FAQ page. */
+    private Hyperlink faqHyperlink;
+
+    /** The content page. */
+    private Composite contentPage;
 
     /** The active JVM. */
     private IActiveJvm jvm;
@@ -99,13 +113,13 @@ abstract public class AbstractJvmPropertySection extends
 
         pageBook = new PageBook(parent, SWT.NONE);
 
-        errorMessageLabel = new Label(pageBook, SWT.NONE);
-        composite = new Composite(pageBook, SWT.NONE);
-        composite.setLayout(new FillLayout());
-        pageBook.showPage(composite);
+        messagePage = createMessagePage(pageBook);
+        contentPage = new Composite(pageBook, SWT.NONE);
+        contentPage.setLayout(new FillLayout());
+        pageBook.showPage(contentPage);
         propertySheet = getPropertySheet((PageSite) tabbedPropertySheetPage
                 .getSite());
-        createControls(composite);
+        createControls(contentPage);
 
         partListener = new PartListener(this, tabbedPropertySheetPage);
         perspectiveListener = new PerspectiveListener(this,
@@ -209,9 +223,9 @@ abstract public class AbstractJvmPropertySection extends
             });
         }
 
-        if (pageBook.isDisposed() || composite.isDisposed()
-                || errorMessageLabel.isDisposed() || jvm == null
-                || e.jvm.getPid() != jvm.getPid()) {
+        if (pageBook.isDisposed() || contentPage.isDisposed()
+                || messagePage.isDisposed() || messageLabel.isDisposed()
+                || jvm == null || e.jvm.getPid() != jvm.getPid()) {
             return;
         }
 
@@ -263,8 +277,8 @@ abstract public class AbstractJvmPropertySection extends
      * @return True if error message is shown
      */
     public boolean hasErrorMessage() {
-        if (!errorMessageLabel.isDisposed()) {
-            return !errorMessageLabel.getText().isEmpty();
+        if (!messageLabel.isDisposed()) {
+            return !messageLabel.getText().isEmpty();
         }
         return false;
     }
@@ -365,7 +379,8 @@ abstract public class AbstractJvmPropertySection extends
      */
     protected void deactivateSection() {
         isSectionActivated = false;
-        if (pageBook.isDisposed() || errorMessageLabel.isDisposed()) {
+        if (pageBook.isDisposed() || messagePage.isDisposed()
+                || messageLabel.isDisposed()) {
             return;
         }
 
@@ -450,29 +465,32 @@ abstract public class AbstractJvmPropertySection extends
      * Updates the page.
      */
     protected void updatePage() {
-        if (jvm == null || pageBook.isDisposed()
-                || errorMessageLabel.isDisposed()) {
+        if (jvm == null || pageBook.isDisposed() || messagePage.isDisposed()
+                || messageLabel.isDisposed()) {
             return;
         }
 
         if (jvm.isConnected()) {
-            errorMessageLabel.setText(""); //$NON-NLS-1$
+            messageLabel.setText(""); //$NON-NLS-1$
         } else {
             if (jvm.isConnectionSupported()) {
-                errorMessageLabel.setText(Messages.monitoringNotStartedMsg);
+                messageLabel.setText(Messages.monitoringNotStartedMsg);
+                showFaqHyperLink(false);
             } else {
                 StringBuffer buffer = new StringBuffer(
                         Messages.monitoringNotSupportedMsg);
                 String errorMessage = jvm.getErrorStateMessage();
-                if (errorMessage != null) {
+                if (errorMessage != null && !errorMessage.isEmpty()) {
                     buffer.append('\n').append('(').append(errorMessage)
                             .append(')');
                 }
-                errorMessageLabel.setText(buffer.toString());
+                messageLabel.setText(buffer.toString());
+                showFaqHyperLink(true);
             }
+            messagePage.layout();
         }
 
-        pageBook.showPage(hasErrorMessage() ? errorMessageLabel : composite);
+        pageBook.showPage(hasErrorMessage() ? messagePage : contentPage);
     }
 
     /**
@@ -497,6 +515,43 @@ abstract public class AbstractJvmPropertySection extends
      *            The parent
      */
     abstract protected void createControls(Composite parent);
+
+    /**
+     * Creates the message page.
+     * 
+     * @param parent
+     *            The parent composite
+     * @return The message page
+     */
+    private Composite createMessagePage(Composite parent) {
+        Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(new GridLayout(1, false));
+        messageLabel = new Label(composite, SWT.NONE);
+        messageLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        FormToolkit toolkit = new FormToolkit(Display.getDefault());
+        toolkit.setBackground(composite.getBackground());
+        faqHyperlink = toolkit.createHyperlink(composite, Messages.seeFaqMsg,
+                SWT.NONE);
+        faqHyperlink.addHyperlinkListener(new HyperlinkAdapter() {
+            @Override
+            public void linkActivated(HyperlinkEvent e) {
+                PlatformUI.getWorkbench().getHelpSystem()
+                        .displayHelpResource(FAQ_URL);
+            }
+        });
+        return composite;
+    }
+
+    /**
+     * Shows the hyper link to FAQ page.
+     * 
+     * @param show
+     *            <tt>true</tt> to show
+     */
+    private void showFaqHyperLink(boolean show) {
+        faqHyperlink.setVisible(show);
+    }
 
     /**
      * Gets the property sheet.
