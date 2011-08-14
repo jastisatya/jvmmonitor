@@ -355,7 +355,7 @@ public class TimelineChart extends Chart implements IPropertyChangeListener {
      *            The monitored attribute
      * @return The series ID
      */
-    private String getSeriesId(IMonitoredMXBeanAttribute attribute) {
+    private static String getSeriesId(IMonitoredMXBeanAttribute attribute) {
         final String NAME = "name="; //$NON-NLS-1$
         final String DELIMITER = ","; //$NON-NLS-1$
 

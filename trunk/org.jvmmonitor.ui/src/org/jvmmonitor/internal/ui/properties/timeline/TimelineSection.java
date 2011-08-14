@@ -287,7 +287,9 @@ public class TimelineSection extends AbstractJvmPropertySection {
     }
 
     /**
-     * Creates the message label.
+     * Creates the message page.
+     * 
+     * @return The message page
      */
     private Composite createMessagePage() {
         messagePage = new Composite(timelinePageBook, SWT.NONE);
@@ -448,7 +450,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
      * @param actions
      *            The actions
      */
-    private void addSectionActions(ExpandableComposite expandableComposite,
+    private static void addSectionActions(ExpandableComposite expandableComposite,
             List<Action> actions) {
         ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
         ToolBar toolbar = toolBarManager.createControl(expandableComposite);

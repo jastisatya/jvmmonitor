@@ -355,7 +355,7 @@ public class ConfigureChartDialog extends Dialog {
      * @param tree
      *            The tree
      */
-    private void configureTree(Tree tree) {
+    private static void configureTree(Tree tree) {
         tree.setLinesVisible(true);
         tree.setHeaderVisible(true);
 

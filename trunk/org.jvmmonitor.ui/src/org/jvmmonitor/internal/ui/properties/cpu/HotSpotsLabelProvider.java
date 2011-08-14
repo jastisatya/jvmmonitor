@@ -132,7 +132,7 @@ public class HotSpotsLabelProvider extends AbstractLabelProvider {
      *            the element
      * @return the method column text
      */
-    private String getMethodColumnText(Object element) {
+    private static String getMethodColumnText(Object element) {
         if (element instanceof IThreadNode) {
             if (((IThreadNode) element).hasChildren()) {
                 return Messages.threadLabel + ' '
@@ -174,7 +174,7 @@ public class HotSpotsLabelProvider extends AbstractLabelProvider {
      *            the element
      * @return the self time column text
      */
-    private String getSelfTimeInPercentageColumnText(Object element) {
+    private static String getSelfTimeInPercentageColumnText(Object element) {
         if (element instanceof IMethodNode) {
             double percentage = ((IMethodNode) element)
                     .getSelfTimeInPercentage();

@@ -106,7 +106,7 @@ public class NotificationComparator extends ViewerComparator {
      *            The notification column
      * @return The column index
      */
-    private int getColumnIndex(Tree tree, NotificationColumn column) {
+    private static int getColumnIndex(Tree tree, NotificationColumn column) {
         for (int i = 0; i < tree.getColumnCount(); i++) {
             if (tree.getColumn(i).getText().equals(column.label)) {
                 return i;

@@ -60,6 +60,7 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
     @Override
     public void transformClasses() {
         new Thread() {
+            @Override
             public void run() {
                 try {
                     inst.addTransformer(classFileTransformer, true);
@@ -196,7 +197,7 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
             for (Class<?> clazz : inst.getAllLoadedClasses()) {
                 String className = clazz.getName();
                 if (!className.startsWith("[")
-                        && matchs(className,
+                        && matches(className,
                                 Config.getInstance().profiledPackages)) {
                     targetClasses.add(clazz);
                 }
@@ -290,7 +291,7 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
      *            the list of packages
      * @return true if the given class belongs to one of the packages list
      */
-    private boolean matchs(String className, Set<String> packages) {
+    private static boolean matches(String className, Set<String> packages) {
         if (packages.isEmpty()) {
             return false;
         }

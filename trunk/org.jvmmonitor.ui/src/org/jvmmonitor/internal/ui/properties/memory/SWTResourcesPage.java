@@ -35,6 +35,9 @@ import org.jvmmonitor.internal.ui.properties.AbstractSashForm;
 import org.jvmmonitor.internal.ui.properties.StackTraceViewer;
 import org.jvmmonitor.ui.Activator;
 
+/**
+ * The SWT resource page.
+ */
 public class SWTResourcesPage extends AbstractSashForm {
 
     /** The sash weights. */
@@ -67,6 +70,8 @@ public class SWTResourcesPage extends AbstractSashForm {
     /**
      * The constructor.
      * 
+     * @param section
+     *            The memory section
      * @param tabFolder
      *            The tab folder
      * @param actionBars

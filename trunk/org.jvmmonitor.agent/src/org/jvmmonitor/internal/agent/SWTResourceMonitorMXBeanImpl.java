@@ -235,6 +235,7 @@ public class SWTResourceMonitorMXBeanImpl implements SWTResourceMonitorMXBean {
     /**
      * Refreshes the resources stored in this class.
      * 
+     * @throws SecurityException 
      * @throws Throwable
      */
     private void refresh() throws SecurityException, Throwable {
@@ -273,7 +274,7 @@ public class SWTResourceMonitorMXBeanImpl implements SWTResourceMonitorMXBean {
      *            The error
      * @return The stack trace
      */
-    private List<StackTraceElementCompositeData> getStackTrace(Error error) {
+    private static List<StackTraceElementCompositeData> getStackTrace(Error error) {
         List<StackTraceElementCompositeData> list = new ArrayList<StackTraceElementCompositeData>();
         if (error != null) {
             for (StackTraceElement element : error.getStackTrace()) {
@@ -303,6 +304,7 @@ public class SWTResourceMonitorMXBeanImpl implements SWTResourceMonitorMXBean {
      * @param object
      *            The resource object
      * @return The name
+     * @throws Throwable 
      */
     private String getName(Object object) throws Throwable {
         if (FONT_CLASS.equals(object.getClass().getName())) {
@@ -358,6 +360,7 @@ public class SWTResourceMonitorMXBeanImpl implements SWTResourceMonitorMXBean {
      * @param object
      *            The color object
      * @return The color name
+     * @throws Throwable 
      */
     private String getColorName(Object object) throws Throwable {
         Method method = colorClass.getDeclaredMethod(GET_RED_METHOD);
@@ -376,6 +379,7 @@ public class SWTResourceMonitorMXBeanImpl implements SWTResourceMonitorMXBean {
      * @param object
      *            The font object
      * @return The font name
+     * @throws Throwable
      */
     private String getFontName(Object object) throws Throwable {
         Method method = fontClass.getDeclaredMethod(GET_FONT_DATA_METHOD);

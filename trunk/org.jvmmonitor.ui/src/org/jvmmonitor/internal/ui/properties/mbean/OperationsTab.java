@@ -199,7 +199,7 @@ public class OperationsTab extends Composite {
      *            The selection
      * @return The object name
      */
-    private ObjectName getObjectName(StructuredSelection selection) {
+    private static ObjectName getObjectName(StructuredSelection selection) {
         Object element = selection.getFirstElement();
         if (element instanceof MBeanType) {
             MBeanName[] mBeanName = ((MBeanType) element).getMBeanNames();

@@ -339,7 +339,7 @@ public class OverviewSection extends AbstractJvmPropertySection {
          *            The string to determine RGB
          * @return The RGB
          */
-        private RGB getRGB(String string) {
+        private static RGB getRGB(String string) {
             int hashCode = string.hashCode();
             int r = (hashCode >> 3) % 256;
             int g = (hashCode >> 1) % 256;

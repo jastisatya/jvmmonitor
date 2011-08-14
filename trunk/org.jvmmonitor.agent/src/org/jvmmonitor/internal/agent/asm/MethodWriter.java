@@ -1112,6 +1112,10 @@ class MethodWriter implements MethodVisitor {
         visitSwitchInsn(dflt, labels);
     }
 
+    /**
+     * @param dflt
+     * @param labels
+     */
     private void visitSwitchInsn(final Label dflt, final Label[] labels) {
         // Label currentBlock = this.currentBlock;
         if (currentBlock != null) {
@@ -1790,6 +1794,11 @@ class MethodWriter implements MethodVisitor {
         }
     }
 
+    /**
+     * Writes the frame type.
+     * 
+     * @param type The frame type
+     */
     private void writeFrameType(final Object type) {
         if (type instanceof String) {
             stackMap.putByte(7).putShort(cw.newClass((String) type));

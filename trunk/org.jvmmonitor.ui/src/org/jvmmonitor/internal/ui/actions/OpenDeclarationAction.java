@@ -382,7 +382,7 @@ public class OpenDeclarationAction extends Action implements
      * @return The editor part
      * @throws PartInitException
      */
-    private IEditorPart openEditor(IEditorInput editorInput,
+    private static IEditorPart openEditor(IEditorInput editorInput,
             ISourcePresentation presentation, Object source)
             throws PartInitException {
         if (editorInput == null) {
@@ -499,7 +499,7 @@ public class OpenDeclarationAction extends Action implements
      *            The type signatures e.g. <tt>QString;I</tt>
      * @return The readable parameter types <tt>String, int</tt>
      */
-    private String[] getReadableParamTypes(String[] signatures) {
+    private static String[] getReadableParamTypes(String[] signatures) {
         String[] results = new String[signatures.length];
         for (int i = 0; i < results.length; i++) {
             results[i] = Signature.toString(signatures[i]);
@@ -515,7 +515,7 @@ public class OpenDeclarationAction extends Action implements
      *            The simplified parameters e.g. <tt>String, int</tt>
      * @return The simplified parameters
      */
-    private String[] getSimplifiedParameters(String parameter) {
+    private static String[] getSimplifiedParameters(String parameter) {
 
         // remove '(' and ')'
         String param = parameter.replaceAll("[()]", ""); //$NON-NLS-1$ //$NON-NLS-2$
@@ -541,7 +541,7 @@ public class OpenDeclarationAction extends Action implements
      *            The class name
      * @return The simplified constructor name
      */
-    private String getSimplifiedConstrucor(String clazz) {
+    private static String getSimplifiedConstrucor(String clazz) {
         int index = clazz.lastIndexOf('$');
         if (index != -1) {
             return clazz.substring(index + 1);

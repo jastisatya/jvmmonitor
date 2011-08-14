@@ -303,7 +303,7 @@ public class JvmTreeLabelProvider implements IStyledLabelProvider,
      *            The JVM
      * @return the ID
      */
-    private String getIdInicator(IJvm jvm) {
+    private static String getIdInicator(IJvm jvm) {
         int pid = jvm.getPid();
         int port = jvm.getPort();
         StringBuffer buffer = new StringBuffer();

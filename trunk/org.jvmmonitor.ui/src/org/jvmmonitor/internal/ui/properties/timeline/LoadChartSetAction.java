@@ -113,7 +113,7 @@ public class LoadChartSetAction extends AbstractChartSetAction {
      * @param defaultChartSet
      *            The default chart set
      */
-    private void storeDefaultChartSet(String defaultChartSet) {
+    private static void storeDefaultChartSet(String defaultChartSet) {
         Activator.getDefault().getPreferenceStore()
                 .setValue(DEFAULT_CHART_SET, defaultChartSet);
     }
@@ -411,7 +411,7 @@ public class LoadChartSetAction extends AbstractChartSetAction {
      *            The RGB string "r,g,b" (e.g. "225,225,0")
      * @return The RGB integer array
      */
-    private int[] getRGB(String rgbString) {
+    private static int[] getRGB(String rgbString) {
         String[] elements = rgbString.split(","); //$NON-NLS-1$
         int[] rgb = new int[3];
 

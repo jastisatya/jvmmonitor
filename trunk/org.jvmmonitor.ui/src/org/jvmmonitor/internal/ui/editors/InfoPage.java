@@ -290,7 +290,7 @@ public class InfoPage extends Composite {
      *            The title for text
      * @return The text
      */
-    private Text createText(Composite parent, FormToolkit toolkit, String title) {
+    private static Text createText(Composite parent, FormToolkit toolkit, String title) {
         Label label = toolkit.createLabel(parent, title, SWT.NONE);
         label.setForeground(toolkit.getColors().getColor(IFormColors.TITLE));
 
@@ -312,7 +312,7 @@ public class InfoPage extends Composite {
      *            The title for text
      * @return The text
      */
-    private Text createEditableText(Composite parent, FormToolkit toolkit,
+    private static Text createEditableText(Composite parent, FormToolkit toolkit,
             String title) {
         Label label = toolkit.createLabel(parent, title, SWT.NONE);
         label.setForeground(toolkit.getColors().getColor(IFormColors.TITLE));

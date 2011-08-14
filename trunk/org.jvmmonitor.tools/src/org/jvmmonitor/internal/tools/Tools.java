@@ -461,7 +461,7 @@ public class Tools implements IPropertyChangeListener, IConstants {
      *            The JDK root directory
      * @return The JRE library path or <tt>null</tt> it not found
      */
-    private String getJreLibraryPath(String jdkRootDirectory) {
+    private static String getJreLibraryPath(String jdkRootDirectory) {
         for (String path : LIBRARY_PATHS) {
             File attachLibraryFile = new File(jdkRootDirectory + path
                     + File.separator + System.mapLibraryName(ATTACH_LIBRARY));
@@ -479,7 +479,7 @@ public class Tools implements IPropertyChangeListener, IConstants {
      *            The JDK root directory
      * @throws Throwable
      */
-    private void addClassPath(String jdkRootDirectory) throws Throwable {
+    private static void addClassPath(String jdkRootDirectory) throws Throwable {
         File file = new File(jdkRootDirectory + TOOLS_JAR);
         URL toolsJarUrl = file.toURI().toURL();
 
@@ -502,7 +502,7 @@ public class Tools implements IPropertyChangeListener, IConstants {
      *            The JDK root directory
      * @throws Throwable
      */
-    private void addLibraryPath(String jdkRootDirectory) throws Throwable {
+    private static void addLibraryPath(String jdkRootDirectory) throws Throwable {
         String libraryPath = System.getProperty(JAVA_LIBRARY_PATH);
         String jreLibraryPath = getJreLibraryPath(jdkRootDirectory);
 

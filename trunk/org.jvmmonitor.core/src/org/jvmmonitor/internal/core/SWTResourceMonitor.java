@@ -221,7 +221,7 @@ public class SWTResourceMonitor implements ISWTResourceMonitor {
      *            The stack trace in composite data array
      * @return The stack trace elements
      */
-    private StackTraceElement[] getStackTrace(CompositeData[] stackTrace) {
+    private static StackTraceElement[] getStackTrace(CompositeData[] stackTrace) {
         List<StackTraceElement> list = new ArrayList<StackTraceElement>();
         for (CompositeData compositeData : stackTrace) {
             Object className = compositeData.get(CLASS_NAME);
@@ -230,7 +230,7 @@ public class SWTResourceMonitor implements ISWTResourceMonitor {
             Object metohdName = compositeData.get(METHOD_NAME);
             Object nativeMethod = compositeData.get(NATIVE_METHOD);
 
-            if ((className instanceof String) && (className instanceof String)
+            if ((className instanceof String)
                     && (fileName instanceof String)
                     && (lineNumber instanceof Integer)
                     && (metohdName instanceof String)

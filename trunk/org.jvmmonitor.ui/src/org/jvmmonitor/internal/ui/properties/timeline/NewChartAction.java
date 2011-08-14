@@ -82,7 +82,7 @@ public class NewChartAction extends Action {
      * @param jvm
      *            The jvm
      */
-    private void performNew(String chartTitle, AxisUnit axisUnit,
+    private static void performNew(String chartTitle, AxisUnit axisUnit,
             List<MBeanAttribute> attributes, IActiveJvm jvm) {
         IMonitoredMXBeanGroup group = jvm.getMBeanServer()
                 .addMonitoredAttributeGroup(chartTitle, axisUnit);

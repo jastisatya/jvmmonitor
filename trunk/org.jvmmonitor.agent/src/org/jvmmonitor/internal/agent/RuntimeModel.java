@@ -188,7 +188,7 @@ public class RuntimeModel implements Runnable {
      * 
      * @return The runtime name
      */
-    private String getRuntime() {
+    private static String getRuntime() {
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         return runtimeMXBean.getName();
     }
@@ -198,7 +198,7 @@ public class RuntimeModel implements Runnable {
      * 
      * @return The main class
      */
-    private String getMainClass() {
+    private static String getMainClass() {
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 
         for (ThreadInfo threadInfo : threadMXBean.dumpAllThreads(false, false)) {
@@ -220,7 +220,7 @@ public class RuntimeModel implements Runnable {
      * 
      * @return The JVM arguments
      */
-    private String getJvmArguments() {
+    private static String getJvmArguments() {
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         List<String> arguments = runtimeMXBean.getInputArguments();
         StringBuffer buffer = new StringBuffer();
@@ -240,7 +240,7 @@ public class RuntimeModel implements Runnable {
      *            The date
      * @return The file
      */
-    private File getFile(Date date) {
+    private static File getFile(Date date) {
         String time = new SimpleDateFormat(Constants.TIME_FORMAT_FOR_FILENAME)
                 .format(date);
         String fileName = Config.getInstance().getDumpDir()

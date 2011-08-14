@@ -153,7 +153,7 @@ public class MBeanContentProvider implements ITreeContentProvider {
      *            The active JVM
      * @return The object names
      */
-    private Set<ObjectName> getObjectNames(IActiveJvm jvm) {
+    private static Set<ObjectName> getObjectNames(IActiveJvm jvm) {
         try {
             return jvm.getMBeanServer().queryNames(null);
         } catch (JvmCoreException e) {
@@ -172,7 +172,7 @@ public class MBeanContentProvider implements ITreeContentProvider {
      *            The object name
      * @return The MBean info
      */
-    private MBeanInfo getMBeanInfo(IActiveJvm jvm, ObjectName objectName) {
+    private static MBeanInfo getMBeanInfo(IActiveJvm jvm, ObjectName objectName) {
         try {
             return jvm.getMBeanServer().getMBeanInfo(objectName);
         } catch (JvmCoreException e) {
@@ -188,7 +188,7 @@ public class MBeanContentProvider implements ITreeContentProvider {
      *            The object name
      * @return The type name
      */
-    private String getTypeName(ObjectName objectName) {
+    private static String getTypeName(ObjectName objectName) {
         String type = objectName.getCanonicalName().split("type=")[1]; //$NON-NLS-1$
         return type.split(",")[0]; //$NON-NLS-1$
     }

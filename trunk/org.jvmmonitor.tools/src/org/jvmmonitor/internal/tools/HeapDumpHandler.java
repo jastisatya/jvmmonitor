@@ -77,7 +77,7 @@ public class HeapDumpHandler implements IHeapDumpHandler {
      * @return The heap histogram
      * @throws JvmCoreException
      */
-    private String getHeapHistogram(Object virtualMachine, boolean isLive)
+    private static String getHeapHistogram(Object virtualMachine, boolean isLive)
             throws JvmCoreException {
         InputStream in = Tools.getInstance().invokeHeapHisto(virtualMachine,
                 isLive);

@@ -143,7 +143,7 @@ public class SaveChartSetAsAction extends AbstractChartSetAction {
      *            The RGB integer array
      * @return The RGB string "r,g,b" (e.g. "225,225,0")
      */
-    private String getRGBString(int[] rgb) {
+    private static String getRGBString(int[] rgb) {
         return new StringBuffer().append(rgb[0]).append(',').append(rgb[1])
                 .append(',').append(rgb[2]).toString();
     }

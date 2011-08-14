@@ -262,7 +262,7 @@ public class Marker {
      *            <tt>true</tt> to show hover below data point
      * @return The hover region
      */
-    private Region getHoverRegion(Point textExtent, boolean showOnRight,
+    private static Region getHoverRegion(Point textExtent, boolean showOnRight,
             boolean showBelow) {
         Region region = new Region();
         int[] pointArray;
@@ -309,7 +309,7 @@ public class Marker {
      *            The text
      * @return The text extent
      */
-    private Point getExtent(Shell hover, String text) {
+    private static Point getExtent(Shell hover, String text) {
         GC gc = new GC(hover);
         Point textExtent = gc.textExtent(text);
         gc.dispose();

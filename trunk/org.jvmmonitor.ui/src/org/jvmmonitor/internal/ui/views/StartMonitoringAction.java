@@ -188,7 +188,7 @@ public class StartMonitoringAction extends Action implements
      * 
      * @return The properties views
      */
-    private List<PropertySheet> getProperriesView() {
+    private static List<PropertySheet> getProperriesView() {
         List<PropertySheet> list = new ArrayList<PropertySheet>();
 
         IViewReference[] views = PlatformUI.getWorkbench()
@@ -211,7 +211,7 @@ public class StartMonitoringAction extends Action implements
      *            The properties views
      * @return The properties view
      */
-    private PropertySheet getPropertiesView(IActiveJvm jvm,
+    private static PropertySheet getPropertiesView(IActiveJvm jvm,
             List<PropertySheet> views) {
         for (PropertySheet view : views) {
             ISelection selection = view.getShowInContext().getSelection();
@@ -232,7 +232,7 @@ public class StartMonitoringAction extends Action implements
      *            The properties view
      * @return The non-pinned properties view
      */
-    private PropertySheet getNonPinnedPropertiesView(List<PropertySheet> views) {
+    private static PropertySheet getNonPinnedPropertiesView(List<PropertySheet> views) {
         for (PropertySheet view : views) {
             if (!view.isPinned()) {
                 return view;
@@ -248,7 +248,7 @@ public class StartMonitoringAction extends Action implements
      *            The JVM
      * @throws PartInitException
      */
-    private void openPropertiesView(IActiveJvm jvm) throws PartInitException {
+    private static void openPropertiesView(IActiveJvm jvm) throws PartInitException {
         PropertySheet view = (PropertySheet) PlatformUI
                 .getWorkbench()
                 .getActiveWorkbenchWindow()
@@ -273,7 +273,7 @@ public class StartMonitoringAction extends Action implements
      *            The properties view
      * @throws PartInitException
      */
-    private void brindPropertiesViewToFront(PropertySheet view)
+    private static void brindPropertiesViewToFront(PropertySheet view)
             throws PartInitException {
         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
                 .bringToTop(view);

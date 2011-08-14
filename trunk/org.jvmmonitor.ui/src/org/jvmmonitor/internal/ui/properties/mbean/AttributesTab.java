@@ -205,7 +205,7 @@ public class AttributesTab extends Composite {
      *            MBean node
      * @return The object name
      */
-    private ObjectName getObjectName(Object element) {
+    private static ObjectName getObjectName(Object element) {
         if (element instanceof MBeanType) {
             MBeanName[] mBeanNames = ((MBeanType) element).getMBeanNames();
             if (mBeanNames.length == 1) {

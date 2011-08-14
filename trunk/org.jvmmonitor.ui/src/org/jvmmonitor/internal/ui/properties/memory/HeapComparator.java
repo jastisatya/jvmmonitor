@@ -112,7 +112,7 @@ public class HeapComparator extends ViewerComparator {
      *            The thread column
      * @return The column index
      */
-    private int getColumnIndex(Tree tree, HeapColumn column) {
+    private static int getColumnIndex(Tree tree, HeapColumn column) {
         for (int i = 0; i < tree.getColumnCount(); i++) {
             if (tree.getColumn(i).getText().equals(column.label)) {
                 return i;
