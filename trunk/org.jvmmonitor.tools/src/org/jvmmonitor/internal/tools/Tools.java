@@ -305,7 +305,18 @@ public class Tools implements IPropertyChangeListener, IConstants {
                     new Class[] { String.class, String.class });
             method.invoke(virtualMachine, path, options);
         } catch (Throwable t) {
-            throw new JvmCoreException(IStatus.ERROR, t.getMessage(), t);
+            String message = t.getMessage();
+            if (message == null) {
+                Throwable cause = t.getCause();
+                while (cause != null) {
+                    message = cause.getMessage();
+                    if (message != null) {
+                        break;
+                    }
+                    cause = cause.getCause();
+                }
+            }
+            throw new JvmCoreException(IStatus.ERROR, message, t);
         }
     }
 
@@ -502,7 +513,8 @@ public class Tools implements IPropertyChangeListener, IConstants {
      *            The JDK root directory
      * @throws Throwable
      */
-    private static void addLibraryPath(String jdkRootDirectory) throws Throwable {
+    private static void addLibraryPath(String jdkRootDirectory)
+            throws Throwable {
         String libraryPath = System.getProperty(JAVA_LIBRARY_PATH);
         String jreLibraryPath = getJreLibraryPath(jdkRootDirectory);
 
