@@ -314,7 +314,7 @@ public class JvmModel {
      * @throws CoreException
      *             if creating executable extension fails
      */
-    private Object loadHandler(String extensionPoint) throws CoreException {
+    private static Object loadHandler(String extensionPoint) throws CoreException {
         IExtension[] extensions = Platform.getExtensionRegistry()
                 .getExtensionPoint(extensionPoint).getExtensions();
 

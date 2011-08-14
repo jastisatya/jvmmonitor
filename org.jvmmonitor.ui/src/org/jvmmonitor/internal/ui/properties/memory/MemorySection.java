@@ -32,7 +32,7 @@ import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
 public class MemorySection extends AbstractJvmPropertySection {
 
     /** The default tab height. */
-    static int defaultTabHeight;
+    int defaultTabHeight;
 
     /** The heap histogram page. */
     HeapHistogramPage heapHistogramPage;

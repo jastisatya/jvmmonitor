@@ -250,7 +250,7 @@ public class AttributeParser {
      *            The array of primitive type
      * @return The array of <tt>Number</tt>
      */
-    private Number[] getNumbers(Object value) {
+    private static Number[] getNumbers(Object value) {
         Number[] numbers = null;
         if (value instanceof byte[]) {
             byte[] array = (byte[]) value;

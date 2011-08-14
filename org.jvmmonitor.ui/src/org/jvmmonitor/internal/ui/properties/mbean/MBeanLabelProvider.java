@@ -142,7 +142,7 @@ public class MBeanLabelProvider implements IStyledLabelProvider {
      *            The object name
      * @return The name
      */
-    private String getName(ObjectName objectName) {
+    private static String getName(ObjectName objectName) {
         if (!objectName.getCanonicalName().contains(NAME_PROPERTY)) {
             return ""; //$NON-NLS-1$
         }

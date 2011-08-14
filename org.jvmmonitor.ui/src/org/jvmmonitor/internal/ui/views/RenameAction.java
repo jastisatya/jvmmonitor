@@ -165,7 +165,7 @@ public class RenameAction extends Action implements ISelectionChangedListener {
      *            The file name with suffix
      * @return The file name without suffix
      */
-    private String removeSuffix(String fileName) {
+    private static String removeSuffix(String fileName) {
         return fileName.substring(0, fileName.indexOf('.'));
     }
 

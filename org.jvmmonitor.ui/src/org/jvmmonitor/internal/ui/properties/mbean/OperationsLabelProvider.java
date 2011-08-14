@@ -77,7 +77,7 @@ public class OperationsLabelProvider extends LabelProvider implements
      *            The operation info
      * @return The method signature
      */
-    private String getMethodSignature(MBeanOperationInfo info) {
+    private static String getMethodSignature(MBeanOperationInfo info) {
         StringBuffer buffer = new StringBuffer();
         buffer.append(info.getName());
         buffer.append("("); //$NON-NLS-1$

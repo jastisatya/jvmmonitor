@@ -40,7 +40,7 @@ import org.xml.sax.SAXException;
 public class HeapDumpEditor extends AbstractDumpEditor {
 
     /** The heap histogram. */
-    HeapHistogramPage heapComposite;
+    HeapHistogramPage heapHistogramPage;
 
     /** The heap list elements. */
     List<IHeapElement> heapListElements;
@@ -92,7 +92,7 @@ public class HeapDumpEditor extends AbstractDumpEditor {
      */
     @Override
     public void setFocus() {
-        heapComposite.setFocus();
+        heapHistogramPage.setFocus();
     }
 
     /*
@@ -110,19 +110,19 @@ public class HeapDumpEditor extends AbstractDumpEditor {
      * Creates the memory page.
      */
     private void createMemoryPage() {
-        heapComposite = new HeapHistogramPage(getContainer(), getEditorSite()
+        heapHistogramPage = new HeapHistogramPage(getContainer(), getEditorSite()
                 .getActionBars());
-        heapComposite.setInput(new IHeapInput() {
+        heapHistogramPage.setInput(new IHeapInput() {
             @Override
             public IHeapElement[] getHeapListElements() {
                 return heapListElements.toArray(new IHeapElement[0]);
             }
         });
-        int page = addPage(heapComposite);
+        int page = addPage(heapHistogramPage);
         setPageText(page, Messages.memoryTabLabel);
         setPageImage(page, getMemoryImage());
 
-        heapComposite.refresh();
+        heapHistogramPage.refresh();
     }
 
     /**
@@ -169,8 +169,8 @@ public class HeapDumpEditor extends AbstractDumpEditor {
                 Display.getDefault().asyncExec(new Runnable() {
                     @Override
                     public void run() {
-                        if (heapComposite != null) {
-                            heapComposite.refresh();
+                        if (heapHistogramPage != null) {
+                            heapHistogramPage.refresh();
                         }
                     }
                 });

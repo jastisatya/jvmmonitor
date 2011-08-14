@@ -195,7 +195,7 @@ public class Config {
      * 
      * @return The directory
      */
-    private String getDefaultDir() {
+    private static String getDefaultDir() {
         String dir = System.getProperty(Constants.USER_HOME_PROP_KEY);
         if (dir != null) {
             return dir;
@@ -215,7 +215,7 @@ public class Config {
      * @param fileName
      *            name The properties with name
      */
-    private void setProperties(String fileName) {
+    private static void setProperties(String fileName) {
         if (fileName == null) {
             return;
         }

@@ -81,7 +81,7 @@ public class ClassFileTransformerImpl implements ClassFileTransformer {
      *            The packages
      * @return <tt>true</tt> if the given class belongs to one of the packages
      */
-    private boolean matches(String className, Set<String> packages) {
+    private static boolean matches(String className, Set<String> packages) {
         if (packages.isEmpty()) {
             return false;
         }
@@ -120,7 +120,7 @@ public class ClassFileTransformerImpl implements ClassFileTransformer {
      * @return <tt>true</tt> if the classes loaded by given class loader are
      *         profiled
      */
-    private boolean isProfiledClassLoader(ClassLoader loader) {
+    private static boolean isProfiledClassLoader(ClassLoader loader) {
         if (Config.getInstance().profiledClassLoaders.isEmpty()) {
             return true;
         }

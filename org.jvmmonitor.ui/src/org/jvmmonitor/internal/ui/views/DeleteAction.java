@@ -187,7 +187,7 @@ public class DeleteAction extends Action implements ISelectionChangedListener {
      * @param fileStore
      *            The file store
      */
-    private void closeEditor(final IFileStore fileStore) {
+    private static void closeEditor(final IFileStore fileStore) {
         Display.getDefault().syncExec(new Runnable() {
             @Override
             public void run() {

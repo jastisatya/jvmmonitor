@@ -132,7 +132,7 @@ public class JvmAttachHandler implements IJvmAttachHandler,
      *            The pid
      * @return True if the given list of JVMs contains the given pid
      */
-    private boolean containJvm(List<IActiveJvm> jvms, int pid) {
+    private static boolean containJvm(List<IActiveJvm> jvms, int pid) {
         for (IActiveJvm jvm : jvms) {
             if (jvm.getPid() == pid) {
                 return true;
@@ -195,7 +195,7 @@ public class JvmAttachHandler implements IJvmAttachHandler,
      *            The pid
      * @return The main class name.
      */
-    private String getMainClass(Object monitoredVm, int pid) {
+    private static String getMainClass(Object monitoredVm, int pid) {
         String javaCommand;
         try {
             Tools tools = Tools.getInstance();
@@ -241,7 +241,7 @@ public class JvmAttachHandler implements IJvmAttachHandler,
      * @return The local connector address
      * @throws JvmCoreException
      */
-    private String getLocalConnectorAddress(Object monitoredVm, int pid)
+    private static String getLocalConnectorAddress(Object monitoredVm, int pid)
             throws JvmCoreException {
         String url = null;
 

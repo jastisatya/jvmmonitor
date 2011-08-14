@@ -103,7 +103,7 @@ public class MBeanTabFolder extends PageBook {
      *            The selection
      * @return True if the given selection is a folder
      */
-    private boolean isFolderSelected(ISelection selection) {
+    private static boolean isFolderSelected(ISelection selection) {
         if (!(selection instanceof StructuredSelection)) {
             return false;
         }

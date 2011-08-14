@@ -331,7 +331,13 @@ public class HeapHistogramPage extends Composite implements
         }
     }
 
-    private void init(IActionBars actionBars) {
+    /**
+     * Initializes the heap histogram page.
+     * 
+     * @param actionBars
+     *            The action bars
+     */
+    private void init(final IActionBars actionBars) {
         GridLayout layout = new GridLayout();
         layout.marginHeight = 0;
         layout.marginWidth = 0;

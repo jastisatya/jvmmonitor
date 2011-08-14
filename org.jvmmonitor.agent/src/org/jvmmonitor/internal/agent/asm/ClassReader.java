@@ -1709,6 +1709,16 @@ public class ClassReader {
         return v;
     }
 
+    /**
+     * Reads the frame type.
+     * 
+     * @param frame
+     * @param index
+     * @param offset
+     * @param buf
+     * @param labels
+     * @return The frame type
+     */
     private int readFrameType(
         final Object[] frame,
         final int index,

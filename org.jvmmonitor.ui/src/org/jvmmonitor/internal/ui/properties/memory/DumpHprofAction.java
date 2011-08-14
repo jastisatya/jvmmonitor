@@ -239,6 +239,9 @@ public class DumpHprofAction extends Action {
         /**
          * The constructor.
          * 
+         * @param shell
+         *            The parent shell for dialog
+         * 
          * @param initialFileName
          *            The initial file name
          * @param isAgentLoaded
@@ -316,7 +319,7 @@ public class DumpHprofAction extends Action {
             Composite composite = new Composite(parent, SWT.NULL);
             composite.setLayout(new GridLayout(1, false));
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-            
+
             Label label = new Label(composite, SWT.NONE);
             label.setText(Messages.hprofFileLabel);
 
@@ -346,7 +349,7 @@ public class DumpHprofAction extends Action {
             Composite composite = new Composite(parent, SWT.NULL);
             composite.setLayout(new GridLayout(1, false));
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-            
+
             final Button button = new Button(composite, SWT.CHECK);
             button.addSelectionListener(new SelectionAdapter() {
                 @Override

@@ -146,6 +146,12 @@ public class CpuSection extends AbstractJvmPropertySection {
         refresh(false);
     }
 
+    /**
+     * Refreshes the CPU section.
+     * 
+     * @param initConfig
+     *            <tt>true</tt> to initialize configuration.
+     */
     private void refresh(final boolean initConfig) {
         new RefreshJob(NLS.bind(Messages.refeshCpuSectionJobLabel, getJvm()
                 .getPid()), toString()) {
@@ -399,7 +405,7 @@ public class CpuSection extends AbstractJvmPropertySection {
             }
         }
     }
-    
+
     /**
      * Sets the profiler sampling period.
      */
@@ -408,11 +414,11 @@ public class CpuSection extends AbstractJvmPropertySection {
         if (jvm == null) {
             return;
         }
-        
+
         Integer period = null;
         String periodString = Activator.getDefault()
-        .getDialogSettings(CpuSection.class.getName())
-        .get(IConstants.PROFILER_SAMPLING_PERIOD_KEY);
+                .getDialogSettings(CpuSection.class.getName())
+                .get(IConstants.PROFILER_SAMPLING_PERIOD_KEY);
         if (periodString != null) {
             try {
                 period = Integer.valueOf(periodString);

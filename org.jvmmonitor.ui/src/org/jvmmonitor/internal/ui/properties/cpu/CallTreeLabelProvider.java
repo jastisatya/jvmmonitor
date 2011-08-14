@@ -106,7 +106,7 @@ public class CallTreeLabelProvider extends AbstractLabelProvider {
      *            the element
      * @return the call tree column text
      */
-    private String getCallTreeColumnText(Object element) {
+    private static String getCallTreeColumnText(Object element) {
         if (element instanceof IThreadNode) {
             if (((IThreadNode) element).hasChildren()) {
                 return Messages.threadLabel + ' '
@@ -151,7 +151,7 @@ public class CallTreeLabelProvider extends AbstractLabelProvider {
      *            the element
      * @return the time column text
      */
-    private String getTimeInPercentageColumnText(Object element) {
+    private static String getTimeInPercentageColumnText(Object element) {
         if (element instanceof IThreadNode) {
             return "100.0%";//$NON-NLS-1$ 
         } else if (element instanceof ICallTreeNode) {
@@ -192,7 +192,7 @@ public class CallTreeLabelProvider extends AbstractLabelProvider {
      *            the element
      * @return the self time column text
      */
-    private String getSelfTimeInPercentageColumnText(Object element) {
+    private static String getSelfTimeInPercentageColumnText(Object element) {
         if (element instanceof ICallTreeNode) {
             double percentage = ((ICallTreeNode) element)
                     .getSelfTimeInPercentage();

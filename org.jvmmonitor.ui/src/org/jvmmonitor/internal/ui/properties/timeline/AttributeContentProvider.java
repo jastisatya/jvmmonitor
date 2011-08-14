@@ -290,7 +290,7 @@ public class AttributeContentProvider implements ITreeContentProvider {
      *            The string to determine RGB
      * @return The RGB
      */
-    private RGB getRGB(String string) {
+    private static RGB getRGB(String string) {
         int hashCode = string.hashCode();
         int r = (hashCode >> 3) % 256;
         int g = (hashCode >> 1) % 256;
@@ -339,7 +339,7 @@ public class AttributeContentProvider implements ITreeContentProvider {
      *            The active JVM
      * @return The object names
      */
-    private Set<ObjectName> getObjectNames(IActiveJvm jvm) {
+    private static Set<ObjectName> getObjectNames(IActiveJvm jvm) {
         try {
             return jvm.getMBeanServer().queryNames(null);
         } catch (JvmCoreException e) {
@@ -357,7 +357,7 @@ public class AttributeContentProvider implements ITreeContentProvider {
      *            The object name
      * @return The MBean info
      */
-    private MBeanInfo getMBeanInfo(IActiveJvm jvm, ObjectName objectName) {
+    private static MBeanInfo getMBeanInfo(IActiveJvm jvm, ObjectName objectName) {
         try {
             return jvm.getMBeanServer().getMBeanInfo(objectName);
         } catch (JvmCoreException e) {
@@ -373,7 +373,7 @@ public class AttributeContentProvider implements ITreeContentProvider {
      *            The object name
      * @return The type name
      */
-    private String getTypeName(ObjectName objectName) {
+    private static String getTypeName(ObjectName objectName) {
         String type = objectName.getCanonicalName().split("type=")[1]; //$NON-NLS-1$
         return type.split(",")[0]; //$NON-NLS-1$
     }
@@ -389,7 +389,7 @@ public class AttributeContentProvider implements ITreeContentProvider {
      *            The attribute name
      * @return The attribute contents
      */
-    private Object getContents(IActiveJvm jvm, ObjectName objectName,
+    private static Object getContents(IActiveJvm jvm, ObjectName objectName,
             String attributeName) {
         try {
             return jvm.getMBeanServer().getAttribute(objectName, attributeName);

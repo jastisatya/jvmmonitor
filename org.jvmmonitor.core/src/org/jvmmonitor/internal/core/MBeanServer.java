@@ -1066,7 +1066,7 @@ public class MBeanServer implements IMBeanServer {
      *            The class name
      * @return The class name
      */
-    private String convertClassName(String className) {
+    private static String convertClassName(String className) {
         if (className.startsWith("[")) { //$NON-NLS-1$
             return Signature.toString(className);
         }
@@ -1119,7 +1119,7 @@ public class MBeanServer implements IMBeanServer {
             } else if (type == SnapshotType.Hprof && jvm.isRemote()) {
                 ObjectName objectName = getObjectName(DATA_TRANSFER_MXBEAN_NAME);
                 os = fileStore.openOutputStream(EFS.NONE, null);
-                byte[] bytes = new byte[0];
+                byte[] bytes;
                 int offset = 0;
                 final int SIZE = 4096;
                 final String[] SIGNATURES = new String[] {
@@ -1316,7 +1316,8 @@ public class MBeanServer implements IMBeanServer {
      *            The stack trace
      * @return The inverted stack trace
      */
-    private StackTraceElement[] invertStackTrace(StackTraceElement[] stackTrace) {
+    private static StackTraceElement[] invertStackTrace(
+            StackTraceElement[] stackTrace) {
         StackTraceElement[] invertedStackTrace = new StackTraceElement[stackTrace.length];
         for (int i = 0; i < stackTrace.length; i++) {
             invertedStackTrace[i] = stackTrace[stackTrace.length - 1 - i];
@@ -1477,7 +1478,8 @@ public class MBeanServer implements IMBeanServer {
      *            The profiled packages
      * @return true if the given class belongs to one of the packages list
      */
-    private boolean isProfiledPackage(String className, Set<String> packages) {
+    private static boolean isProfiledPackage(String className,
+            Set<String> packages) {
         if (packages.isEmpty()) {
             return false;
         }

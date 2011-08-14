@@ -146,7 +146,7 @@ public class AttributeContentProvider implements ITreeContentProvider {
      *            The attribute name
      * @return The attribute value
      */
-    private Object getAttributeValue(IActiveJvm jvm, ObjectName objectName,
+    private static Object getAttributeValue(IActiveJvm jvm, ObjectName objectName,
             String attributeName) {
         try {
             return jvm.getMBeanServer().getAttribute(objectName, attributeName);

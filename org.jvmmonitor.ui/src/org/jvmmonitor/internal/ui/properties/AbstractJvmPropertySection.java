@@ -505,7 +505,7 @@ abstract public class AbstractJvmPropertySection extends
      *            The page site
      * @return The property sheet, or <tt>null</tt> if not accessible
      */
-    private PropertySheet getPropertySheet(PageSite pageSite) {
+    private static PropertySheet getPropertySheet(PageSite pageSite) {
         try {
             Field field = PageSite.class.getDeclaredField("parentSite"); //$NON-NLS-1$
             field.setAccessible(true);
