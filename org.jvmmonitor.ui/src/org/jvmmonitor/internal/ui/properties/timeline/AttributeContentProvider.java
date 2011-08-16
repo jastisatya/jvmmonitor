@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 JVM Monitor project. All rights reserved. 
+ * Copyright (c) 2010-2011 JVM Monitor project. All rights reserved. 
  * 
  * This code is distributed under the terms of the Eclipse Public License v1.0
  * which is available at http://www.eclipse.org/legal/epl-v10.html
@@ -25,12 +25,12 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.RGB;
-import org.jvmmonitor.core.Activator;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.JvmCoreException;
+import org.jvmmonitor.internal.ui.properties.mbean.IMBeanNode;
+import org.jvmmonitor.internal.ui.properties.mbean.MBean;
 import org.jvmmonitor.internal.ui.properties.mbean.MBeanDomain;
-import org.jvmmonitor.internal.ui.properties.mbean.MBeanName;
-import org.jvmmonitor.internal.ui.properties.mbean.MBeanType;
+import org.jvmmonitor.ui.Activator;
 
 /**
  * The attribute content provider.
@@ -64,22 +64,12 @@ public class AttributeContentProvider implements ITreeContentProvider {
      */
     @Override
     public Object[] getChildren(Object parentElement) {
-        if (parentElement instanceof MBeanDomain) {
-            return ((MBeanDomain) parentElement).getMBeanTypes();
-        }
 
         ObjectName objectName = null;
-        if (parentElement instanceof MBeanType) {
-            MBeanName[] names = ((MBeanType) parentElement).getMBeanNames();
-            if (names.length > 1) {
-                return names;
-            } else if (names.length == 1) {
-                objectName = names[0].getObjectName();
-            }
-        }
-
-        if (parentElement instanceof MBeanName) {
-            objectName = ((MBeanName) parentElement).getObjectName();
+        if (parentElement instanceof MBean) {
+            objectName = ((MBean) parentElement).getObjectName();
+        } else if (parentElement instanceof IMBeanNode) {
+            return ((IMBeanNode) parentElement).getChildren();
         }
 
         if (objectName != null) {
@@ -99,8 +89,8 @@ public class AttributeContentProvider implements ITreeContentProvider {
      */
     @Override
     public Object getParent(Object element) {
-        if (element instanceof MBeanType) {
-            return ((MBeanType) element).getMBeanDomain();
+        if (element instanceof IMBeanNode) {
+            return ((IMBeanNode) element).getParent();
         }
         return null;
     }
@@ -110,22 +100,11 @@ public class AttributeContentProvider implements ITreeContentProvider {
      */
     @Override
     public boolean hasChildren(Object element) {
-        if (element instanceof MBeanDomain) {
-            return true;
-        }
-
         ObjectName objectName = null;
-        if (element instanceof MBeanType) {
-            MBeanName[] names = ((MBeanType) element).getMBeanNames();
-            if (names.length > 1) {
-                return true;
-            } else if (names.length == 1) {
-                objectName = names[0].getObjectName();
-            }
-        }
-
-        if (element instanceof MBeanName) {
-            objectName = ((MBeanName) element).getObjectName();
+        if (element instanceof MBean) {
+            objectName = ((MBean) element).getObjectName();
+        } else if (element instanceof IMBeanNode) {
+            return ((IMBeanNode) element).getChildren().length > 0;
         }
 
         if (objectName != null) {
@@ -201,22 +180,8 @@ public class AttributeContentProvider implements ITreeContentProvider {
             } else {
                 domain = new MBeanDomain(domainName);
             }
+            domain.refresh(objectName, jvm);
             domains.put(domainName, domain);
-
-            String typeName = getTypeName(objectName);
-            MBeanType type = domain.getMBeanType(typeName);
-            if (type == null) {
-                type = new MBeanType(jvm, typeName, domain);
-                domain.putMBeanType(typeName, type);
-            }
-
-            MBeanName mBeanName = type.getMBeanName(objectName);
-            if (mBeanName == null) {
-                MBeanInfo info = getMBeanInfo(jvm, objectName);
-                mBeanName = new MBeanName(objectName, jvm,
-                        info.getNotifications().length > 0);
-            }
-            type.addMBeanName(mBeanName);
         }
     }
 
@@ -227,8 +192,8 @@ public class AttributeContentProvider implements ITreeContentProvider {
      *            The attribute node
      */
     private void validateAttributes(AttributeNode node) {
-        AttributeNode[] nodes = node.getChildren().toArray(
-                new AttributeNode[0]);
+        AttributeNode[] nodes = node.getChildren()
+                .toArray(new AttributeNode[0]);
         if (nodes.length == 0 && !node.isValidLeaf()) {
             node.remove();
         }
@@ -367,18 +332,6 @@ public class AttributeContentProvider implements ITreeContentProvider {
     }
 
     /**
-     * Gets the type name.
-     * 
-     * @param objectName
-     *            The object name
-     * @return The type name
-     */
-    private static String getTypeName(ObjectName objectName) {
-        String type = objectName.getCanonicalName().split("type=")[1]; //$NON-NLS-1$
-        return type.split(",")[0]; //$NON-NLS-1$
-    }
-
-    /**
      * Gets the contents.
      * 
      * @param jvm
@@ -394,11 +347,13 @@ public class AttributeContentProvider implements ITreeContentProvider {
         try {
             return jvm.getMBeanServer().getAttribute(objectName, attributeName);
         } catch (JvmCoreException e) {
-            Activator
-                    .log(IStatus.ERROR, Messages.getMBeanAttributeFailedMsg, e);
+            // not supported
+            if (org.jvmmonitor.ui.Activator.getDefault().isDebugging()) {
+                Activator.log(IStatus.ERROR,
+                        Messages.getMBeanAttributeFailedMsg, e);
+            }
         } catch (RuntimeMBeanException e) {
             // not supported
-            return null;
         }
         return null;
     }

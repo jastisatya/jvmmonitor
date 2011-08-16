@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 JVM Monitor project. All rights reserved. 
+ * Copyright (c) 2010-2011 JVM Monitor project. All rights reserved. 
  * 
  * This code is distributed under the terms of the Eclipse Public License v1.0
  * which is available at http://www.eclipse.org/legal/epl-v10.html
@@ -136,13 +136,8 @@ public class SubscribeAction extends Action {
         if (selection instanceof ITreeSelection) {
             ITreeSelection new_name = (ITreeSelection) selection;
             Object element = new_name.getFirstElement();
-            if (element instanceof MBeanType) {
-                MBeanName[] mBeanNames = ((MBeanType) element).getMBeanNames();
-                if (mBeanNames != null && mBeanNames.length == 1) {
-                    objectName = mBeanNames[0].getObjectName();
-                }
-            } else if (element instanceof MBeanName) {
-                objectName = ((MBeanName) element).getObjectName();
+            if (element instanceof MBean) {
+                objectName = ((MBean) element).getObjectName();
             }
         }
     }

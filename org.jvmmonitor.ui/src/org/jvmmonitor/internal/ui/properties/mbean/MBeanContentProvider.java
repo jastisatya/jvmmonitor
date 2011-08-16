@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 JVM Monitor project. All rights reserved. 
+ * Copyright (c) 2010-2011 JVM Monitor project. All rights reserved. 
  * 
  * This code is distributed under the terms of the Eclipse Public License v1.0
  * which is available at http://www.eclipse.org/legal/epl-v10.html
@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.management.MBeanInfo;
 import javax.management.ObjectName;
 
 import org.eclipse.core.runtime.IStatus;
@@ -49,12 +48,8 @@ public class MBeanContentProvider implements ITreeContentProvider {
      */
     @Override
     public Object[] getChildren(Object parentElement) {
-        if (parentElement instanceof MBeanDomain) {
-            return ((MBeanDomain) parentElement).getMBeanTypes();
-        }
-
-        if (parentElement instanceof MBeanType) {
-            return ((MBeanType) parentElement).getMBeanNames();
+        if (parentElement instanceof IMBeanNode) {
+            return ((IMBeanNode) parentElement).getChildren();
         }
         return null;
     }
@@ -64,8 +59,8 @@ public class MBeanContentProvider implements ITreeContentProvider {
      */
     @Override
     public Object getParent(Object element) {
-        if (element instanceof MBeanType) {
-            return ((MBeanType) element).getMBeanDomain();
+        if (element instanceof IMBeanNode) {
+            return ((IMBeanNode) element).getParent();
         }
         return null;
     }
@@ -75,12 +70,8 @@ public class MBeanContentProvider implements ITreeContentProvider {
      */
     @Override
     public boolean hasChildren(Object element) {
-        if (element instanceof MBeanDomain) {
-            return true;
-        }
-
-        if (element instanceof MBeanType) {
-            return ((MBeanType) element).getMBeanNames().length > 1;
+        if (element instanceof IMBeanNode) {
+            return ((IMBeanNode) element).getChildren().length > 0;
         }
 
         return false;
@@ -111,7 +102,7 @@ public class MBeanContentProvider implements ITreeContentProvider {
     public void refresh(IActiveJvm jvm) {
         Map<String, MBeanDomain> newDomains = new HashMap<String, MBeanDomain>();
 
-        // add or update elements
+        // refresh domains
         for (ObjectName objectName : getObjectNames(jvm)) {
             MBeanDomain domain;
             String domainName = objectName.getDomain();
@@ -124,23 +115,7 @@ public class MBeanContentProvider implements ITreeContentProvider {
                 domain = new MBeanDomain(domainName);
                 newDomains.put(domainName, domain);
             }
-
-            String typeName = getTypeName(objectName);
-            MBeanType type = domain.getMBeanType(typeName);
-            if (type == null) {
-                type = new MBeanType(jvm, typeName, domain);
-                domain.putMBeanType(typeName, type);
-            } else {
-                type.setJvm(jvm);
-            }
-
-            MBeanName mBeanName = type.getMBeanName(objectName);
-            if (mBeanName == null) {
-                MBeanInfo info = getMBeanInfo(jvm, objectName);
-                mBeanName = new MBeanName(objectName, jvm,
-                        info.getNotifications().length > 0);
-            }
-            type.addMBeanName(mBeanName);
+            domain.refresh(objectName, jvm);
         }
 
         domains = newDomains;
@@ -161,35 +136,5 @@ public class MBeanContentProvider implements ITreeContentProvider {
                     e);
         }
         return new HashSet<ObjectName>();
-    }
-
-    /**
-     * Gets the MBean info.
-     * 
-     * @param jvm
-     *            The active JVM
-     * @param objectName
-     *            The object name
-     * @return The MBean info
-     */
-    private static MBeanInfo getMBeanInfo(IActiveJvm jvm, ObjectName objectName) {
-        try {
-            return jvm.getMBeanServer().getMBeanInfo(objectName);
-        } catch (JvmCoreException e) {
-            Activator.log(IStatus.ERROR, Messages.getMBeanInfoFailedMsg, e);
-            return null;
-        }
-    }
-
-    /**
-     * Gets the type name.
-     * 
-     * @param objectName
-     *            The object name
-     * @return The type name
-     */
-    private static String getTypeName(ObjectName objectName) {
-        String type = objectName.getCanonicalName().split("type=")[1]; //$NON-NLS-1$
-        return type.split(",")[0]; //$NON-NLS-1$
     }
 }

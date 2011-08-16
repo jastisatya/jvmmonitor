@@ -1,24 +1,34 @@
 /*******************************************************************************
- * Copyright (c) 2010 JVM Monitor project. All rights reserved. 
+ * Copyright (c) 2010-2011 JVM Monitor project. All rights reserved. 
  * 
  * This code is distributed under the terms of the Eclipse Public License v1.0
  * which is available at http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 package org.jvmmonitor.internal.ui.properties.mbean;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import javax.management.MBeanInfo;
+import javax.management.ObjectName;
+
+import org.eclipse.core.runtime.IStatus;
+import org.jvmmonitor.core.Activator;
+import org.jvmmonitor.core.IActiveJvm;
+import org.jvmmonitor.core.JvmCoreException;
 
 /**
  * The MBean domain.
  */
-public class MBeanDomain {
+public class MBeanDomain implements IMBeanNode {
 
     /** The domain name. */
     private String domainName;
 
-    /** The MBean types. */
-    private Map<String, MBeanType> types;
+    /** The child nodes. */
+    private List<IMBeanNode> children;
 
     /**
      * The constructor.
@@ -28,47 +38,153 @@ public class MBeanDomain {
      */
     public MBeanDomain(String domainName) {
         this.domainName = domainName;
-        types = new HashMap<String, MBeanType>();
+        children = new ArrayList<IMBeanNode>();
     }
 
-    /**
-     * Gets the MBean type.
-     * 
-     * @param typeName
-     *            The type name
-     * @return The MBean type
+    /*
+     * @see IMBeanNode#getName()
      */
-    public MBeanType getMBeanType(String typeName) {
-        return types.get(typeName);
-    }
-
-    /**
-     * Gets the MBean type.
-     * 
-     * @return The MBean type
-     */
-    public MBeanType[] getMBeanTypes() {
-        return types.values().toArray(new MBeanType[0]);
-    }
-
-    /**
-     * Puts the MBean type.
-     * 
-     * @param typeName
-     *            The MBean type name
-     * @param type
-     *            The MBean type
-     */
-    public void putMBeanType(String typeName, MBeanType type) {
-        types.put(typeName, type);
-    }
-
-    /**
-     * Gets the domain name.
-     * 
-     * @return The domain name
-     */
-    public String getDomainName() {
+    @Override
+    public String getName() {
         return domainName;
+    }
+
+    /*
+     * @see IMBeanNode#getParent()
+     */
+    @Override
+    public IMBeanNode getParent() {
+        return null;
+    }
+
+    /*
+     * @see IMBeanNode#getChildren()
+     */
+    @Override
+    public IMBeanNode[] getChildren() {
+        return children.toArray(new IMBeanNode[children.size()]);
+    }
+
+    /*
+     * @see IMBeanNode#addChild(IMBeanNode)
+     */
+    @Override
+    public void addChild(IMBeanNode child) {
+        if (children.contains(child)) {
+            return;
+        }
+
+        children.add(child);
+
+        Collections.sort(children, new Comparator<IMBeanNode>() {
+            @Override
+            public int compare(IMBeanNode o1, IMBeanNode o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+    }
+
+    /**
+     * Refreshes the MBean domain.
+     * 
+     * @param objectName
+     *            The object name
+     * @param jvm
+     *            The JVM
+     */
+    public void refresh(ObjectName objectName, IActiveJvm jvm) {
+        // object name can be type=xxx,name=xxx
+        String[] properties = objectName.getCanonicalKeyPropertyListString()
+                .split(","); //$NON-NLS-1$
+
+        // add or refresh MBean folders
+        IMBeanNode parent = this;
+        String mBeanName;
+        if (properties.length <= 1) {
+            mBeanName = getPropertyValue(properties[0]);
+        } else {
+            for (int i = properties.length - 1; i >= 1; i--) {
+                String name = getPropertyValue(properties[i]);
+                IMBeanNode child = getChild(parent, name);
+                if (child == null) {
+                    child = new MBeanFolder(name, parent);
+                    parent.addChild(child);
+                }
+                parent = child;
+            }
+            mBeanName = getPropertyValue(properties[0]);
+        }
+
+        // search corresponding MBean
+        MBean mBean = null;
+        for (IMBeanNode child : parent.getChildren()) {
+            if (child instanceof MBean) {
+                String name = ((MBean) child).getObjectName()
+                        .getCanonicalName();
+                if (name.equals(objectName.getCanonicalName())) {
+                    mBean = (MBean) child;
+                    break;
+                }
+            }
+        }
+
+        // add or refresh MBean
+        if (mBean == null) {
+            MBeanInfo info = getMBeanInfo(jvm, objectName);
+            mBean = new MBean(mBeanName, parent, objectName, jvm,
+                    info.getNotifications().length > 0);
+        }
+        parent.addChild(mBean);
+    }
+
+    /**
+     * Gets the value from the given property string "key=value".
+     * 
+     * @param property
+     *            The property string
+     * @return The value
+     */
+    private static String getPropertyValue(String property) {
+        String[] elements = property.split("="); //$NON-NLS-1$
+        if (elements.length == 2) {
+            return elements[1].trim();
+        }
+        return property.trim();
+    }
+
+    /**
+     * Gets the child node of given node that corresponds to the given name.
+     * 
+     * @param node
+     *            The MBean node
+     * @param name
+     *            The node name
+     * @return The child node
+     */
+    private static IMBeanNode getChild(IMBeanNode node, String name) {
+        for (IMBeanNode child : node.getChildren()) {
+            if (child.getName().equals(name)) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the MBean info.
+     * 
+     * @param jvm
+     *            The active JVM
+     * @param objectName
+     *            The object name
+     * @return The MBean info
+     */
+    private static MBeanInfo getMBeanInfo(IActiveJvm jvm, ObjectName objectName) {
+        try {
+            return jvm.getMBeanServer().getMBeanInfo(objectName);
+        } catch (JvmCoreException e) {
+            Activator.log(IStatus.ERROR, Messages.getMBeanInfoFailedMsg, e);
+            return null;
+        }
     }
 }

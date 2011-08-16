@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 JVM Monitor project. All rights reserved. 
+ * Copyright (c) 2010-2011 JVM Monitor project. All rights reserved. 
  * 
  * This code is distributed under the terms of the Eclipse Public License v1.0
  * which is available at http://www.eclipse.org/legal/epl-v10.html
@@ -206,13 +206,8 @@ public class AttributesTab extends Composite {
      * @return The object name
      */
     private static ObjectName getObjectName(Object element) {
-        if (element instanceof MBeanType) {
-            MBeanName[] mBeanNames = ((MBeanType) element).getMBeanNames();
-            if (mBeanNames.length == 1) {
-                return mBeanNames[0].getObjectName();
-            }
-        } else if (element instanceof MBeanName) {
-            return ((MBeanName) element).getObjectName();
+        if (element instanceof MBean) {
+            return ((MBean) element).getObjectName();
         }
         return null;
     }
@@ -363,7 +358,11 @@ public class AttributesTab extends Composite {
                         jvm.getMBeanServer().setAttribute(objectName,
                                 new Attribute(node.getName(), adjustedValue));
                     } catch (JvmCoreException e) {
-                        Activator.log(Messages.setMBeanAttributeFailedMsg, e);
+                        // not supported
+                        if (Activator.getDefault().isDebugging()) {
+                            Activator.log(Messages.setMBeanAttributeFailedMsg,
+                                    e);
+                        }
                     }
                 }
 

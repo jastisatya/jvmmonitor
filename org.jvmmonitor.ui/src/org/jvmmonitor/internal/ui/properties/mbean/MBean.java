@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 JVM Monitor project. All rights reserved. 
+ * Copyright (c) 2010-2011 JVM Monitor project. All rights reserved. 
  * 
  * This code is distributed under the terms of the Eclipse Public License v1.0
  * which is available at http://www.eclipse.org/legal/epl-v10.html
@@ -11,9 +11,15 @@ import javax.management.ObjectName;
 import org.jvmmonitor.core.IActiveJvm;
 
 /**
- * The MBean name.
+ * The MBean.
  */
-public class MBeanName {
+public class MBean implements IMBeanNode {
+
+    /** The node name. */
+    private String name;
+
+    /** The parent node. */
+    private IMBeanNode parent;
 
     /** The object name. */
     private ObjectName objectName;
@@ -27,6 +33,10 @@ public class MBeanName {
     /**
      * The constructor.
      * 
+     * @param name
+     *            The node name
+     * @param parent
+     *            The parent node
      * @param objectName
      *            The object name
      * @param jvm
@@ -34,11 +44,45 @@ public class MBeanName {
      * @param isNotificationSupported
      *            <tt>true</tt> if notification is supported
      */
-    public MBeanName(ObjectName objectName, IActiveJvm jvm,
-            boolean isNotificationSupported) {
+    public MBean(String name, IMBeanNode parent, ObjectName objectName,
+            IActiveJvm jvm, boolean isNotificationSupported) {
+        this.name = name;
+        this.parent = parent;
         this.objectName = objectName;
         this.jvm = jvm;
         this.isNotificationSupported = isNotificationSupported;
+    }
+
+    /*
+     * @see IMBeanNode#getName()
+     */
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    /*
+     * @see IMBeanNode#getParent()
+     */
+    @Override
+    public IMBeanNode getParent() {
+        return parent;
+    }
+
+    /*
+     * @see IMBeanNode#getChildren()
+     */
+    @Override
+    public IMBeanNode[] getChildren() {
+        return new IMBeanNode[0];
+    }
+
+    /*
+     * @see IMBeanNode#addChild(IMBeanNode)
+     */
+    @Override
+    public void addChild(IMBeanNode child) {
+        // do nothing
     }
 
     /**

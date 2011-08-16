@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 JVM Monitor project. All rights reserved. 
+ * Copyright (c) 2010-2011 JVM Monitor project. All rights reserved. 
  * 
  * This code is distributed under the terms of the Eclipse Public License v1.0
  * which is available at http://www.eclipse.org/legal/epl-v10.html
@@ -21,9 +21,6 @@ import org.jvmmonitor.ui.ISharedImages;
  */
 public class MBeanLabelProvider implements IStyledLabelProvider {
 
-    /** The name property in object name. */
-    private static final String NAME_PROPERTY = "name="; //$NON-NLS-1$
-
     /** The MBean image. */
     private Image mBeanImage;
 
@@ -42,23 +39,12 @@ public class MBeanLabelProvider implements IStyledLabelProvider {
         ObjectName objectName = null;
         IActiveJvm jvm = null;
 
-        if (element instanceof MBeanDomain) {
-            text.append(((MBeanDomain) element).getDomainName());
-        } else if (element instanceof MBeanType) {
-            MBeanName[] mBeanNames = ((MBeanType) element).getMBeanNames();
-            text.append(((MBeanType) element).getName());
-            if (mBeanNames.length == 1
-                    && mBeanNames[0].isNotificationSubsctibed()) {
+        if (element instanceof IMBeanNode) {
+            text.append(((IMBeanNode) element).getName());
+            if (element instanceof MBean
+                    && ((MBean) element).isNotificationSubsctibed()) {
                 appendSuffix = true;
-                objectName = mBeanNames[0].getObjectName();
-                jvm = ((MBeanType) element).getJvm();
-            }
-        } else if (element instanceof MBeanName) {
-            objectName = ((MBeanName) element).getObjectName();
-            text.append(getName(objectName));
-            if (((MBeanName) element).isNotificationSubsctibed()) {
-                appendSuffix = true;
-                jvm = ((MBeanName) element).getJvm();
+                jvm = ((MBean) element).getJvm();
             }
         }
 
@@ -84,15 +70,11 @@ public class MBeanLabelProvider implements IStyledLabelProvider {
             return getMBeanFolderImage();
         }
 
-        if (element instanceof MBeanType) {
-            MBeanName[] mBeanNames = ((MBeanType) element).getMBeanNames();
-            if (mBeanNames.length > 1) {
-                return getMBeanFolderImage();
-            }
-            return getMBeanImage();
+        if (element instanceof MBeanFolder) {
+            return getMBeanFolderImage();
         }
 
-        if (element instanceof MBeanName) {
+        if (element instanceof MBean) {
             return getMBeanImage();
         }
         return null;
@@ -133,21 +115,6 @@ public class MBeanLabelProvider implements IStyledLabelProvider {
     @Override
     public void removeListener(ILabelProviderListener listener) {
         // do nothing
-    }
-
-    /**
-     * Gets the name.
-     * 
-     * @param objectName
-     *            The object name
-     * @return The name
-     */
-    private static String getName(ObjectName objectName) {
-        if (!objectName.getCanonicalName().contains(NAME_PROPERTY)) {
-            return ""; //$NON-NLS-1$
-        }
-        String type = objectName.getCanonicalName().split(NAME_PROPERTY)[1];
-        return type.split(",")[0]; //$NON-NLS-1$
     }
 
     /**
