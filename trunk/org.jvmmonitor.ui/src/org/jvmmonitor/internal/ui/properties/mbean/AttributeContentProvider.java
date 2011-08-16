@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 JVM Monitor project. All rights reserved. 
+ * Copyright (c) 2010-2011 JVM Monitor project. All rights reserved. 
  * 
  * This code is distributed under the terms of the Eclipse Public License v1.0
  * which is available at http://www.eclipse.org/legal/epl-v10.html
@@ -7,6 +7,8 @@
 package org.jvmmonitor.internal.ui.properties.mbean;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.management.MBeanAttributeInfo;
@@ -110,7 +112,7 @@ public class AttributeContentProvider implements ITreeContentProvider {
             return;
         }
 
-        ArrayList<AttributeNode> nodes = new ArrayList<AttributeNode>();
+        List<AttributeNode> nodes = new ArrayList<AttributeNode>();
         AttributeParser parser = new AttributeParser();
         for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
             String name = attributeInfo.getName();
@@ -128,10 +130,18 @@ public class AttributeContentProvider implements ITreeContentProvider {
                 attributeNode = new AttributeNode(name, null, value);
             }
             parser.refreshAttribute(attributeNode);
-            
+
             attributeNode.setWritable(attributeInfo.isWritable());
             nodes.add(attributeNode);
         }
+
+        Collections.sort(nodes, new Comparator<AttributeNode>() {
+            @Override
+            public int compare(AttributeNode o1, AttributeNode o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+
         attributeRootNodes = nodes;
     }
 
@@ -146,16 +156,18 @@ public class AttributeContentProvider implements ITreeContentProvider {
      *            The attribute name
      * @return The attribute value
      */
-    private static Object getAttributeValue(IActiveJvm jvm, ObjectName objectName,
-            String attributeName) {
+    private static Object getAttributeValue(IActiveJvm jvm,
+            ObjectName objectName, String attributeName) {
         try {
             return jvm.getMBeanServer().getAttribute(objectName, attributeName);
         } catch (JvmCoreException e) {
-            Activator
-                    .log(IStatus.ERROR, Messages.getMBeanAttributeFailedMsg, e);
+            // not supported
+            if (Activator.getDefault().isDebugging()) {
+                Activator.log(IStatus.ERROR,
+                        Messages.getMBeanAttributeFailedMsg, e);
+            }
         } catch (RuntimeMBeanException e) {
             // not supported
-            return null;
         }
         return null;
     }

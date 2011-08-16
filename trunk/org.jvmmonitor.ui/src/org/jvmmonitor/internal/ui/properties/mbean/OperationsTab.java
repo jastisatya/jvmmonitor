@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 JVM Monitor project. All rights reserved. 
+ * Copyright (c) 2010-2011 JVM Monitor project. All rights reserved. 
  * 
  * This code is distributed under the terms of the Eclipse Public License v1.0
  * which is available at http://www.eclipse.org/legal/epl-v10.html
@@ -201,13 +201,8 @@ public class OperationsTab extends Composite {
      */
     private static ObjectName getObjectName(StructuredSelection selection) {
         Object element = selection.getFirstElement();
-        if (element instanceof MBeanType) {
-            MBeanName[] mBeanName = ((MBeanType) element).getMBeanNames();
-            if (mBeanName != null && mBeanName.length == 1) {
-                return mBeanName[0].getObjectName();
-            }
-        } else if (element instanceof MBeanName) {
-            return ((MBeanName) element).getObjectName();
+        if (element instanceof MBean) {
+            return ((MBean) element).getObjectName();
         }
 
         return null;
