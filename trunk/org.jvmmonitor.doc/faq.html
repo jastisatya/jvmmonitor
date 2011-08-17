@@ -19,6 +19,9 @@
 <p>
 <a href="#How_to_enable_BCI_CPU_profiler">How can I enable the BCI mode of CPU profiler on remote host?</a>
 </p>
+<p>
+<a href="#How_to_monitor_app_that_runs_for_short_time">How can I monitor my application that runs only for very short time?</a>
+</p>
 <br>
 
 
@@ -104,7 +107,7 @@
 </h2>
 
 <p>
-    To enable BCI mode of CPU profiler on remote host:
+    To enable BCI mode of CPU profiler on remote host,
 </p>
 <ol>
     <li>
@@ -116,7 +119,7 @@
     Copy the agent file to arbitrary directory on remote host.
     </li>
     <li>
-    Start JVM on remote host with the following options.
+    Start your application on remote host with the following options.
     <pre>
     -javaagent:<i>&lt;path&gt;</i>/jvmmonitor-agent.jar</pre>
     </li>
@@ -124,5 +127,35 @@
 <p>
     <b>Note:</b> When you upgrade the version of JVM Monitor, jvmmonitor-agent.jar has to be copied again.
 </p>
+<br>
+
+
+<a name="How_to_monitor_app_that_runs_for_short_time"></a>
+<h2>
+    How can I monitor my application that runs only for very short time?
+</h2>
+
+<p>
+    To monitor the application that runs for so short time that you cannot connect JVM Monitor,
+</p>
+<ol>
+    <li>
+    Set a break point at point of interest, and run your application with debug mode.
+    </li>
+    <li>
+    Connect JVM Monitor to the application while stopped at break point.
+    </li>
+    <li>
+    Collect profiling data with JVM Monitor.
+    </li>
+</ol>
+<p>
+    <b>Note:</b> If your application is started from outside Eclipse, you may specify the following option
+    for your application to suspend until debugger is attached.
+    <pre>
+    -agentlib:jdwp=transport=dt_socket,address=<i>&lt;port number&gt;</i>,server=y,suspend=y</pre>
+    </li>
+</p>
+
 </body>
 </html>
