@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- =========================================================================== -->
-<!-- Copyright (c) 2010 JVM Monitor project. All rights reserved.                -->
+<!-- Copyright (c) 2010-2011 JVM Monitor project. All rights reserved.           -->
 <!--                                                                             -->
 <!-- This code is distributed under the terms of the Eclipse Public License v1.0 -->
 <!-- which is available at http://www.eclipse.org/legal/epl-v10.html             -->
@@ -8,7 +8,7 @@
 <feature
       id="org.jvmmonitor"
       label="%featureName"
-      version="3.7.0.qualifier"
+      version="3.7.1.qualifier"
       provider-name="%providerName"
       plugin="org.jvmmonitor.ui">
 
@@ -32,26 +32,26 @@
          id="org.jvmmonitor.core"
          download-size="0"
          install-size="0"
-         version="3.7.0.qualifier"/>
+         version="3.7.1.qualifier"/>
 
    <plugin
          id="org.jvmmonitor.tools"
          download-size="0"
          install-size="0"
-         version="3.7.0.qualifier"
+         version="3.7.1.qualifier"
          unpack="false"/>
 
    <plugin
          id="org.jvmmonitor.ui"
          download-size="0"
          install-size="0"
-         version="3.7.0.qualifier"/>
+         version="3.7.1.qualifier"/>
 
    <plugin
          id="org.jvmmonitor.doc"
          download-size="0"
          install-size="0"
-         version="3.7.0.qualifier"
+         version="3.7.1.qualifier"
          unpack="false"/>
 
 </feature>
