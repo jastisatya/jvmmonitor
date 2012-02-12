@@ -243,7 +243,9 @@ public class HeapHistogramPage extends Composite implements
                         && heapViewer.getControl().isVisible() && isSupported) {
                     heapViewer.refresh();
                 }
-                refreshBackground();
+                if (!isDisposed()) {
+                    refreshBackground();
+                }
 
                 dumpHprofAction.setEnabled(isConnected);
                 dumpHeapAction.setEnabled(!section.hasErrorMessage()
