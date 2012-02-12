@@ -95,6 +95,12 @@
     Using Java 1.6 or 1.7 for your application solves the issue.
     </li>
     <li>
+    If you see the additional message "Unable to open socket file: target process not responding or Hotspot VM not loaded",
+    either your application didn't respond creating a socket file like /tmp/.java_pid1234 (e.g. due to hangup, file system 
+    permission), or JVM Monitor was not able to find the created socket file (e.g. due to the bug 
+    <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7009828">7009828</a>).
+    </li>
+    <li>
     If you don't see any additional message, your application might be shut down in the meantime.
     </li>
 </ul>

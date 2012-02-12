@@ -162,7 +162,9 @@ public class SWTResourcesPage extends AbstractSashForm {
                 IActiveJvm jvm = section.getJvm();
                 boolean isConnected = jvm != null && jvm.isConnected();
 
-                refreshBackground();
+                if (!isDisposed()) {
+                    refreshBackground();
+                }
                 refreshAction.setEnabled(isConnected);
                 clearSWTResourceAction.setEnabled(isConnected);
                 if (!force && section.isRefreshSuspended() || !isVisible) {

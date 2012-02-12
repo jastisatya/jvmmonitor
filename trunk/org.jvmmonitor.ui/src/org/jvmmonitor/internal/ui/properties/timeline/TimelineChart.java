@@ -186,30 +186,32 @@ public class TimelineChart extends Chart implements IPropertyChangeListener {
      *            The color
      */
     private void setColor(ILineSeries series, int[] rgb) {
-        if (rgb != null && !hasColor(rgb)) {
-            Color color = new Color(Display.getDefault(), rgb[0], rgb[1],
-                    rgb[2]);
+        if (rgb != null) {
+            Color color = getStoredColor(rgb);
+            if (color == null) {
+                color = new Color(Display.getDefault(), rgb[0], rgb[1], rgb[2]);
+                colors.add(color);
+            }
             series.setLineColor(color);
-            colors.add(color);
         }
     }
 
     /**
-     * Checks if the given color is already available in this chart.
+     * Gets the stored color corresponding to the given RGB.
      * 
      * @param rgb
      *            The RGB
-     * @return <tt>true</tt> if the given color is already available in this
-     *         chart
+     * @return The stored color corresponding to the given RGB, or <tt>null</tt>
+     *         if not found
      */
-    private boolean hasColor(int[] rgb) {
+    private Color getStoredColor(int[] rgb) {
         for (Color color : colors) {
             if (color.getRGB().red == rgb[0] && color.getRGB().green == rgb[1]
                     && color.getRGB().blue == rgb[2]) {
-                return true;
+                return color;
             }
         }
-        return false;
+        return null;
     }
 
     /**
@@ -280,8 +282,11 @@ public class TimelineChart extends Chart implements IPropertyChangeListener {
             getAxisSet().getYAxis(0).getTick()
                     .setFormat(new DecimalFormat("###%")); //$NON-NLS-1$
             getAxisSet().getXAxis(0).adjustRange();
-            getAxisSet().getYAxis(0).setRange(
-                    new Range(0, (getSize().y + 10) / (double) getSize().y));
+            int y = getSize().y;
+            if (y > 0) {
+                getAxisSet().getYAxis(0).setRange(
+                        new Range(0, (y + 10) / (double) y));
+            }
         } else if (axisUnit == AxisUnit.Count) {
             getAxisSet().getYAxis(0).getTick()
                     .setFormat(NumberFormat.getIntegerInstance());
