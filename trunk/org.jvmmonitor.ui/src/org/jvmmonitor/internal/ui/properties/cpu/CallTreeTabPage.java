@@ -23,7 +23,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.cpu.CpuModelEvent;
@@ -64,7 +63,7 @@ public class CallTreeTabPage extends AbstractTabPage {
         composite.setBackground(Display.getDefault().getSystemColor(
                 SWT.COLOR_BLACK));
 
-        createCallTreeViewer(composite);
+        createCallTreeViewer(composite, cpuSection.getPropertySheet());
 
         viewForm.setContent(composite);
 
@@ -133,10 +132,11 @@ public class CallTreeTabPage extends AbstractTabPage {
      * 
      * @param composite
      *            The parent composite
+     * @param propertySheet
+     *            The property sheet
      */
-    private void createCallTreeViewer(Composite composite) {
-        PropertySheet propertySheet = (PropertySheet) PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage().getActivePart();
+    private void createCallTreeViewer(Composite composite,
+            PropertySheet propertySheet) {
         filteredTree = new CallTreeFilteredTree(composite, propertySheet
                 .getViewSite().getActionBars()) {
             @Override

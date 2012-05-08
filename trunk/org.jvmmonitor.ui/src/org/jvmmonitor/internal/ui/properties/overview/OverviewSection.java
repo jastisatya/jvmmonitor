@@ -33,7 +33,6 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.views.properties.PropertySheet;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.RefreshJob;
@@ -85,10 +84,7 @@ public class OverviewSection extends AbstractJvmPropertySection {
         layout.marginWidth = 0;
         composite.setLayout(layout);
 
-        PropertySheet view = (PropertySheet) PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage().getActivePart();
-        viewer = new PropertiesFilteredTree(composite, view.getViewSite()
-                .getActionBars()) {
+        viewer = new PropertiesFilteredTree(composite, getActionBars()) {
 
             private ShowInTimelineAction showInTimelineAction;
 

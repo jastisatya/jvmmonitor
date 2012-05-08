@@ -25,7 +25,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.PageBook;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.jvmmonitor.core.IActiveJvm;
@@ -76,8 +75,8 @@ public class CallerCalleeTabPage extends AbstractTabPage {
         sashForm.setOrientation(SWT.VERTICAL);
         sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        createCallerViewer(sashForm);
-        createCalleeViewer(sashForm);
+        createCallerViewer(sashForm, cpuSection.getPropertySheet());
+        createCalleeViewer(sashForm, cpuSection.getPropertySheet());
 
         callersCalleesPageBook.showPage(sashForm);
 
@@ -175,10 +174,11 @@ public class CallerCalleeTabPage extends AbstractTabPage {
      * 
      * @param parent
      *            The parent composite
+     * @param propertySheet
+     *            The property sheet
      */
-    private void createCallerViewer(Composite parent) {
-        PropertySheet propertySheet = (PropertySheet) PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage().getActivePart();
+    private void createCallerViewer(Composite parent,
+            PropertySheet propertySheet) {
         callerFilteredTree = new HotSpotsFilteredTree(parent, propertySheet
                 .getViewSite().getActionBars()) {
             @Override
@@ -231,10 +231,11 @@ public class CallerCalleeTabPage extends AbstractTabPage {
      * 
      * @param parent
      *            The parent composite
+     * @param propertySheet
+     *            The property sheet
      */
-    private void createCalleeViewer(Composite parent) {
-        PropertySheet propertySheet = (PropertySheet) PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage().getActivePart();
+    private void createCalleeViewer(Composite parent,
+            PropertySheet propertySheet) {
         calleeFilteredTree = new HotSpotsFilteredTree(parent, propertySheet
                 .getViewSite().getActionBars()) {
             @Override
