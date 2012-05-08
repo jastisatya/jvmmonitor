@@ -209,7 +209,7 @@ public class HeapHistogramPage extends Composite implements
      */
     public void refresh() {
         // for dump editor
-        if (section == null) {
+        if (section == null || isDisposed()) {
             return;
         }
 

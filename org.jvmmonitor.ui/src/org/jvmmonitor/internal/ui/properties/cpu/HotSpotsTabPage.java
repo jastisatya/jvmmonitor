@@ -23,7 +23,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.cpu.CpuModelEvent;
@@ -65,7 +64,7 @@ public class HotSpotsTabPage extends AbstractTabPage {
         composite.setBackground(Display.getDefault().getSystemColor(
                 SWT.COLOR_BLACK));
 
-        createHotSpotsViewer(composite);
+        createHotSpotsViewer(composite, cpuSection.getPropertySheet());
 
         viewForm.setContent(composite);
 
@@ -134,10 +133,11 @@ public class HotSpotsTabPage extends AbstractTabPage {
      * 
      * @param composite
      *            The parent composite
+     * @param propertySheet
+     *            The property sheet
      */
-    private void createHotSpotsViewer(Composite composite) {
-        PropertySheet propertySheet = (PropertySheet) PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage().getActivePart();
+    private void createHotSpotsViewer(Composite composite,
+            PropertySheet propertySheet) {
         filteredTree = new HotSpotsFilteredTree(composite, propertySheet
                 .getViewSite().getActionBars()) {
             @Override

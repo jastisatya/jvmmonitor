@@ -35,7 +35,6 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.JvmCoreException;
@@ -113,7 +112,7 @@ public class AttributesTab extends Composite {
             }
         });
 
-        createViewer();
+        createViewer(section.getPropertySheet());
     }
 
     /*
@@ -158,8 +157,11 @@ public class AttributesTab extends Composite {
 
     /**
      * Creates the viewer.
+     * 
+     * @param propertySheet
+     *            The property sheet
      */
-    private void createViewer() {
+    private void createViewer(PropertySheet propertySheet) {
         setLayout(new FillLayout());
 
         Composite composite = new Composite(this, SWT.NONE);
@@ -168,8 +170,6 @@ public class AttributesTab extends Composite {
         layout.marginHeight = 0;
         composite.setLayout(layout);
 
-        PropertySheet propertySheet = (PropertySheet) PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage().getActivePart();
         PropertiesFilteredTree filteredTree = new PropertiesFilteredTree(
                 composite, propertySheet.getViewSite().getActionBars()) {
 

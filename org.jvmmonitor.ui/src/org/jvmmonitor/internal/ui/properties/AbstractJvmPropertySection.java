@@ -31,6 +31,7 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
@@ -119,6 +120,7 @@ abstract public class AbstractJvmPropertySection extends
         pageBook.showPage(contentPage);
         propertySheet = getPropertySheet((PageSite) tabbedPropertySheetPage
                 .getSite());
+
         createControls(contentPage);
 
         partListener = new PartListener(this, tabbedPropertySheetPage);
@@ -350,6 +352,15 @@ abstract public class AbstractJvmPropertySection extends
      */
     public IActionBars getActionBars() {
         return propertySheet.getViewSite().getActionBars();
+    }
+    
+    /**
+     * Gets the property sheet.
+     * 
+     * @return The property sheet
+     */
+    public PropertySheet getPropertySheet() {
+        return propertySheet;
     }
 
     /**
@@ -626,8 +637,12 @@ abstract public class AbstractJvmPropertySection extends
      * @return True of property sheet is focused.
      */
     private boolean isFocused() {
-        IWorkbenchPage page = PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage();
+        IWorkbenchWindow window = PlatformUI.getWorkbench()
+                .getActiveWorkbenchWindow();
+        if (window == null) {
+            return false;
+        }
+        IWorkbenchPage page = window.getActivePage();
         if (page == null) {
             return false;
         }

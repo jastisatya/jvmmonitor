@@ -236,6 +236,10 @@ public class CpuSection extends AbstractJvmPropertySection {
     @Override
     protected void setInput(IWorkbenchPart part, ISelection selection,
             IActiveJvm newJvm, IActiveJvm oldJvm) {
+        if (isDisposed()) {
+            return;
+        }
+
         if (oldJvm != null) {
             oldJvm.getCpuProfiler().getCpuModel()
                     .removeModelChangeListener(cpuModelChangeListener);
@@ -336,7 +340,7 @@ public class CpuSection extends AbstractJvmPropertySection {
      *            True if packages are specified
      */
     void updatePage(boolean isPackageSpecified) {
-        if (!callTree.isDisposed() && !hotSpots.isDisposed()
+        if (!isDisposed() && !callTree.isDisposed() && !hotSpots.isDisposed()
                 && !callerCallee.isDisposed()) {
             callTree.updatePage(isPackageSpecified);
             hotSpots.updatePage(isPackageSpecified);
