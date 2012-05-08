@@ -116,7 +116,7 @@ public class Tools implements IPropertyChangeListener, IConstants {
      * @return The monitored host
      * @throws JvmCoreException
      */
-    protected Object invokeGetMonitoredHost(String name)
+    synchronized protected Object invokeGetMonitoredHost(String name)
             throws JvmCoreException {
         try {
             Class<?> clazz = Class.forName(MONITORED_HOST_CLASS);
@@ -176,7 +176,7 @@ public class Tools implements IPropertyChangeListener, IConstants {
      * @return The monitored VM
      * @throws JvmCoreException
      */
-    protected Object invokeGetMonitoredVm(Object monitoredHost,
+    synchronized protected Object invokeGetMonitoredVm(Object monitoredHost,
             Object vmIdentifier) throws JvmCoreException {
         try {
             Class<?> clazz = Class.forName(MONITORED_HOST_CLASS);
