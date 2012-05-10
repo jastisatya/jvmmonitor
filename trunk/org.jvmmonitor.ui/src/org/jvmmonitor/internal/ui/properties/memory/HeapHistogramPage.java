@@ -62,9 +62,6 @@ public class HeapHistogramPage extends Composite implements
     /** The heap viewer. */
     TreeViewer heapViewer;
 
-    /** The separator. */
-    private Separator separator;
-
     /** The action to refresh section. */
     RefreshAction refreshAction;
 
@@ -283,7 +280,9 @@ public class HeapHistogramPage extends Composite implements
      *            The tool bar manager
      */
     void addToolBarActions(IToolBarManager manager) {
-        manager.insertAfter("defaults", separator); //$NON-NLS-1$
+        if (manager.find("separator") == null) { //$NON-NLS-1$
+            manager.insertAfter("defaults", new Separator("separator")); //$NON-NLS-1$ //$NON-NLS-2$
+        }
         if (manager.find(refreshAction.getId()) == null) {
             manager.insertAfter("defaults", refreshAction); //$NON-NLS-1$
         }
@@ -309,7 +308,7 @@ public class HeapHistogramPage extends Composite implements
      *            The tool bar manager
      */
     void removeToolBarActions(IToolBarManager manager) {
-        manager.remove(separator);
+        manager.remove("separator"); //$NON-NLS-1$
         manager.remove(refreshAction.getId());
         manager.remove(garbageCollectorAction.getId());
         manager.remove(clearHeapDeltaAction.getId());
@@ -441,7 +440,6 @@ public class HeapHistogramPage extends Composite implements
         clearHeapDeltaAction = new ClearHeapDeltaAction(this, section);
         dumpHeapAction = new DumpHeapAction(section);
         dumpHprofAction = new DumpHprofAction(section);
-        separator = new Separator();
     }
 
     /**

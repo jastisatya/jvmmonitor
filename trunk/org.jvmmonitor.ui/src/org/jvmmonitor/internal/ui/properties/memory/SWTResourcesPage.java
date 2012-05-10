@@ -55,9 +55,6 @@ public class SWTResourcesPage extends AbstractSashForm {
     /** The memory section. */
     MemorySection section;
 
-    /** The separator. */
-    private Separator separator;
-
     /** The action to refresh section. */
     RefreshAction refreshAction;
 
@@ -263,7 +260,9 @@ public class SWTResourcesPage extends AbstractSashForm {
      *            The tool bar manager
      */
     void addToolBarActions(IToolBarManager manager) {
-        manager.insertAfter("defaults", separator); //$NON-NLS-1$
+        if (manager.find("separator") == null) { //$NON-NLS-1$
+            manager.insertAfter("defaults", new Separator("separator")); //$NON-NLS-1$ //$NON-NLS-2$
+        }
         if (manager.find(refreshAction.getId()) == null) {
             manager.insertAfter("defaults", refreshAction); //$NON-NLS-1$
         }
@@ -280,7 +279,7 @@ public class SWTResourcesPage extends AbstractSashForm {
      *            The tool bar manager
      */
     void removeToolBarActions(IToolBarManager manager) {
-        manager.remove(separator);
+        manager.remove("separator"); //$NON-NLS-1$
         manager.remove(refreshAction.getId());
         manager.remove(clearSWTResourceAction.getId());
         manager.update(true);
@@ -327,7 +326,6 @@ public class SWTResourcesPage extends AbstractSashForm {
             // to have different action id from one in heap histogram
         };
         clearSWTResourceAction = new ClearSWTResourceAction(this, section);
-        separator = new Separator();
         layoutMenu = new MenuManager(Messages.layoutLabel, LAYOUT_MENU_ID);
     }
 }

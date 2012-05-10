@@ -79,9 +79,6 @@ public class CpuSection extends AbstractJvmPropertySection {
     /** The action to dump CPU profiling data. */
     DumpCpuProfilingDataAction dumpCpuProfilingDataAction;
 
-    /** The separator. */
-    private Separator separator;
-
     /** The CPU model change listener. */
     private ICpuModelChangeListener cpuModelChangeListener;
 
@@ -93,7 +90,6 @@ public class CpuSection extends AbstractJvmPropertySection {
         resumeCpuProfilingAction = new ResumeCpuProfilingAction(this);
         clearCpuProfilingDataAction = new ClearCpuProfilingDataAction(this);
         dumpCpuProfilingDataAction = new DumpCpuProfilingDataAction(this);
-        separator = new Separator();
 
         cpuModelChangeListener = new ICpuModelChangeListener() {
             @Override
@@ -264,7 +260,9 @@ public class CpuSection extends AbstractJvmPropertySection {
         suspendCpuProfilingAction.setEnabled(false);
         resumeCpuProfilingAction.setEnabled(false);
         clearCpuProfilingDataAction.setEnabled(false);
-        manager.insertAfter("defaults", separator); //$NON-NLS-1$
+        if (manager.find("separator") == null) { //$NON-NLS-1$
+            manager.insertAfter("defaults", new Separator("separator")); //$NON-NLS-1$ //$NON-NLS-2$
+        }
         if (manager.find(clearCpuProfilingDataAction.getId()) == null) {
             manager.insertAfter("defaults", clearCpuProfilingDataAction); //$NON-NLS-1$
         }
@@ -288,7 +286,7 @@ public class CpuSection extends AbstractJvmPropertySection {
         manager.remove(resumeCpuProfilingAction.getId());
         manager.remove(clearCpuProfilingDataAction.getId());
         manager.remove(dumpCpuProfilingDataAction.getId());
-        manager.remove(separator);
+        manager.remove("separator"); //$NON-NLS-1$
     }
 
     /*
