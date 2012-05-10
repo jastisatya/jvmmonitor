@@ -44,9 +44,6 @@ public class ThreadsSection extends AbstractJvmPropertySection {
     /** The action to refresh section. */
     RefreshAction refreshAction;
 
-    /** The separator. */
-    private Separator separator;
-
     /** The layout menu. */
     private MenuManager layoutMenu;
 
@@ -127,7 +124,9 @@ public class ThreadsSection extends AbstractJvmPropertySection {
      */
     @Override
     protected void addToolBarActions(IToolBarManager manager) {
-        manager.insertAfter("defaults", separator); //$NON-NLS-1$
+        if (manager.find(refreshAction.getId()) == null) {
+            manager.insertAfter("defaults", new Separator("separator")); //$NON-NLS-1$ //$NON-NLS-2$
+        }
         if (manager.find(refreshAction.getId()) == null) {
             manager.insertAfter("defaults", refreshAction); //$NON-NLS-1$
         }
@@ -141,7 +140,7 @@ public class ThreadsSection extends AbstractJvmPropertySection {
      */
     @Override
     protected void removeToolBarActions(IToolBarManager manager) {
-        manager.remove(separator);
+        manager.remove("separator"); //$NON-NLS-1$
         manager.remove(refreshAction.getId());
         manager.remove(dumpThreadsAction.getId());
     }
@@ -185,7 +184,6 @@ public class ThreadsSection extends AbstractJvmPropertySection {
     private void createActions() {
         dumpThreadsAction = new DumpThreadsAction(this);
         refreshAction = new RefreshAction(this);
-        separator = new Separator();
         layoutMenu = new MenuManager(Messages.layoutLabel, LAYOUT_MENU_ID);
     }
 }
