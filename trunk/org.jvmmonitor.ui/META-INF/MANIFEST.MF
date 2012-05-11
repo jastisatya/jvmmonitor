@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
 Bundle-SymbolicName: org.jvmmonitor.ui;singleton:=true
-Bundle-Version: 3.7.2.qualifier
+Bundle-Version: 3.8.0.qualifier
 Bundle-Activator: org.jvmmonitor.ui.Activator
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui.views.properties.tabbed,
@@ -31,5 +31,5 @@ Export-Package: org.jvmmonitor.internal.ui;x-friends:="org.jvmmonitor.ui.tests",
  org.jvmmonitor.internal.ui.views;x-friends:="org.jvmmonitor.ui.tests",
  org.jvmmonitor.ui
 Bundle-Vendor: %providerName
-Bundle-ClassPath: lib/org.swtchart_0.7.0.v20100930.jar,
+Bundle-ClassPath: lib/org.swtchart_0.8.0.v20120301.jar,
  jvmmonitor-ui.jar
