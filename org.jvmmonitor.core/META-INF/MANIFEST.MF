@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.jvmmonitor.core;singleton:=true
-Bundle-Version: 3.7.2.qualifier
+Bundle-Version: 3.8.0.qualifier
 Bundle-Activator: org.jvmmonitor.core.Activator
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.core.runtime,
