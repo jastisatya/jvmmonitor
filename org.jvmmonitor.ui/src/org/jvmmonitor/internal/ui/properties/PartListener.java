@@ -102,9 +102,7 @@ public class PartListener implements IPartListener2 {
      */
     @Override
     public void partVisible(IWorkbenchPartReference partRef) {
-        if (validatePart(partRef)) {
-            propertySection.activateSection();
-        }
+        // do nothing
     }
 
     /**
@@ -129,7 +127,8 @@ public class PartListener implements IPartListener2 {
         }
 
         // check if the property sheet is the corresponding one
-        if (!propertySection.getPropertySheetId().equals(partRef.getPart(false).toString())) {
+        if (!propertySection.getPropertySheetId().equals(
+                partRef.getPart(false).toString())) {
             return false;
         }
 
