@@ -145,7 +145,7 @@ public class SWTResourcesPage extends AbstractSashForm {
                 try {
                     IActiveJvm jvm = section.getJvm();
                     if (isVisible && jvm != null && jvm.isConnected()
-                            && !section.isRefreshSuspended()
+                            && (!section.isRefreshSuspended() || force)
                             && jvm.getSWTResourceMonitor().isSupported()) {
                         jvm.getSWTResourceMonitor().refreshResourcesCache();
                     }

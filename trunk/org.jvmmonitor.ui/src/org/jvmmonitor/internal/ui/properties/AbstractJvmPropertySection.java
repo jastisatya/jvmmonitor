@@ -78,7 +78,7 @@ abstract public class AbstractJvmPropertySection extends
     private IActiveJvm jvm;
 
     /** The state indicating if suspending refresh. */
-    protected boolean suspendRefresh;
+    private boolean suspendRefresh;
 
     /** The part listener. */
     private PartListener partListener;
