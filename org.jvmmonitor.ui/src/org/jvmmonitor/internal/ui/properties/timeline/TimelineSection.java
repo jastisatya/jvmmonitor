@@ -189,7 +189,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
         refreshConnectionIndicator();
 
         IActiveJvm jvm = getJvm();
-        if (jvm == null || !jvm.isConnected() || suspendRefresh
+        if (jvm == null || !jvm.isConnected() || isRefreshSuspended()
                 || chartsPage.isDisposed()) {
             return;
         }
@@ -200,7 +200,7 @@ public class TimelineSection extends AbstractJvmPropertySection {
             }
         }
     }
-
+    
     /*
      * @see AbstractJvmPropertySection#addToolBarActions(IToolBarManager)
      */
@@ -276,11 +276,21 @@ public class TimelineSection extends AbstractJvmPropertySection {
      * Clears the monitored attributes.
      */
     protected void clear() {
-        IActiveJvm jvm = getJvm();
+        final IActiveJvm jvm = getJvm();
+
         if (jvm != null) {
             for (IMonitoredMXBeanGroup group : jvm.getMBeanServer()
                     .getMonitoredAttributeGroups()) {
                 group.clearAttributes();
+            }
+
+            if (isRefreshSuspended()) {
+                Display.getDefault().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        reconstructCharts(jvm, false);
+                    }
+                });
             }
         }
     }
