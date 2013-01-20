@@ -10,8 +10,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.DecoratingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.widgets.Composite;
@@ -75,7 +77,11 @@ public class MBeanSashForm extends AbstractSashForm {
         selectionChangedListener = new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                mBeanTabFolder.selectionChanged(event.getSelection());
+                ISelection selection = event.getSelection();
+                if (selection instanceof StructuredSelection) {
+                    mBeanTabFolder
+                            .selectionChanged((StructuredSelection) selection);
+                }
             }
         };
         mBeanViewer.addSelectionChangedListener(selectionChangedListener);
@@ -123,10 +129,11 @@ public class MBeanSashForm extends AbstractSashForm {
                     TreeItem[] items = mBeanViewer.getTree().getItems();
                     if (items != null && items.length > 0) {
                         mBeanViewer.getTree().select(items[0]);
-                        mBeanTabFolder.selectionChanged(mBeanViewer
-                                .getSelection());
-                    } else {
-                        mBeanTabFolder.selectionChanged(null);
+                        ISelection selection = mBeanViewer.getSelection();
+                        if (selection instanceof StructuredSelection) {
+                            mBeanTabFolder
+                                    .selectionChanged((StructuredSelection) selection);
+                        }
                     }
                 }
             }

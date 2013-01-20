@@ -171,6 +171,9 @@ public final class Messages extends NLS {
     public static String mBeanNotSelectedMessage;
 
     /** */
+    public static String mBeanNotSupportedMessage;
+
+    /** */
     public static String notificationsNotSubscribedMsg;
 
     /** */
@@ -180,9 +183,6 @@ public final class Messages extends NLS {
     public static String notificationsLabel;
 
     // error log messages
-
-    /** */
-    public static String getMBeanInfoFailedMsg;
 
     /** */
     public static String getMBeanAttributeFailedMsg;

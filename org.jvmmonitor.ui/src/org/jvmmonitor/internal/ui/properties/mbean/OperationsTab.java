@@ -6,24 +6,20 @@
  *******************************************************************************/
 package org.jvmmonitor.internal.ui.properties.mbean;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
-import javax.management.ObjectName;
+import javax.management.MBeanParameterInfo;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -31,13 +27,12 @@ import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.JvmCoreException;
 import org.jvmmonitor.internal.ui.RefreshJob;
 import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
-import org.jvmmonitor.ui.Activator;
 import org.jvmmonitor.ui.ISharedImages;
 
 /**
  * The operations tab.
  */
-public class OperationsTab extends Composite {
+public class OperationsTab extends AbstractMBeanTab {
 
     /** The table viewer. */
     TableViewer tableViewer;
@@ -45,23 +40,8 @@ public class OperationsTab extends Composite {
     /** The action to invoke MBean operation. */
     InvokeAction invokeAction;
 
-    /** The tab item. */
-    CTabItem tabItem;
-
-    /** The tab folder. */
-    private CTabFolder tabFolder;
-
     /** The content provider. */
     OperationsContentProvider contentProvider;
-
-    /** The object name. */
-    ObjectName objectName;
-
-    /** The property section. */
-    AbstractJvmPropertySection section;
-
-    /** The method image. */
-    private Image methodImage;
 
     /**
      * The constructor.
@@ -73,13 +53,7 @@ public class OperationsTab extends Composite {
      */
     public OperationsTab(CTabFolder tabFolder,
             AbstractJvmPropertySection section) {
-        super(tabFolder, SWT.NONE);
-
-        this.tabFolder = tabFolder;
-        this.section = section;
-        addTabItem();
-
-        setLayout(new FillLayout());
+        super(tabFolder, section);
 
         tableViewer = new TableViewer(this, SWT.NONE);
         tableViewer.setLabelProvider(new OperationsLabelProvider());
@@ -90,33 +64,9 @@ public class OperationsTab extends Composite {
         configureTable();
     }
 
-    /*
-     * @see Widget#dispose()
-     */
     @Override
-    public void dispose() {
-        super.dispose();
-        if (methodImage != null) {
-            methodImage.dispose();
-        }
-    }
-
-    /**
-     * Notifies that selection has been changed.
-     * 
-     * @param selection
-     *            The selection
-     */
-    public void selectionChanged(ISelection selection) {
-        if (!(selection instanceof StructuredSelection)) {
-            return;
-        }
-
-        objectName = getObjectName((StructuredSelection) selection);
-        if (objectName == null) {
-            return;
-        }
-
+    public void selectionChanged() {
+        showPage(tableViewer.getControl());
         tableViewer.setInput(objectName);
         invokeAction.selectionChanged(objectName);
         contentProvider.refresh(null);
@@ -125,10 +75,8 @@ public class OperationsTab extends Composite {
         refresh();
     }
 
-    /**
-     * Refreshes.
-     */
-    protected void refresh() {
+    @Override
+    void performRefresh() {
         new RefreshJob(Messages.refreshOperationsTabJobLabel, toString()) {
 
             /** The MBean operations. */
@@ -146,13 +94,13 @@ public class OperationsTab extends Composite {
                     try {
                         info = jvm.getMBeanServer().getMBeanInfo(objectName);
                     } catch (JvmCoreException e) {
-                        Activator.log(Messages.getMBeanInfoFailedMsg, e);
+                        indicateNotSupported(e);
                         return;
                     }
                 }
 
                 if (info != null) {
-                    operations = info.getOperations();
+                    operations = getValidOperations(info.getOperations());
                     contentProvider.refresh(operations);
                 }
             }
@@ -175,37 +123,61 @@ public class OperationsTab extends Composite {
         }.schedule();
     }
 
-    /**
-     * Invoked when section is deactivated.
-     */
-    protected void deactivated() {
-        Job.getJobManager().cancel(toString());
+    @Override
+    String getTabText() {
+        return Messages.operationsTabLabel;
+    }
+
+    @Override
+    String getTabImagePath() {
+        return ISharedImages.METHOD_IMG_PATH;
     }
 
     /**
-     * Adds the tab item.
-     */
-    void addTabItem() {
-        tabItem = new CTabItem(tabFolder, SWT.NONE);
-        tabItem.setText(Messages.operationsTabLabel);
-        tabItem.setImage(getMethodImage());
-        tabItem.setControl(this);
-    }
-
-    /**
-     * Gets the object name.
+     * Gets the valid MBean operations.
      * 
-     * @param selection
-     *            The selection
-     * @return The object name
+     * @param operations
+     * @return The valid MBean operations
      */
-    private static ObjectName getObjectName(StructuredSelection selection) {
-        Object element = selection.getFirstElement();
-        if (element instanceof MBean) {
-            return ((MBean) element).getObjectName();
-        }
+    static MBeanOperationInfo[] getValidOperations(
+            MBeanOperationInfo[] operations) {
+        List<MBeanOperationInfo> validOperations = new ArrayList<MBeanOperationInfo>();
+        for (MBeanOperationInfo operation : operations) {
+            boolean invalid = false;
+            MBeanParameterInfo[] signature = operation.getSignature();
+            for (int i = 0; i < signature.length; i++) {
+                String name = signature[i].getName();
+                String type = signature[i].getType();
+                String description = signature[i].getDescription();
+                if (name == null || type == null || description == null) {
+                    invalid = true;
+                    signature[i] = new MBeanParameterInfo(getNonNull(name),
+                            getNonNull(type), getNonNull(description),
+                            signature[i].getDescriptor());
+                }
+            }
 
-        return null;
+            if (invalid) {
+                operation = new MBeanOperationInfo(operation.getName(),
+                        operation.getDescription(), signature,
+                        operation.getReturnType(), operation.getImpact(),
+                        operation.getDescriptor());
+            }
+            validOperations.add(operation);
+        }
+        return validOperations.toArray(new MBeanOperationInfo[validOperations
+                .size()]);
+    }
+
+    /**
+     * Gets the non null string.
+     * 
+     * @param string
+     *            The string
+     * @return The given string or empty string if null is given
+     */
+    private static String getNonNull(String string) {
+        return string == null ? "" : string; //$NON-NLS-1$
     }
 
     /**
@@ -248,18 +220,5 @@ public class OperationsTab extends Composite {
         // create context menu
         Menu menu = menuMgr.createContextMenu(tableViewer.getControl());
         tableViewer.getControl().setMenu(menu);
-    }
-
-    /**
-     * Gets the method image.
-     * 
-     * @return The method image
-     */
-    private Image getMethodImage() {
-        if (methodImage == null || methodImage.isDisposed()) {
-            methodImage = Activator.getImageDescriptor(
-                    ISharedImages.METHOD_IMG_PATH).createImage();
-        }
-        return methodImage;
     }
 }

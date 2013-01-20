@@ -10,30 +10,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.management.Attribute;
-import javax.management.ObjectName;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ICellEditorListener;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.jvmmonitor.core.IActiveJvm;
@@ -50,7 +41,7 @@ import org.jvmmonitor.ui.ISharedImages;
 /**
  * The attributes tab.
  */
-public class AttributesTab extends Composite {
+public class AttributesTab extends AbstractMBeanTab {
 
     /** The boolean items for combo box. */
     static final String[] BOOLEAN_ITEMS = new String[] {
@@ -68,14 +59,8 @@ public class AttributesTab extends Composite {
     /** The attribute content provider. */
     AttributeContentProvider contentProvider;
 
-    /** The object name. */
-    ObjectName objectName;
-
-    /** The attribute image. */
-    private Image attributeImage;
-
-    /** The property section. */
-    protected AbstractJvmPropertySection section;
+    /** The filtered tree. */
+    private PropertiesFilteredTree filteredTree;
 
     /**
      * The constructor.
@@ -87,13 +72,8 @@ public class AttributesTab extends Composite {
      */
     public AttributesTab(CTabFolder tabFolder,
             AbstractJvmPropertySection section) {
-        super(tabFolder, SWT.NONE);
-        this.section = section;
+        super(tabFolder, section);
 
-        final CTabItem tabItem = new CTabItem(tabFolder, SWT.NONE);
-        tabItem.setText(Messages.attributesTabLabel);
-        tabItem.setImage(getAttributeImage());
-        tabItem.setControl(this);
         tabFolder.setSelection(tabItem);
         selected = true;
         editorActivated = false;
@@ -115,44 +95,25 @@ public class AttributesTab extends Composite {
         createViewer(section.getPropertySheet());
     }
 
-    /*
-     * @see Widget#dispose()
-     */
     @Override
-    public void dispose() {
-        super.dispose();
-        if (attributeImage != null) {
-            attributeImage.dispose();
-        }
-    }
-
-    /**
-     * Notifies that selection has been changed.
-     * 
-     * @param selection
-     *            The selection
-     */
-    protected void selectionChanged(ISelection selection) {
-        if (selection instanceof IStructuredSelection) {
-            Object element = ((IStructuredSelection) selection)
-                    .getFirstElement();
-            objectName = getObjectName(element);
-        }
+    protected void selectionChanged() {
+        showPage(filteredTree);
         refresh(true);
     }
 
-    /**
-     * Refreshes.
-     */
-    protected void refresh() {
+    @Override
+    void performRefresh() {
         refresh(false);
     }
 
-    /**
-     * Invoked when section is deactivated.
-     */
-    protected void deactivated() {
-        Job.getJobManager().cancel(toString());
+    @Override
+    String getTabText() {
+        return Messages.attributesTabLabel;
+    }
+
+    @Override
+    String getTabImagePath() {
+        return ISharedImages.ATTRIBUTE_IMG_PATH;
     }
 
     /**
@@ -162,16 +123,8 @@ public class AttributesTab extends Composite {
      *            The property sheet
      */
     private void createViewer(PropertySheet propertySheet) {
-        setLayout(new FillLayout());
-
-        Composite composite = new Composite(this, SWT.NONE);
-        GridLayout layout = new GridLayout(1, false);
-        layout.marginWidth = 0;
-        layout.marginHeight = 0;
-        composite.setLayout(layout);
-
-        PropertiesFilteredTree filteredTree = new PropertiesFilteredTree(
-                composite, propertySheet.getViewSite().getActionBars()) {
+        filteredTree = new PropertiesFilteredTree(this, propertySheet
+                .getViewSite().getActionBars()) {
 
             private ShowInTimelineAction showInTimelineAction;
 
@@ -199,20 +152,6 @@ public class AttributesTab extends Composite {
     }
 
     /**
-     * Gets the object name.
-     * 
-     * @param element
-     *            MBean node
-     * @return The object name
-     */
-    private static ObjectName getObjectName(Object element) {
-        if (element instanceof MBean) {
-            return ((MBean) element).getObjectName();
-        }
-        return null;
-    }
-
-    /**
      * Refreshes.
      * 
      * @param force
@@ -229,7 +168,12 @@ public class AttributesTab extends Composite {
                 IActiveJvm jvm = section.getJvm();
                 if (jvm != null && objectName != null && jvm.isConnected()
                         && !section.isRefreshSuspended()) {
-                    contentProvider.refresh(jvm, objectName);
+                    try {
+                        contentProvider.refresh(jvm, objectName);
+                    } catch (JvmCoreException e) {
+                        indicateNotSupported(e);
+                        return;
+                    }
                 }
             }
 
@@ -463,18 +407,5 @@ public class AttributesTab extends Composite {
             int b = hashCode % 256;
             return new RGB(Math.abs(r), Math.abs(g), Math.abs(b));
         }
-    }
-
-    /**
-     * Gets the attribute image.
-     * 
-     * @return The attribute image
-     */
-    private Image getAttributeImage() {
-        if (attributeImage == null || attributeImage.isDisposed()) {
-            attributeImage = Activator.getImageDescriptor(
-                    ISharedImages.ATTRIBUTE_IMG_PATH).createImage();
-        }
-        return attributeImage;
     }
 }

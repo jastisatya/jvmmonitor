@@ -11,13 +11,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.management.MBeanInfo;
 import javax.management.ObjectName;
 
-import org.eclipse.core.runtime.IStatus;
-import org.jvmmonitor.core.Activator;
 import org.jvmmonitor.core.IActiveJvm;
-import org.jvmmonitor.core.JvmCoreException;
 
 /**
  * The MBean domain.
@@ -130,9 +126,10 @@ public class MBeanDomain implements IMBeanNode {
 
         // add or refresh MBean
         if (mBean == null) {
-            MBeanInfo info = getMBeanInfo(jvm, objectName);
+            int notificationCount = jvm.getMBeanServer().getMBeanNotification()
+                    .getNotifications(objectName).length;
             mBean = new MBean(mBeanName, parent, objectName, jvm,
-                    info.getNotifications().length > 0);
+                    notificationCount > 0);
         }
         parent.addChild(mBean);
     }
@@ -168,23 +165,5 @@ public class MBeanDomain implements IMBeanNode {
             }
         }
         return null;
-    }
-
-    /**
-     * Gets the MBean info.
-     * 
-     * @param jvm
-     *            The active JVM
-     * @param objectName
-     *            The object name
-     * @return The MBean info
-     */
-    private static MBeanInfo getMBeanInfo(IActiveJvm jvm, ObjectName objectName) {
-        try {
-            return jvm.getMBeanServer().getMBeanInfo(objectName);
-        } catch (JvmCoreException e) {
-            Activator.log(IStatus.ERROR, Messages.getMBeanInfoFailedMsg, e);
-            return null;
-        }
     }
 }

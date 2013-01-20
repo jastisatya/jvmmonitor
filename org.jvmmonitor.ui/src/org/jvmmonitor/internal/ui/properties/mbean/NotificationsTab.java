@@ -6,17 +6,10 @@
  *******************************************************************************/
 package org.jvmmonitor.internal.ui.properties.mbean;
 
-import javax.management.ObjectName;
-
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -24,44 +17,27 @@ import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
-import org.eclipse.ui.part.PageBook;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.internal.ui.RefreshJob;
 import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
-import org.jvmmonitor.ui.Activator;
 import org.jvmmonitor.ui.ISharedImages;
 
 /**
  * The notification tab.
  */
-public class NotificationsTab extends PageBook {
+public class NotificationsTab extends AbstractMBeanTab {
 
     /** The tree viewer. */
     TreeViewer treeViewer;
 
-    /** The tab item. */
-    CTabItem tabItem;
-
-    /** The tab folder. */
-    private CTabFolder tabFolder;
+    /** The message page. */
+    Composite messagePage;
 
     /** The notification filtered tree. */
     NotificationFilteredTree tree;
 
-    /** The message page. */
-    Composite messagePage;
-
-    /** The object name. */
-    ObjectName objectName;
-
     /** The action to subscribe notification. */
     SubscribeAction subscribeAction;
-
-    /** The notification image. */
-    private Image notificationImage;
-
-    /** The property section. */
-    AbstractJvmPropertySection section;
 
     /**
      * The constructor.
@@ -73,74 +49,29 @@ public class NotificationsTab extends PageBook {
      */
     public NotificationsTab(CTabFolder tabFolder,
             AbstractJvmPropertySection section) {
-        super(tabFolder, SWT.NONE);
-
-        this.tabFolder = tabFolder;
-        this.section = section;
-        addTabItem();
+        super(tabFolder, section);
 
         tree = new NotificationFilteredTree(this, section);
         tree.setLayoutData(null);
         treeViewer = tree.getViewer();
 
-        messagePage = new Composite(this, SWT.NONE);
-        messagePage.setLayout(new GridLayout(3, false));
-        FormToolkit toolkit = new FormToolkit(Display.getDefault());
-        toolkit.createLabel(messagePage, Messages.notificationsNotSubscribedMsg);
-        Hyperlink hyperlink = toolkit.createHyperlink(messagePage,
-                Messages.subscribeLinkLabel, SWT.NONE);
-        toolkit.createLabel(messagePage, Messages.notificationsLabel);
-        hyperlink.addHyperlinkListener(new HyperlinkAdapter() {
-            @Override
-            public void linkActivated(HyperlinkEvent e) {
-                subscribeAction.run();
-            }
-        });
-        messagePage.setBackground(Display.getDefault().getSystemColor(
-                SWT.COLOR_LIST_BACKGROUND));
+        createMessagePage();
 
         showPage(tree);
 
         subscribeAction = new SubscribeAction(section);
     }
 
-    /*
-     * @see Widget#dispose()
-     */
     @Override
-    public void dispose() {
-        super.dispose();
-        if (notificationImage != null) {
-            notificationImage.dispose();
-        }
-    }
-
-    /**
-     * Notifies that selection has been changed.
-     * 
-     * @param selection
-     *            The selection
-     */
-    public void selectionChanged(ISelection selection) {
-        if (!(selection instanceof StructuredSelection)) {
-            return;
-        }
-
-        objectName = getObjectName((StructuredSelection) selection);
-        if (objectName == null) {
-            return;
-        }
-
+    public void selectionChanged() {
         tree.setInput(objectName);
         subscribeAction.setSelection(objectName);
 
         refresh();
     }
 
-    /**
-     * Refreshes.
-     */
-    protected void refresh() {
+    @Override
+    void performRefresh() {
         new RefreshJob(Messages.refreshNotificationTabJobLabel, toString()) {
             private boolean isSubscribed;
             private boolean isSupported;
@@ -192,20 +123,34 @@ public class NotificationsTab extends PageBook {
     }
 
     /**
-     * Invoked when section is deactivated.
+     * Creates the message page.
      */
-    protected void deactivated() {
-        Job.getJobManager().cancel(toString());
+    private void createMessagePage() {
+        messagePage = new Composite(this, SWT.NONE);
+        messagePage.setLayout(new GridLayout(3, false));
+        FormToolkit toolkit = new FormToolkit(Display.getDefault());
+
+        toolkit.createLabel(messagePage, Messages.notificationsNotSubscribedMsg);
+        Hyperlink hyperlink = toolkit.createHyperlink(messagePage,
+                Messages.subscribeLinkLabel, SWT.NONE);
+        toolkit.createLabel(messagePage, Messages.notificationsLabel);
+
+        hyperlink.addHyperlinkListener(new HyperlinkAdapter() {
+            @Override
+            public void linkActivated(HyperlinkEvent e) {
+                subscribeAction.run();
+            }
+        });
     }
 
-    /**
-     * Adds the tab item.
-     */
-    void addTabItem() {
-        tabItem = new CTabItem(tabFolder, SWT.NONE);
-        tabItem.setText(Messages.notificationsTabLabel);
-        tabItem.setImage(getNotificationImage());
-        tabItem.setControl(this);
+    @Override
+    String getTabText() {
+        return Messages.notificationsTabLabel;
+    }
+
+    @Override
+    String getTabImagePath() {
+        return ISharedImages.NOTIFICATION_IMG_PATH;
     }
 
     /**
@@ -220,34 +165,5 @@ public class NotificationsTab extends PageBook {
         } else {
             showPage(messagePage);
         }
-    }
-
-    /**
-     * Gets the object name.
-     * 
-     * @param selection
-     *            The selection
-     * @return The object name
-     */
-    private static ObjectName getObjectName(StructuredSelection selection) {
-        Object element = selection.getFirstElement();
-        if (element instanceof MBean) {
-            return ((MBean) element).getObjectName();
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets the notification image.
-     * 
-     * @return The notification image
-     */
-    private Image getNotificationImage() {
-        if (notificationImage == null || notificationImage.isDisposed()) {
-            notificationImage = Activator.getImageDescriptor(
-                    ISharedImages.NOTIFICATION_IMG_PATH).createImage();
-        }
-        return notificationImage;
     }
 }
