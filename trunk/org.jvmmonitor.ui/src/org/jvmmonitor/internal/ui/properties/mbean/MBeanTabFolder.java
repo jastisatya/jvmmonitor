@@ -67,7 +67,7 @@ public class MBeanTabFolder extends PageBook {
      * @param selection
      *            The selection
      */
-    public void selectionChanged(ISelection selection) {
+    public void selectionChanged(StructuredSelection selection) {
         if (isFolderSelected(selection)) {
             showPage(message);
         } else {
@@ -104,10 +104,6 @@ public class MBeanTabFolder extends PageBook {
      * @return True if the given selection is a folder
      */
     private static boolean isFolderSelected(ISelection selection) {
-        if (!(selection instanceof StructuredSelection)) {
-            return false;
-        }
-
         Object firstElement = ((StructuredSelection) selection)
                 .getFirstElement();
         return firstElement instanceof MBeanDomain

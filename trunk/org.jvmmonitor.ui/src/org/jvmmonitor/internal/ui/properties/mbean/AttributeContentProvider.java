@@ -100,19 +100,24 @@ public class AttributeContentProvider implements ITreeContentProvider {
      *            The JVM
      * @param objectName
      *            The object name
+     * @throws JvmCoreException
      */
-    protected void refresh(IActiveJvm jvm, ObjectName objectName) {
+    protected void refresh(IActiveJvm jvm, ObjectName objectName)
+            throws JvmCoreException {
         MBeanInfo mBeanInfo = null;
+        List<AttributeNode> nodes = new ArrayList<AttributeNode>();
         try {
             mBeanInfo = jvm.getMBeanServer().getMBeanInfo(objectName);
         } catch (JvmCoreException e) {
-            Activator.log(IStatus.ERROR, Messages.getMBeanInfoFailedMsg, e);
+            attributeRootNodes = nodes;
+            throw e;
         }
+
         if (mBeanInfo == null) {
+            attributeRootNodes = nodes;
             return;
         }
 
-        List<AttributeNode> nodes = new ArrayList<AttributeNode>();
         AttributeParser parser = new AttributeParser();
         for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
             String name = attributeInfo.getName();
