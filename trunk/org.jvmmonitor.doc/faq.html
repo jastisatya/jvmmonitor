@@ -14,6 +14,9 @@
 <a href="#Cannot_Find_JVMs">Why cannot I find any JVMs on JVM Explorer?</a>
 </p>
 <p>
+<a href="#No_Providers_Installed">Why do I get the error "No providers installed"?</a>
+</p>
+<p>
 <a href="#Cannot_Connect_to_JVM">Why do I get the message "Monitoring is not supported for the selected JVM"?</a>
 </p>
 <p>
@@ -61,6 +64,35 @@
     you may try specifying the JDK on preference page
     <b>Window > Preferences > Java > Monitor > Tools > JDK Root Directory</b>.
 </p>
+<br>
+
+
+<a name="No_Providers_Installed"></a>
+<h2>
+    Why do I get the error "No providers installed"?
+</h2>
+<p>
+    This error can happen when JDK root directory specified on preference page doesn't match with 
+    JDK with which Eclipse is started.
+</p>
+<p>
+    To solve this issue,
+</p>
+<ol>
+    <li>
+    Start Eclipse with supported JDK (not JRE) in the same procedure as described in the prevoius question.
+    </li>
+    <li>
+    Open preference page
+    <b>Window > Preferences > Java > Monitor > Tools > JDK Root Directory</b>.
+    </li>
+    <li>
+    Specify JDK Root Directory which is exactly the same as the JDK with which Eclipse is started.
+    </li>
+    <li>
+    Restart Eclipse with supported JDK.
+    </li>
+</ol>
 <br>
 
 
