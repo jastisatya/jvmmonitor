@@ -258,7 +258,9 @@ public class CpuBciProfilerMXBeanImpl implements CpuBciProfilerMXBean {
             } catch (UnmodifiableClassException e) {
                 Agent.logError(e, Messages.CANNOT_RETRANSFORM_CLASS);
             } catch (InternalError e) {
-                // do nothing
+                // continue to transform the other classes
+            } catch (VerifyError e) {
+                // continue to transform the other classes
             }
         }
 
