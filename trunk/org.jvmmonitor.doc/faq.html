@@ -14,9 +14,6 @@
 <a href="#Cannot_Find_JVMs">Why cannot I find any JVMs on JVM Explorer?</a>
 </p>
 <p>
-<a href="#No_Providers_Installed">Why do I get the error "No providers installed"?</a>
-</p>
-<p>
 <a href="#Cannot_Connect_to_JVM">Why do I get the message "Monitoring is not supported for the selected JVM"?</a>
 </p>
 <p>
@@ -67,35 +64,6 @@
 <br>
 
 
-<a name="No_Providers_Installed"></a>
-<h2>
-    Why do I get the error "No providers installed"?
-</h2>
-<p>
-    This error can happen when JDK root directory specified on preference page doesn't match with 
-    JDK with which Eclipse is started.
-</p>
-<p>
-    To solve this issue,
-</p>
-<ol>
-    <li>
-    Start Eclipse with supported JDK (not JRE) in the same procedure as described in the prevoius question.
-    </li>
-    <li>
-    Open preference page
-    <b>Window > Preferences > Java > Monitor > Tools > JDK Root Directory</b>.
-    </li>
-    <li>
-    Specify JDK Root Directory which is exactly the same as the JDK with which Eclipse is started.
-    </li>
-    <li>
-    Restart Eclipse with supported JDK.
-    </li>
-</ol>
-<br>
-
-
 <a name="Cannot_Connect_to_JVM"></a>
 <h2>
     Why do I get the message "Monitoring is not supported for the selected JVM"?
@@ -131,6 +99,19 @@
     either your application didn't respond creating a socket file like /tmp/.java_pid1234 (e.g. due to hangup, file system 
     permission), or JVM Monitor was not able to find the created socket file (e.g. due to the bug 
     <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7009828">7009828</a>).
+    </li>
+    <li>
+    If you see the additional message "No providers installed",
+    JDK root directory specified on preference page doesn't match with JDK with which Eclipse is started.
+    See the previous question for the procedure to start Eclipse with supported JDK.
+    When changing JDK root directory on preference page, Eclipse has to be restarted.
+    </li>
+    <li>
+    If you see error message "Could not open PerfMemory" on Error Log view on Windows, 
+    the directory %TMP%\hsperfdata_* is not permitted to create a new file.
+    The possible solution would be to change the security settings for that directory, 
+    or set TMP environmental variable to writable directory.
+    After changing settings, not only your application but also Eclipse have to be restarted.
     </li>
     <li>
     If you don't see any additional message, your application might be shut down in the meantime.
