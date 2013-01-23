@@ -244,7 +244,10 @@ public class JvmModel {
      * @return True if valid JDK is available
      */
     public boolean hasValidJdk() {
-        return jvmAttachHandler.hasValidJdk();
+        if (jvmAttachHandler != null) {
+            return jvmAttachHandler.hasValidJdk();
+        }
+        return false;
     }
 
     /**
