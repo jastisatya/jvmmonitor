@@ -31,7 +31,10 @@
 </h2>
 <p>
     At least one JVM (Eclipse itself) should be shown on JVM Explorer. 
-    If no JVM is shown, it is likely that Eclipse is not started with supported JDK.
+    If no JVM is shown, there are two possible causes.
+</p>
+<p>
+    cause 1) Eclipse is not started with supported JDK.
     For example, JRE might be used instead of JDK.
 </p>
 <p>
@@ -60,6 +63,23 @@
     <b>Note:</b> If failed to specify -vm option or if you don't want to change the eclipse launch settings, 
     you may try specifying the JDK on preference page
     <b>Window > Preferences > Java > Monitor > Tools > JDK Root Directory</b>.
+</p>
+<p>
+    cause 2) The folder %TMP%\hsperfdata_* could be not permitted for JVM to create a new file on Windows.
+</p>
+<p>
+    To solve the issue,
+</p>
+<ul>
+    <li>
+    Change the security settings for that folder, 
+    </li>
+    <li>
+    Or alternatively set TMP environmental variable to writable directory.
+    </li>
+</ul>
+<p>
+    <b>Note:</b> After changing settings, not only your application but also Eclipse have to be restarted.
 </p>
 <br>
 
@@ -103,15 +123,13 @@
     <li>
     If you see the additional message "No providers installed",
     JDK root directory specified on preference page doesn't match with JDK with which Eclipse is started.
-    See the previous question for the procedure to start Eclipse with supported JDK.
+    See the <a href="#Cannot_Find_JVMs">previous question</a> for the procedure to start Eclipse with supported JDK.
     After changing JDK root directory on preference page, Eclipse has to be restarted.
     </li>
     <li>
     If you see error message "Could not open PerfMemory" on Error Log view on Windows, 
     the directory %TMP%\hsperfdata_* is not permitted to create a new file.
-    The possible solution would be to change the security settings for that directory, 
-    or set TMP environmental variable to writable directory.
-    After changing settings, not only your application but also Eclipse have to be restarted.
+    See the <a href="#Cannot_Find_JVMs">previous question</a> for the solution.
     </li>
     <li>
     If you don't see any additional message, your application might be shut down in the meantime.
