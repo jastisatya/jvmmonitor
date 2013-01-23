@@ -170,10 +170,13 @@ public class Marker {
      *            The inverted series index
      */
     private void configureHovers(Integer invertedSeriesIndex) {
-        ISeries[] seriesArray = chart.getSeriesSet().getSeries();
+        ISeries largestSeries = getLargestSeries();
+        if (largestSeries == null) {
+            return;
+        }
 
         // create hover for time
-        Date[] dates = seriesArray[0].getXDateSeries();
+        Date[] dates = largestSeries.getXDateSeries();
         long time = dates[dates.length - invertedSeriesIndex].getTime();
 
         StringBuffer buffer = new StringBuffer();
@@ -328,14 +331,7 @@ public class Marker {
                 .getDataCoordinate(desiredX);
 
         // find largest size of series
-        ISeries largestSeries = null;
-        for (ISeries series : chart.getSeriesSet().getSeries()) {
-            int length = series.getXSeries().length;
-            if (largestSeries == null
-                    || largestSeries.getXSeries().length < length) {
-                largestSeries = series;
-            }
-        }
+        ISeries largestSeries = getLargestSeries();
         if (largestSeries == null) {
             return null;
         }
@@ -357,6 +353,25 @@ public class Marker {
             return dates.length - nearestIndex;
         }
         return null;
+    }
+
+    /**
+     * Gets the largest series in terms of number of data points.
+     * 
+     * @return The largest series
+     */
+    private ISeries getLargestSeries() {
+        ISeries largestSeries = null;
+
+        for (ISeries series : chart.getSeriesSet().getSeries()) {
+            int length = series.getXSeries().length;
+            if (largestSeries == null
+                    || largestSeries.getXSeries().length < length) {
+                largestSeries = series;
+            }
+        }
+
+        return largestSeries;
     }
 
     /**

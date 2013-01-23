@@ -319,10 +319,14 @@ public class JvmTreeViewer extends TreeViewer implements
                     }
                 } else if (element instanceof IHost) {
                     IHost host = (IHost) element;
-                    if (host.getName().equals(IHost.LOCALHOST)
-                            && !JvmModel.getInstance().hasValidJdk()) {
-                        errorText.append(Messages.invalidJdkLocationMsg);
-                        errorImage = getErrorImage();
+                    if (host.getName().equals(IHost.LOCALHOST)) {
+                        if (!JvmModel.getInstance().hasValidJdk()) {
+                            errorText.append(Messages.invalidJdkLocationMsg);
+                            errorImage = getErrorImage();
+                        } else if (host.getActiveJvms().isEmpty()) {
+                            errorText.append(Messages.cannnotDetectJvmMsg);
+                            errorImage = getErrorImage();
+                        }
                     }
                 }
 
