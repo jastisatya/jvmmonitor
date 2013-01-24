@@ -46,7 +46,7 @@ abstract public class PropertiesFilteredTree extends FilteredTree {
      */
     public PropertiesFilteredTree(Composite parent, IActionBars actionBars) {
         super(parent, SWT.MULTI | SWT.FULL_SELECTION, new PatternFilter(), true);
-        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 
         configureTree();
         createContextMenu(actionBars);

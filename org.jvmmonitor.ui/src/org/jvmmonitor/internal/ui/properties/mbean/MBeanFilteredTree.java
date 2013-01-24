@@ -35,7 +35,7 @@ public class MBeanFilteredTree extends FilteredTree {
             AbstractJvmPropertySection section) {
         super(parent, SWT.MULTI | SWT.FULL_SELECTION, new PatternFilter(), true);
         createContextMenu(section);
-        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
     }
 
     /*

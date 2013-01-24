@@ -296,7 +296,7 @@ abstract public class AbstractJvmPropertySection extends
     public void refreshBackground(final Control control, boolean jvmConnected) {
         final int color;
         if (jvmConnected) {
-            color = SWT.COLOR_WHITE;
+            color = SWT.COLOR_LIST_BACKGROUND;
         } else {
             color = SWT.COLOR_WIDGET_BACKGROUND;
         }

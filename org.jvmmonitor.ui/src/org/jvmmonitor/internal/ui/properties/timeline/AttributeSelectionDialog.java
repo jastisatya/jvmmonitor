@@ -244,7 +244,7 @@ public class AttributeSelectionDialog extends Dialog {
         protected MyFilteredTree(Composite parent) {
             super(parent, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER,
                     new PatternFilter(), true);
-            setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+            setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         }
 
         /*

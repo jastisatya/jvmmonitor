@@ -92,7 +92,7 @@ abstract public class AbstractFilteredTree extends FilteredTree implements
         loadColumnsPreference();
         configureTree();
         createContextMenu();
-        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 
         addListeners();
     }
