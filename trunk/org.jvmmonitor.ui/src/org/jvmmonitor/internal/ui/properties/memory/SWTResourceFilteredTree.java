@@ -55,7 +55,7 @@ public class SWTResourceFilteredTree extends FilteredTree {
 
         configureTree();
         createContextMenu();
-        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
     }
 
     /*

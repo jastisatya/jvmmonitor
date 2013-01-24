@@ -94,7 +94,7 @@ public class NotificationFilteredTree extends FilteredTree implements
         loadColumnsPreference();
         configureTree();
         createContextMenu(section.getActionBars());
-        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 
         Activator.getDefault().getPreferenceStore()
                 .addPropertyChangeListener(this);

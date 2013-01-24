@@ -59,7 +59,7 @@ public class ThreadFilteredTree extends FilteredTree implements
         loadColumnsPreference();
         configureTree();
         createContextMenu(actionBars);
-        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 
         Activator.getDefault().getPreferenceStore()
                 .addPropertyChangeListener(this);

@@ -26,7 +26,7 @@ public class HeapFilteredTree extends FilteredTree {
      */
     protected HeapFilteredTree(Composite parent) {
         super(parent, SWT.MULTI | SWT.FULL_SELECTION, new PatternFilter(), true);
-        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
     }
 
     /*
