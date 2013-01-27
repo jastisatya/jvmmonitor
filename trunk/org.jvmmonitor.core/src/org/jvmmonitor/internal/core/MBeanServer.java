@@ -1130,9 +1130,13 @@ public class MBeanServer implements IMBeanServer {
                     os.write(bytes);
                     offset += SIZE;
                     if (monitor != null && monitor.isCanceled()) {
-                        return null;
+                        break;
                     }
                 } while (bytes.length > 0);
+            }
+
+            if (monitor != null && monitor.isCanceled()) {
+                return null;
             }
 
             Snapshot snapshot = new Snapshot(fileStore, abstractJvm);

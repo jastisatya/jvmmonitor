@@ -400,6 +400,7 @@ abstract public class AbstractJvmPropertySection extends
         if (toolBarManager != null) {
             removeToolBarActions(toolBarManager);
             toolBarManager.update(false);
+            updateActionBars();
         }
 
         // remove local menus
@@ -408,6 +409,7 @@ abstract public class AbstractJvmPropertySection extends
             menuManager.remove(preferencesAction.getId());
             removeLocalMenus(menuManager);
             menuManager.update(false);
+            updateActionBars();
         }
 
         // clear status line
@@ -608,7 +610,15 @@ abstract public class AbstractJvmPropertySection extends
         if (toolBarManager != null) {
             addToolBarActions(toolBarManager);
             toolBarManager.update(false);
+            updateActionBars();
         }
+    }
+
+    /**
+     * Updates the action bars.
+     */
+    private void updateActionBars() {
+        propertySheet.getViewSite().getActionBars().updateActionBars();
     }
 
     /**
@@ -625,6 +635,7 @@ abstract public class AbstractJvmPropertySection extends
                     addLocalMenus(menuManager);
                     menuManager.add(preferencesAction);
                     menuManager.update(false);
+                    updateActionBars();
                 }
             }
         });
