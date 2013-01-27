@@ -236,6 +236,9 @@ public class SWTResourcesPage extends AbstractSashForm {
         } else {
             removeToolBarActions(manager);
         }
+
+        manager.update(false);
+        section.getActionBars().updateActionBars();
     }
 
     /**
@@ -260,8 +263,8 @@ public class SWTResourcesPage extends AbstractSashForm {
      *            The tool bar manager
      */
     void addToolBarActions(IToolBarManager manager) {
-        if (manager.find("separator") == null) { //$NON-NLS-1$
-            manager.insertAfter("defaults", new Separator("separator")); //$NON-NLS-1$ //$NON-NLS-2$
+        if (manager.find("separator2") == null) { //$NON-NLS-1$
+            manager.insertAfter("defaults", new Separator("separator2")); //$NON-NLS-1$ //$NON-NLS-2$
         }
         if (manager.find(refreshAction.getId()) == null) {
             manager.insertAfter("defaults", refreshAction); //$NON-NLS-1$
@@ -269,7 +272,6 @@ public class SWTResourcesPage extends AbstractSashForm {
         if (manager.find(clearSWTResourceAction.getId()) == null) {
             manager.insertAfter("defaults", clearSWTResourceAction); //$NON-NLS-1$
         }
-        manager.update(true);
     }
 
     /**
@@ -279,10 +281,9 @@ public class SWTResourcesPage extends AbstractSashForm {
      *            The tool bar manager
      */
     void removeToolBarActions(IToolBarManager manager) {
-        manager.remove("separator"); //$NON-NLS-1$
+        manager.remove("separator2"); //$NON-NLS-1$
         manager.remove(refreshAction.getId());
         manager.remove(clearSWTResourceAction.getId());
-        manager.update(true);
     }
 
     /**

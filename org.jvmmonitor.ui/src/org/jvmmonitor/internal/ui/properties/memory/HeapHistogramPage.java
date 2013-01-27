@@ -298,7 +298,6 @@ public class HeapHistogramPage extends Composite implements
         if (manager.find(dumpHprofAction.getId()) == null) {
             manager.insertAfter("defaults", dumpHprofAction); //$NON-NLS-1$
         }
-        manager.update(true);
     }
 
     /**
@@ -314,7 +313,6 @@ public class HeapHistogramPage extends Composite implements
         manager.remove(clearHeapDeltaAction.getId());
         manager.remove(dumpHeapAction.getId());
         manager.remove(dumpHprofAction.getId());
-        manager.update(true);
     }
 
     /**
@@ -330,6 +328,9 @@ public class HeapHistogramPage extends Composite implements
         } else {
             removeToolBarActions(manager);
         }
+
+        manager.update(false);
+        section.getActionBars().updateActionBars();
     }
 
     /**
