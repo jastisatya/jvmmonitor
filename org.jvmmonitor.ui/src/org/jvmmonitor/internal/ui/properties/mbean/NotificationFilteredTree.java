@@ -94,7 +94,8 @@ public class NotificationFilteredTree extends FilteredTree implements
         loadColumnsPreference();
         configureTree();
         createContextMenu(section.getActionBars());
-        setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        setBackground(Display.getDefault().getSystemColor(
+                SWT.COLOR_LIST_BACKGROUND));
 
         Activator.getDefault().getPreferenceStore()
                 .addPropertyChangeListener(this);
@@ -194,8 +195,41 @@ public class NotificationFilteredTree extends FilteredTree implements
             return;
         }
 
-        treeViewer.setInput(jvm.getMBeanServer().getMBeanNotification()
-                .getNotifications(objectName));
+        Notification[] notifications = jvm.getMBeanServer()
+                .getMBeanNotification().getNotifications(objectName);
+
+        if (!isSameInput(notifications)) {
+            treeViewer.setInput(notifications);
+        }
+    }
+
+    /**
+     * Checks if the given notifications are the same as current input.
+     * 
+     * @param notifications
+     *            The notifications
+     * @return <tt>true</tt> if the given notifications are the same as current
+     *         input
+     */
+    private boolean isSameInput(Notification[] notifications) {
+        Object input = treeViewer.getInput();
+        if (!(input instanceof Notification[])) {
+            return false;
+        }
+
+        Notification[] currentNotifications = (Notification[]) input;
+        if (currentNotifications.length != notifications.length) {
+            return false;
+        }
+
+        for (int i = 0; i < notifications.length; i++) {
+            if (!notifications[i].toString().equals(
+                    currentNotifications[i].toString())) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
