@@ -157,7 +157,7 @@ public class AttributesTab extends AbstractMBeanTab {
      * @param force
      *            True to force refresh
      */
-    private void refresh(boolean force) {
+    private void refresh(final boolean force) {
         if (!force && (!selected || editorActivated)) {
             return;
         }
@@ -167,7 +167,7 @@ public class AttributesTab extends AbstractMBeanTab {
             protected void refreshModel(IProgressMonitor monitor) {
                 IActiveJvm jvm = section.getJvm();
                 if (jvm != null && objectName != null && jvm.isConnected()
-                        && !section.isRefreshSuspended()) {
+                        && !section.isRefreshSuspended() || force) {
                     try {
                         contentProvider.refresh(jvm, objectName);
                     } catch (JvmCoreException e) {

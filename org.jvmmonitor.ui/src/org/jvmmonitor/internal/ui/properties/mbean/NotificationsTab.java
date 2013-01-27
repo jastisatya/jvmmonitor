@@ -67,11 +67,21 @@ public class NotificationsTab extends AbstractMBeanTab {
         tree.setInput(objectName);
         subscribeAction.setSelection(objectName);
 
-        refresh();
+        refresh(true);
     }
 
     @Override
     void performRefresh() {
+        refresh(false);
+    }
+    
+    /**
+     * Refreshes.
+     * 
+     * @param force
+     *            True to force refresh
+     */
+    private void refresh(final boolean force) {
         new RefreshJob(Messages.refreshNotificationTabJobLabel, toString()) {
             private boolean isSubscribed;
             private boolean isSupported;
@@ -105,8 +115,10 @@ public class NotificationsTab extends AbstractMBeanTab {
                     addTabItem();
                 }
 
-                tree.setInput(objectName);
-                treeViewer.refresh();
+                if (!section.isRefreshSuspended() || force) {
+                    tree.setInput(objectName);
+                    treeViewer.refresh();
+                }
                 updatePage(isSubscribed);
             }
         }.schedule();
