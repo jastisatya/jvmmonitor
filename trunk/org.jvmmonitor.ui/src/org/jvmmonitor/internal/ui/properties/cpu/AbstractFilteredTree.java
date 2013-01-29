@@ -25,8 +25,6 @@ import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -298,14 +296,6 @@ abstract public class AbstractFilteredTree extends FilteredTree implements
             public void selectionChanged(SelectionChangedEvent event) {
                 openAction.selectionChanged(event);
                 copyAction.selectionChanged(event);
-            }
-        });
-
-        // set viewer not when tree item is selected but when tree gets focus
-        viewer.getControl().addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                findAction.setViewer(getViewer(), getViewerType());
             }
         });
 
