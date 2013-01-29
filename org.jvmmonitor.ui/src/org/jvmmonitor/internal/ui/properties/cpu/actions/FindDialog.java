@@ -32,11 +32,15 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import org.jvmmonitor.core.cpu.ICpuModel;
+import org.eclipse.ui.part.IPage;
+import org.eclipse.ui.views.properties.PropertySheet;
+import org.eclipse.ui.views.properties.tabbed.ISection;
+import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jvmmonitor.core.cpu.ITreeNode;
 import org.jvmmonitor.internal.ui.IHelpContextIds;
-import org.jvmmonitor.internal.ui.properties.cpu.AbstractFilteredTree.ViewerType;
+import org.jvmmonitor.internal.ui.properties.cpu.actions.FindAction.IFindTarget;
 import org.jvmmonitor.ui.Activator;
 
 /**
@@ -61,24 +65,11 @@ public class FindDialog extends Dialog {
     /** The state indicating if search is started. */
     private boolean startSearch;
 
-    /** The tree viewer. */
-    private TreeViewer viewer;
-
-    /** The viewer type. */
-    private ViewerType viewerType;
-
     /**
      * The constructor.
-     * 
-     * @param viewer
-     *            The tree viewer
-     * @param viewerType
-     *            The viewer type
      */
-    public FindDialog(TreeViewer viewer, ViewerType viewerType) {
-        super(viewer.getTree().getShell());
-        this.viewer = viewer;
-        this.viewerType = viewerType;
+    public FindDialog() {
+        super(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
         setShellStyle(getShellStyle() ^ SWT.APPLICATION_MODAL);
     }
 
@@ -143,6 +134,42 @@ public class FindDialog extends Dialog {
     @Override
     protected boolean isResizable() {
         return true;
+    }
+
+    /**
+     * Gets the target for find action.
+     * 
+     * @return The target for find action
+     */
+    private static IFindTarget getFindTarget() {
+        IWorkbenchPart activePart = PlatformUI.getWorkbench()
+                .getActiveWorkbenchWindow().getActivePage().getActivePart();
+        if (activePart instanceof IFindTarget) {
+            return (IFindTarget) activePart;
+        }
+
+        PropertySheet part = (PropertySheet) activePart;
+        if (part == null) {
+            return null;
+        }
+
+        IPage page = part.getCurrentPage();
+        if (!(page instanceof TabbedPropertySheetPage)) {
+            return null;
+        }
+
+        TabbedPropertySheetPage propertySheetPage = (TabbedPropertySheetPage) page;
+        ISection[] sections = propertySheetPage.getCurrentTab().getSections();
+        if (sections.length != 1) {
+            return null;
+        }
+
+        ISection section = sections[0];
+        if (!(section instanceof IFindTarget)) {
+            return null;
+        }
+
+        return (IFindTarget) section;
     }
 
     /**
@@ -242,33 +269,32 @@ public class FindDialog extends Dialog {
      * Finds the item with string specified in text field.
      */
     void doFind() {
+        IFindTarget target = getFindTarget();
+        if (target == null) {
+            return;
+        }
+
+        TreeViewer viewer = target.getTargetTreeViewer();
+        ITreeNode[] rootNodes = target.getTargetTreeNodes();
+
+        if (viewer == null || rootNodes.length == 0) {
+            return;
+        }
+
         String searchText = findText.getText();
         addHistory(searchText);
 
         ITreeNode treeNode = null;
-        ITreeNode[] nodes = null;
 
-        ICpuModel cpuModel = (ICpuModel) viewer.getInput();
-        if (viewerType == ViewerType.CallTree) {
-            nodes = cpuModel.getCallTreeRoots();
-        } else if (viewerType == ViewerType.HotSpots) {
-            nodes = cpuModel.getHotSpotRoots();
-        } else if (viewerType == ViewerType.Caller) {
-            nodes = cpuModel.getCallers();
-        } else if (viewerType == ViewerType.Callee) {
-            nodes = cpuModel.getCallees();
-        }
-        if (nodes == null) {
-            return;
-        }
-
-        ITreeNode selectedNode = getSelectedNode();
+        ITreeNode selectedNode = getSelectedNode(viewer);
         startSearch = (selectedNode == null);
 
         if (forwardButton.getSelection()) {
-            treeNode = searchTreeNodeInForward(nodes, selectedNode, searchText);
+            treeNode = searchTreeNodeInForward(viewer, rootNodes, selectedNode,
+                    searchText);
         } else {
-            treeNode = searchTreeNodeInBackward(nodes, selectedNode, searchText);
+            treeNode = searchTreeNodeInBackward(viewer, rootNodes,
+                    selectedNode, searchText);
         }
         if (treeNode != null) {
             ISelection newSelection = new StructuredSelection(treeNode);
@@ -280,9 +306,11 @@ public class FindDialog extends Dialog {
     /**
      * Gets the selected node.
      * 
+     * @param viewer
+     *            The tree viewer
      * @return The selected node
      */
-    private ITreeNode getSelectedNode() {
+    private static ITreeNode getSelectedNode(TreeViewer viewer) {
         ISelection selection = viewer.getSelection();
         if (selection instanceof TreeSelection) {
             TreeSelection treeSelection = (TreeSelection) selection;
@@ -298,6 +326,8 @@ public class FindDialog extends Dialog {
      * Searches the tree node containing the given string in the given nodes in
      * forward.
      * 
+     * @param viewer
+     *            The tree viewer
      * @param nodes
      *            The tree nodes
      * @param selectedNode
@@ -306,9 +336,9 @@ public class FindDialog extends Dialog {
      *            The search text
      * @return The tree node
      */
-    private ITreeNode searchTreeNodeInForward(ITreeNode[] nodes,
-            ITreeNode selectedNode, String searchText) {
-        ITreeNode[] sortedNodes = getSortedNodes(nodes);
+    private ITreeNode searchTreeNodeInForward(TreeViewer viewer,
+            ITreeNode[] nodes, ITreeNode selectedNode, String searchText) {
+        ITreeNode[] sortedNodes = getSortedNodes(viewer, nodes);
 
         for (ITreeNode treeNode : sortedNodes) {
             if (startSearch && treeNode.getName().contains(searchText)) {
@@ -320,9 +350,9 @@ public class FindDialog extends Dialog {
             }
 
             if (treeNode.hasChildren()) {
-                ITreeNode foundTreeNode = searchTreeNodeInForward(treeNode
-                        .getChildren().toArray(new ITreeNode[0]), selectedNode,
-                        searchText);
+                ITreeNode foundTreeNode = searchTreeNodeInForward(viewer,
+                        treeNode.getChildren().toArray(new ITreeNode[0]),
+                        selectedNode, searchText);
                 if (foundTreeNode != null) {
                     return foundTreeNode;
                 }
@@ -335,6 +365,8 @@ public class FindDialog extends Dialog {
      * Searches the tree node containing the given string in the given list in
      * backward.
      * 
+     * @param viewer
+     *            The tree viewer
      * @param nodes
      *            The tree nodes
      * @param selectedNode
@@ -343,17 +375,17 @@ public class FindDialog extends Dialog {
      *            The search text
      * @return The tree node
      */
-    private ITreeNode searchTreeNodeInBackward(ITreeNode[] nodes,
-            ITreeNode selectedNode, String searchText) {
-        ITreeNode[] sortedNodes = getSortedNodes(nodes);
+    private ITreeNode searchTreeNodeInBackward(TreeViewer viewer,
+            ITreeNode[] nodes, ITreeNode selectedNode, String searchText) {
+        ITreeNode[] sortedNodes = getSortedNodes(viewer, nodes);
 
         for (int i = sortedNodes.length - 1; i >= 0; i--) {
             ITreeNode treeNode = sortedNodes[i];
 
             if (treeNode.hasChildren()) {
-                ITreeNode foundTreeNode = searchTreeNodeInBackward(treeNode
-                        .getChildren().toArray(new ITreeNode[0]), selectedNode,
-                        searchText);
+                ITreeNode foundTreeNode = searchTreeNodeInBackward(viewer,
+                        treeNode.getChildren().toArray(new ITreeNode[0]),
+                        selectedNode, searchText);
                 if (foundTreeNode != null) {
                     return foundTreeNode;
                 }
@@ -373,11 +405,14 @@ public class FindDialog extends Dialog {
     /**
      * Gets the sorted tree nodes.
      * 
+     * @param viewer
+     *            The tree viewer
      * @param nodes
      *            The tree nodes
      * @return The sorted tree nodes
      */
-    private ITreeNode[] getSortedNodes(ITreeNode[] nodes) {
+    private static ITreeNode[] getSortedNodes(TreeViewer viewer,
+            ITreeNode[] nodes) {
         ViewerComparator comparator = viewer.getComparator();
         if (comparator != null) {
             comparator.sort(viewer, nodes);

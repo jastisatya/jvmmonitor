@@ -164,7 +164,9 @@ public class CallTreeNode extends AbstractMethodNode implements ICallTreeNode {
         if (frameNode.getName().equals(qualifiedMethodName)
                 && frameNode.getSelfTime() == selfTime
                 && frameNode.getTotalTime() == totalTime
-                && frameNode.getInvocationCount() == invocationCount) {
+                && frameNode.getInvocationCount() == invocationCount
+                && frameNode.getIndentation().length() == getIndentation()
+                        .length()) {
             return true;
         }
 

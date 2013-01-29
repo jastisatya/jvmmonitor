@@ -9,18 +9,12 @@ package org.jvmmonitor.internal.ui.properties.cpu.actions;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.jvmmonitor.internal.ui.properties.cpu.AbstractFilteredTree.ViewerType;
+import org.jvmmonitor.core.cpu.ITreeNode;
 
 /**
  * The action to find tree item.
  */
 public class FindAction extends Action {
-
-    /** The tree viewer. */
-    private TreeViewer viewer;
-
-    /** The viewer type. */
-    private ViewerType type;
 
     /**
      * The constructor.
@@ -35,21 +29,26 @@ public class FindAction extends Action {
      */
     @Override
     public void run() {
-        if (viewer != null && type != null) {
-            new FindDialog(viewer, type).open();
-        }
+        new FindDialog().open();
     }
 
     /**
-     * Sets the viewer.
-     * 
-     * @param treeViewer
-     *            The tree viewer
-     * @param viewerType
-     *            The viewer type
+     * The target for find action.
      */
-    public void setViewer(TreeViewer treeViewer, ViewerType viewerType) {
-        viewer = treeViewer;
-        type = viewerType;
+    public interface IFindTarget {
+
+        /**
+         * Gets the target tree viewer for find action.
+         * 
+         * @return The target tree viewer for find action
+         */
+        TreeViewer getTargetTreeViewer();
+
+        /**
+         * Gets the target tree model for find action.
+         * 
+         * @return The target tree model for find action
+         */
+        ITreeNode[] getTargetTreeNodes();
     }
 }

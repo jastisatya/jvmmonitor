@@ -53,9 +53,11 @@ import org.jvmmonitor.core.cpu.ICallTreeNode;
 import org.jvmmonitor.core.cpu.ICpuModel;
 import org.jvmmonitor.core.cpu.ICpuModelChangeListener;
 import org.jvmmonitor.core.cpu.IMethodNode;
+import org.jvmmonitor.core.cpu.ITreeNode;
 import org.jvmmonitor.core.dump.CpuDumpParser;
 import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.actions.CollapseAllAction;
+import org.jvmmonitor.internal.ui.actions.CollapseAllAction.ICollapseTarget;
 import org.jvmmonitor.internal.ui.actions.CopyAction;
 import org.jvmmonitor.internal.ui.actions.OpenDeclarationAction;
 import org.jvmmonitor.internal.ui.properties.cpu.AbstractContentProvider;
@@ -67,6 +69,7 @@ import org.jvmmonitor.internal.ui.properties.cpu.CallTreeLabelProvider;
 import org.jvmmonitor.internal.ui.properties.cpu.HotSpotsFilteredTree;
 import org.jvmmonitor.internal.ui.properties.cpu.HotSpotsLabelProvider;
 import org.jvmmonitor.internal.ui.properties.cpu.actions.FindAction;
+import org.jvmmonitor.internal.ui.properties.cpu.actions.FindAction.IFindTarget;
 import org.jvmmonitor.ui.Activator;
 import org.jvmmonitor.ui.ISharedImages;
 import org.xml.sax.SAXException;
@@ -74,7 +77,8 @@ import org.xml.sax.SAXException;
 /**
  * The CPU dump editor.
  */
-public class CpuDumpEditor extends AbstractDumpEditor {
+public class CpuDumpEditor extends AbstractDumpEditor implements
+        ICollapseTarget, IFindTarget {
 
     /** The CPU model. */
     protected ICpuModel cpuModel;
@@ -163,6 +167,45 @@ public class CpuDumpEditor extends AbstractDumpEditor {
     public void setFocus() {
         getContainer().setFocus();
         refresh();
+    }
+
+    /*
+     * @see CollapseAllAction.ICollapseTarget#getTargetTreeViewer()
+     */
+    @Override
+    public TreeViewer getTargetTreeViewer() {
+        AbstractFilteredTree activeFilteredTree = getActiveFilteredTree();
+        if (activeFilteredTree != null) {
+            return activeFilteredTree.getViewer();
+        }
+
+        return null;
+    }
+
+    /*
+     * @see FindAction.IFindTarget#getTargetTreeNodes()
+     */
+    @Override
+    public ITreeNode[] getTargetTreeNodes() {
+        ITreeNode[] nodes = new ITreeNode[0];
+        AbstractFilteredTree activeFilteredTree = getActiveFilteredTree();
+        if (activeFilteredTree == null) {
+            return nodes;
+        }
+
+        ViewerType viewerType = activeFilteredTree.getViewerType();
+
+        if (viewerType == ViewerType.CallTree) {
+            nodes = cpuModel.getCallTreeRoots();
+        } else if (viewerType == ViewerType.HotSpots) {
+            nodes = cpuModel.getHotSpotRoots();
+        } else if (viewerType == ViewerType.Caller) {
+            nodes = cpuModel.getCallers();
+        } else if (viewerType == ViewerType.Callee) {
+            nodes = cpuModel.getCallees();
+        }
+
+        return nodes;
     }
 
     /*
@@ -429,14 +472,6 @@ public class CpuDumpEditor extends AbstractDumpEditor {
         AbstractFilteredTree tree = getActiveFilteredTree();
         if (tree == null) {
             setContentDescription(""); //$NON-NLS-1$
-            return;
-        }
-
-        collapseAllAction.setViewer(tree.getViewer());
-        FindAction findAction = (FindAction) getEditorSite().getActionBars()
-                .getGlobalActionHandler(ActionFactory.FIND.getId());
-        if (findAction != null) {
-            findAction.setViewer(tree.getViewer(), tree.getViewerType());
         }
     }
 

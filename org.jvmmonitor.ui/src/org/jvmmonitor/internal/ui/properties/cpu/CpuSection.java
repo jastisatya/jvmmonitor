@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -31,18 +32,22 @@ import org.jvmmonitor.core.JvmCoreException;
 import org.jvmmonitor.core.JvmModelEvent;
 import org.jvmmonitor.core.JvmModelEvent.State;
 import org.jvmmonitor.core.cpu.CpuModelEvent;
+import org.jvmmonitor.core.cpu.ICpuModel;
 import org.jvmmonitor.core.cpu.ICpuModelChangeListener;
 import org.jvmmonitor.core.cpu.ICpuProfiler.ProfilerState;
 import org.jvmmonitor.core.cpu.ICpuProfiler.ProfilerType;
+import org.jvmmonitor.core.cpu.ITreeNode;
 import org.jvmmonitor.internal.ui.IConstants;
 import org.jvmmonitor.internal.ui.IHelpContextIds;
 import org.jvmmonitor.internal.ui.RefreshJob;
 import org.jvmmonitor.internal.ui.actions.CopyAction;
 import org.jvmmonitor.internal.ui.actions.OpenDeclarationAction;
 import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
+import org.jvmmonitor.internal.ui.properties.cpu.AbstractFilteredTree.ViewerType;
 import org.jvmmonitor.internal.ui.properties.cpu.actions.ClearCpuProfilingDataAction;
 import org.jvmmonitor.internal.ui.properties.cpu.actions.DumpCpuProfilingDataAction;
 import org.jvmmonitor.internal.ui.properties.cpu.actions.FindAction;
+import org.jvmmonitor.internal.ui.properties.cpu.actions.FindAction.IFindTarget;
 import org.jvmmonitor.internal.ui.properties.cpu.actions.ResumeCpuProfilingAction;
 import org.jvmmonitor.internal.ui.properties.cpu.actions.SuspendCpuProfilingAction;
 import org.jvmmonitor.ui.Activator;
@@ -50,7 +55,8 @@ import org.jvmmonitor.ui.Activator;
 /**
  * The CPU section.
  */
-public class CpuSection extends AbstractJvmPropertySection {
+public class CpuSection extends AbstractJvmPropertySection implements
+        IFindTarget {
 
     /** The default profiler sampling period. */
     static final Integer DEFAULT_SAMPLING_PERIOD = 50;
@@ -81,6 +87,9 @@ public class CpuSection extends AbstractJvmPropertySection {
 
     /** The CPU model change listener. */
     private ICpuModelChangeListener cpuModelChangeListener;
+
+    /** The filtered tree on active tab. */
+    private AbstractFilteredTree activeFilteredTree;
 
     /**
      * The constructor.
@@ -140,70 +149,6 @@ public class CpuSection extends AbstractJvmPropertySection {
             return;
         }
         refresh(false);
-    }
-
-    /**
-     * Refreshes the CPU section.
-     * 
-     * @param initConfig
-     *            <tt>true</tt> to initialize configuration.
-     */
-    private void refresh(final boolean initConfig) {
-        new RefreshJob(NLS.bind(Messages.refeshCpuSectionJobLabel, getJvm()
-                .getPid()), toString()) {
-
-            private boolean isCpuProfilerReady;
-            private boolean isPackageSpecified;
-            private boolean isCpuProfilerRunning;
-
-            @Override
-            protected void refreshModel(IProgressMonitor monitor) {
-                isCpuProfilerReady = isCpuProfilerReady();
-                isPackageSpecified = isPackageSpecified();
-                isCpuProfilerRunning = isCpuProfilerRunning();
-
-                if (initConfig) {
-                    setProfiledPackages();
-                    setProfilerSamplingPeriod();
-                    setProfilerType();
-                }
-
-                IActiveJvm jvm = getJvm();
-                if (jvm == null || !isCpuProfilerRunning) {
-                    return;
-                }
-
-                try {
-                    jvm.getCpuProfiler().refreshBciProfileCache(monitor);
-                    jvm.getCpuProfiler().getCpuModel().refreshMaxValues();
-                } catch (JvmCoreException e) {
-                    Activator.log(Messages.refreshCpuProfileDataFailedMsg, e);
-                }
-            }
-
-            @Override
-            protected void refreshUI() {
-                IActiveJvm jvm = getJvm();
-                boolean isConnected = jvm != null && jvm.isConnected();
-                updatePage(isPackageSpecified);
-
-                suspendCpuProfilingAction.setEnabled(isCpuProfilerRunning
-                        && isCpuProfilerReady && isConnected);
-                resumeCpuProfilingAction.setEnabled(!isCpuProfilerRunning
-                        && isCpuProfilerReady && isPackageSpecified
-                        && isConnected);
-                clearCpuProfilingDataAction.setEnabled(isCpuProfilerReady
-                        && isPackageSpecified && isConnected);
-                dumpCpuProfilingDataAction.setEnabled(!hasErrorMessage());
-
-                if (!isDisposed()) {
-                    refreshBackground(callTree.getChildren(), isConnected);
-                    refreshBackground(hotSpots.getChildren(), isConnected);
-                    refreshBackground(callerCallee.getChildren(), isConnected);
-                    refreshViewers();
-                }
-            }
-        }.schedule();
     }
 
     /*
@@ -298,6 +243,38 @@ public class CpuSection extends AbstractJvmPropertySection {
         Job.getJobManager().cancel(toString());
     }
 
+    @Override
+    public TreeViewer getTargetTreeViewer() {
+        if (activeFilteredTree != null) {
+            return activeFilteredTree.getViewer();
+        }
+        return null;
+    }
+
+    @Override
+    public ITreeNode[] getTargetTreeNodes() {
+        ITreeNode[] nodes = new ITreeNode[0];
+        if (activeFilteredTree == null) {
+            return nodes;
+        }
+
+        ViewerType viewerType = activeFilteredTree.getViewerType();
+        ICpuModel cpuModel = (ICpuModel) activeFilteredTree.getViewer()
+                .getInput();
+
+        if (viewerType == ViewerType.CallTree) {
+            nodes = cpuModel.getCallTreeRoots();
+        } else if (viewerType == ViewerType.HotSpots) {
+            nodes = cpuModel.getHotSpotRoots();
+        } else if (viewerType == ViewerType.Caller) {
+            nodes = cpuModel.getCallers();
+        } else if (viewerType == ViewerType.Callee) {
+            nodes = cpuModel.getCallees();
+        }
+
+        return nodes;
+    }
+
     /**
      * Clears the CPU profile data.
      */
@@ -322,13 +299,71 @@ public class CpuSection extends AbstractJvmPropertySection {
         clearStatusLine();
 
         AbstractTabPage page = (AbstractTabPage) tabItem.getControl();
-        AbstractFilteredTree filteredTree = page.getFilteredTrees().get(0);
-        FindAction findAction = (FindAction) getActionBars()
-                .getGlobalActionHandler(ActionFactory.FIND.getId());
-        if (findAction != null) {
-            findAction.setViewer(filteredTree.getViewer(),
-                    filteredTree.getViewerType());
-        }
+        activeFilteredTree = page.getFilteredTrees().get(0);
+    }
+
+    /**
+     * Refreshes the CPU section.
+     * 
+     * @param initConfig
+     *            <tt>true</tt> to initialize configuration.
+     */
+    private void refresh(final boolean initConfig) {
+        new RefreshJob(NLS.bind(Messages.refeshCpuSectionJobLabel, getJvm()
+                .getPid()), toString()) {
+
+            private boolean isCpuProfilerReady;
+            private boolean isPackageSpecified;
+            private boolean isCpuProfilerRunning;
+
+            @Override
+            protected void refreshModel(IProgressMonitor monitor) {
+                isCpuProfilerReady = isCpuProfilerReady();
+                isPackageSpecified = isPackageSpecified();
+                isCpuProfilerRunning = isCpuProfilerRunning();
+
+                if (initConfig) {
+                    setProfiledPackages();
+                    setProfilerSamplingPeriod();
+                    setProfilerType();
+                }
+
+                IActiveJvm jvm = getJvm();
+                if (jvm == null || !isCpuProfilerRunning) {
+                    return;
+                }
+
+                try {
+                    jvm.getCpuProfiler().refreshBciProfileCache(monitor);
+                    jvm.getCpuProfiler().getCpuModel().refreshMaxValues();
+                } catch (JvmCoreException e) {
+                    Activator.log(Messages.refreshCpuProfileDataFailedMsg, e);
+                }
+            }
+
+            @Override
+            protected void refreshUI() {
+                IActiveJvm jvm = getJvm();
+                boolean isConnected = jvm != null && jvm.isConnected();
+                updatePage(isPackageSpecified);
+
+                suspendCpuProfilingAction.setEnabled(isCpuProfilerRunning
+                        && isCpuProfilerReady && isConnected);
+                resumeCpuProfilingAction.setEnabled(!isCpuProfilerRunning
+                        && isCpuProfilerReady && isPackageSpecified
+                        && isConnected);
+                clearCpuProfilingDataAction.setEnabled(isCpuProfilerReady
+                        && isPackageSpecified && isConnected);
+                dumpCpuProfilingDataAction.setEnabled(!hasErrorMessage());
+
+                if (!isDisposed()) {
+                    refreshBackground(callTree.getChildren(), isConnected);
+                    refreshBackground(hotSpots.getChildren(), isConnected);
+                    refreshBackground(callerCallee.getChildren(), isConnected);
+                    refreshViewers();
+                }
+            }
+        }.schedule();
     }
 
     /**
