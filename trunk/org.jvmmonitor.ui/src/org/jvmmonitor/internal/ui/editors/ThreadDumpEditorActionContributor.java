@@ -9,6 +9,7 @@ package org.jvmmonitor.internal.ui.editors;
 import java.util.ArrayList;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.EditorActionBarContributor;
@@ -17,9 +18,10 @@ import org.jvmmonitor.internal.ui.actions.ToggleOrientationAction.Orientation;
 import org.jvmmonitor.internal.ui.properties.thread.ThreadSashForm;
 
 /**
- * The thread action contributor.
+ * The action bar contributor for thread dump editor.
  */
-public class ThreadActionContributor extends EditorActionBarContributor {
+public class ThreadDumpEditorActionContributor extends
+        EditorActionBarContributor {
 
     /** The actions to toggle orientation. */
     private ArrayList<ToggleOrientationAction> orientationActions;
@@ -35,7 +37,12 @@ public class ThreadActionContributor extends EditorActionBarContributor {
         }
 
         for (Action action : orientationActions) {
-            toolBarManager.add(action);
+            toolBarManager.add(new ActionContributionItem(action) {
+                @Override
+                protected boolean isEnabledAllowed() {
+                    return true;
+                }
+            });
         }
     }
 
