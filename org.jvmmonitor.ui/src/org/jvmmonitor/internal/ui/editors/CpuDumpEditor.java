@@ -19,8 +19,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.ui.actions.JdtActionConstants;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.IPageChangedListener;
 import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -56,7 +54,6 @@ import org.jvmmonitor.core.cpu.IMethodNode;
 import org.jvmmonitor.core.cpu.ITreeNode;
 import org.jvmmonitor.core.dump.CpuDumpParser;
 import org.jvmmonitor.internal.ui.IHelpContextIds;
-import org.jvmmonitor.internal.ui.actions.CollapseAllAction;
 import org.jvmmonitor.internal.ui.actions.CollapseAllAction.ICollapseTarget;
 import org.jvmmonitor.internal.ui.actions.CopyAction;
 import org.jvmmonitor.internal.ui.actions.OpenDeclarationAction;
@@ -97,9 +94,6 @@ public class CpuDumpEditor extends AbstractDumpEditor implements
 
     /** The caller callee image. */
     private Image callerCalleeImage;
-
-    /** The collapse all action. */
-    CollapseAllAction collapseAllAction;
 
     /**
      * The constructor.
@@ -515,21 +509,6 @@ public class CpuDumpEditor extends AbstractDumpEditor implements
      */
     private void contributeToActionBars() {
         IActionBars actionBars = getEditorSite().getActionBars();
-        IToolBarManager manager = actionBars.getToolBarManager();
-        collapseAllAction = new CollapseAllAction();
-
-        // check if CollapseAllAction has been already added
-        boolean exist = false;
-        for (IContributionItem contributionItem : manager.getItems()) {
-            if (contributionItem.getId().equals(collapseAllAction.getId())) {
-                exist = true;
-                break;
-            }
-        }
-        if (!exist) {
-            manager.add(collapseAllAction);
-        }
-
         actionBars.setGlobalActionHandler(JdtActionConstants.OPEN,
                 new OpenDeclarationAction());
         actionBars.setGlobalActionHandler(ActionFactory.FIND.getId(),

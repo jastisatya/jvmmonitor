@@ -203,6 +203,7 @@
          point="org.eclipse.ui.editors">
       <editor
             class="org.jvmmonitor.internal.ui.editors.CpuDumpEditor"
+            contributorClass="org.jvmmonitor.internal.ui.editors.CpuDumpEditorActionContributor"
             default="true"
             extensions="cpu"
             icon="icons/full/obj16/cpu_dump.gif"
@@ -211,7 +212,7 @@
       </editor>
       <editor
             class="org.jvmmonitor.internal.ui.editors.ThreadDumpEditor"
-            contributorClass="org.jvmmonitor.internal.ui.editors.ThreadActionContributor"
+            contributorClass="org.jvmmonitor.internal.ui.editors.ThreadDumpEditorActionContributor"
             default="false"
             extensions="thread"
             icon="icons/full/obj16/thread_dump.gif"
