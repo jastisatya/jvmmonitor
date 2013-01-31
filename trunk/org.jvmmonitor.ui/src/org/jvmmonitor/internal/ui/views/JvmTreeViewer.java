@@ -29,6 +29,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
@@ -115,6 +116,12 @@ public class JvmTreeViewer extends TreeViewer implements
                         setInput(new Object[0]);
                         JvmModel.getInstance().addJvmModelChangeListener(
                                 JvmTreeViewer.this);
+
+                        TreeItem topItem = getTree().getTopItem();
+                        if (topItem != null) {
+                            topItem.setExpanded(true);
+                            refresh();
+                        }
                     }
                 });
                 return Status.OK_STATUS;
