@@ -9,8 +9,6 @@ package org.jvmmonitor.internal.ui.properties.cpu.actions;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.action.Action;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.JvmCoreException;
 import org.jvmmonitor.core.cpu.ICpuProfiler.ProfilerType;
@@ -21,10 +19,10 @@ import org.jvmmonitor.ui.ISharedImages;
 /**
  * The action to resume CPU profiling.
  */
-public class ResumeCpuProfilingAction extends Action {
+public class ResumeCpuProfilingAction extends AbstractCpuProfilingAction {
 
-    /** The property section. */
-    AbstractJvmPropertySection section;
+    /** The suspend action. */
+    private SuspendCpuProfilingAction suspendAction;
 
     /**
      * The constructor.
@@ -33,46 +31,63 @@ public class ResumeCpuProfilingAction extends Action {
      *            The property section
      */
     public ResumeCpuProfilingAction(AbstractJvmPropertySection section) {
+        super(section);
+
         setText(Messages.resumeCpuProfilingLabel);
         setImageDescriptor(Activator
                 .getImageDescriptor(ISharedImages.RESUME_IMG_PATH));
         setDisabledImageDescriptor(Activator
                 .getImageDescriptor(ISharedImages.DISABLED_RESUME_IMG_PATH));
         setId(getClass().getName());
-
-        this.section = section;
     }
 
     /*
-     * @see Action#run()
+     * @see AbstractJobAction#performRun(IProgressMonitor)
      */
     @Override
-    public void run() {
-        new Job(Messages.resumeCpuProfilingJob) {
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                IActiveJvm jvm = section.getJvm();
-                if (jvm == null) {
-                    return Status.CANCEL_STATUS;
-                }
+    protected IStatus performRun(IProgressMonitor monitor) {
+        IActiveJvm jvm = section.getJvm();
+        if (jvm == null) {
+            return Status.CANCEL_STATUS;
+        }
 
-                if (jvm.getCpuProfiler().getProfilerType() == ProfilerType.BCI) {
-                    try {
-                        jvm.getCpuProfiler().transformClasses(monitor);
-                    } catch (JvmCoreException e) {
-                        Activator.log(Messages.resumeCpuProfilingFailedMsg, e);
-                    } catch (InterruptedException e) {
-                        return Status.CANCEL_STATUS;
-                    }
-                }
-
-                try {
-                    jvm.getCpuProfiler().resume();
-                } catch (JvmCoreException e) {
-                    Activator.log(Messages.resumeCpuProfilingFailedMsg, e);
-                }
-                return Status.OK_STATUS;
+        if (jvm.getCpuProfiler().getProfilerType() == ProfilerType.BCI) {
+            try {
+                jvm.getCpuProfiler().transformClasses(monitor);
+            } catch (JvmCoreException e) {
+                Activator.log(Messages.resumeCpuProfilingFailedMsg, e);
+            } catch (InterruptedException e) {
+                return Status.CANCEL_STATUS;
             }
-        }.schedule();
+        }
+
+        try {
+            jvm.getCpuProfiler().resume();
+        } catch (JvmCoreException e) {
+            Activator.log(Messages.resumeCpuProfilingFailedMsg, e);
+        }
+
+        suspendAction.setEnabled(true);
+
+        return Status.OK_STATUS;
+    }
+
+    /*
+     * @see AbstractJobAction#getJobName()
+     */
+    @Override
+    protected String getJobName() {
+        return Messages.resumeCpuProfilingJob;
+    }
+
+    /**
+     * Sets the suspend action.
+     * 
+     * @param suspendAction
+     *            The suspend action
+     */
+    public void setSuspendCpuProfilingAction(
+            SuspendCpuProfilingAction suspendAction) {
+        this.suspendAction = suspendAction;
     }
 }
