@@ -100,6 +100,11 @@ public class CpuSection extends AbstractJvmPropertySection implements
         clearCpuProfilingDataAction = new ClearCpuProfilingDataAction(this);
         dumpCpuProfilingDataAction = new DumpCpuProfilingDataAction(this);
 
+        resumeCpuProfilingAction
+                .setSuspendCpuProfilingAction(suspendCpuProfilingAction);
+        suspendCpuProfilingAction
+                .setResumeCpuProfilingAction(resumeCpuProfilingAction);
+
         cpuModelChangeListener = new ICpuModelChangeListener() {
             @Override
             public void modelChanged(CpuModelEvent event) {

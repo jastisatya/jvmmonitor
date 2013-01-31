@@ -10,8 +10,6 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.action.Action;
 import org.jvmmonitor.core.IActiveJvm;
 import org.jvmmonitor.core.JvmCoreException;
 import org.jvmmonitor.internal.ui.properties.AbstractJvmPropertySection;
@@ -22,10 +20,7 @@ import org.jvmmonitor.ui.ISharedImages;
 /**
  * Dumps the CPU profiling data.
  */
-public class DumpCpuProfilingDataAction extends Action {
-
-    /** The property section. */
-    AbstractJvmPropertySection section;
+public class DumpCpuProfilingDataAction extends AbstractCpuProfilingAction {
 
     /**
      * The constructor.
@@ -34,42 +29,45 @@ public class DumpCpuProfilingDataAction extends Action {
      *            The property section
      */
     public DumpCpuProfilingDataAction(AbstractJvmPropertySection section) {
+        super(section);
+
         setText(Messages.dumpCpuLabel);
         setImageDescriptor(Activator
                 .getImageDescriptor(ISharedImages.TAKE_CPU_DUMP_IMG_PATH));
         setDisabledImageDescriptor(Activator
                 .getImageDescriptor(ISharedImages.DISABLED_TAKE_CPU_DUMP_IMG_PATH));
         setId(getClass().getName());
-
-        this.section = section;
     }
 
     /*
-     * @see Action#run()
+     * @see AbstractJobAction#performRun(IProgressMonitor)
      */
     @Override
-    public void run() {
-        new Job(Messages.dumpCpuProfileDataJobLabel) {
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                IActiveJvm jvm = section.getJvm();
-                if (jvm == null) {
-                    return Status.CANCEL_STATUS;
-                }
+    protected IStatus performRun(IProgressMonitor monitor) {
+        IActiveJvm jvm = section.getJvm();
+        if (jvm == null) {
+            return Status.CANCEL_STATUS;
+        }
 
-                IFileStore fileStore = null;
-                try {
-                    fileStore = jvm.getCpuProfiler().dump();
-                } catch (JvmCoreException e) {
-                    Activator.log(Messages.dumpCpuProfileDataFailedMsg, e);
-                    return Status.CANCEL_STATUS;
-                }
+        IFileStore fileStore = null;
+        try {
+            fileStore = jvm.getCpuProfiler().dump();
+        } catch (JvmCoreException e) {
+            Activator.log(Messages.dumpCpuProfileDataFailedMsg, e);
+            return Status.CANCEL_STATUS;
+        }
 
-                section.setPinned(true);
+        section.setPinned(true);
 
-                OpenSnapshotAction.openEditor(fileStore);
-                return Status.OK_STATUS;
-            }
-        }.schedule();
+        OpenSnapshotAction.openEditor(fileStore);
+        return Status.OK_STATUS;
+    }
+
+    /*
+     * @see AbstractJobAction#getJobName()
+     */
+    @Override
+    protected String getJobName() {
+        return Messages.dumpCpuProfileDataJobLabel;
     }
 }
