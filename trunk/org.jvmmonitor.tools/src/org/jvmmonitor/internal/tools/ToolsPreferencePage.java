@@ -71,7 +71,7 @@ public class ToolsPreferencePage extends PreferencePage implements
         layout.marginWidth = 0;
         composite.setLayout(layout);
 
-        if (!Util.isMac()) {
+        if (!Util.isMac() || !Tools.getInstance().isReady()) {
             Label label = new Label(composite, SWT.WRAP);
             label.setText(Messages.toolsPreferencePageLabel);
             GridData layoutData = new GridData(GridData.FILL_HORIZONTAL);
